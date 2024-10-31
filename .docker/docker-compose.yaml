@@ -29,7 +29,7 @@ services:
       - postgres
 
   pgadmin:
-    container_name: pgadmin_container
+    container_name: pga5432dmin_container
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: "alexeasy11@gmail.com"
@@ -47,6 +47,12 @@ services:
           memory: 1G
     networks:
       - postgres
+    user: root
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - "mkdir -p /var/lib/pgadmin/sessions && chown -R 5050:5050 /var/lib/pgadmin && /entrypoint.sh"
+
 
 networks:
   postgres:
