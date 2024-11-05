@@ -155,3 +155,94 @@ CREATE TABLE product_articles (
     CONSTRAINT fk_product_articles_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_product_articles_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
 );
+
+CREATE OR REPLACE FUNCTION update_product_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE product
+    SET rate = (
+        SELECT AVG(stars)::numeric(2,1)
+        FROM feedback
+        WHERE product_id = NEW.product_id
+    )
+    WHERE id = NEW.product_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_product_rating
+AFTER INSERT OR UPDATE OR DELETE ON feedback
+FOR EACH ROW EXECUTE FUNCTION update_product_rating();
+
+CREATE OR REPLACE FUNCTION update_user_subscriptions()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE "user"
+        SET subscriptions = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE user_id = NEW.user_id
+        )
+        WHERE id = NEW.user_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE "user"
+        SET subscriptions = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE user_id = OLD.user_id
+        )
+        WHERE id = OLD.user_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_user_subscriptions
+AFTER INSERT OR DELETE ON user_musician_subscription
+FOR EACH ROW EXECUTE FUNCTION update_user_subscriptions();
+
+CREATE OR REPLACE FUNCTION update_musician_subscribers()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE musician 
+        SET subscribers = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE musician_id = NEW.musician_id
+        )
+        WHERE id = NEW.musician_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE musician 
+        SET subscribers = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE musician_id = OLD.musician_id
+        )
+        WHERE id = OLD.musician_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_subscribers
+AFTER INSERT OR DELETE ON user_musician_subscription
+FOR EACH ROW EXECUTE FUNCTION update_musician_subscribers();
+
+INSERT INTO type_of_musician (name)
+VALUES ('MUSICAL PRODUCER'), ('GUITARIST'), ('DRUMMER'), ('BASSIST'), ('SINGER'), ('RAPPER'), ('KEYBOARDIST');
+
+INSERT INTO genre (name)
+VALUES ('BLUES'), ('ROCK'), ('POP'), ('JAZZ'), ('RAP'), ('METAL'), ('CLASSICAL'), ('REGGAE'), ('ELECTRONIC'), ('HIP-HOP');
+
+INSERT INTO brand (name)
+VALUES ('FENDER'), ('GIBSON'), ('YAMAHA'), ('IBANEZ'), ('ESP'), ('PRS'), ('SQUIER'), ('MARTIN'), ('COLLINGS'), ('TAYLOR');
+
+INSERT INTO guitar_form (name)
+VALUES ('STRATOCASTER'), ('TELECASTER'), ('THINLINE'), ('LES PAUL'), ('V'), ('JAGUAR'), ('JAZZ-MASTER'), ('MOCKINGBIRD'), ('STAR'),
+('MUSTANG');
+
+INSERT INTO type_of_product (name)
+VALUES ('PEDALS_AND_EFFECTS'), ('ELECTRIC_GUITAR'), ('STUDIO_RECORDING_GEAR'), ('KEYS_AND_MIDI'), ('AMPLIFIER'), ('DRUMS_AND_PERCUSSION'),
+('BASS_GUITAR'), ('ACOUSTIC_GUITAR'), ('SOFTWARE_AND_ACCESSORIES');
