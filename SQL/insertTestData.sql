@@ -1,20 +1,17 @@
 -- Добавление музыкантов
-INSERT INTO musician (name, subscribers, genre_id, type_of_musician_id)
+INSERT INTO musician (name, subscribers)
 SELECT 
     'Musician ' || generate_series,
-    floor(random() * 1000000)::int,
-    floor(random() * 10 + 1)::int,
-    floor(random() * 7 + 1)::int
+    floor(random() * 1000000)::int
 FROM generate_series(1, 130);
 
 -- Добавление пользователей
-INSERT INTO "user" (login, password, password_salt, is_admin, type_of_user_id, subscriptions)
+INSERT INTO "user" (login, password, password_salt, is_admin, subscriptions)
 SELECT 
     'user' || generate_series,
     md5(random()::text),
     md5(random()::text),
-    false,
-    floor(random() * 2 + 1)::int,
+    (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)],
     floor(random() * 1000)::int
 FROM generate_series(1, 130);
 
@@ -57,3 +54,120 @@ SELECT
     'Feedback text ' || generate_series,
     floor(random() * 5 + 1)::int
 FROM generate_series(1, 130);
+
+-- Добавление связей продуктов и статей
+INSERT INTO product_articles (product_id, article_id)
+SELECT 
+    p.id,
+    a.id
+FROM product p
+CROSS JOIN LATERAL (
+    SELECT id FROM articles
+    WHERE id NOT IN (SELECT article_id FROM product_articles WHERE product_id = p.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) a;
+
+-- Добавление связей продуктов и пользователей
+INSERT INTO product_user (product_id, user_id)
+SELECT 
+    p.id,
+    u.id 
+FROM "user" u
+CROSS JOIN LATERAL (
+    SELECT id FROM product 
+    WHERE id NOT IN (SELECT product_id FROM product_user WHERE user_id = u.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) p;
+
+-- Добавление связей музыкантов и продуктов
+INSERT INTO musician_product (musician_id, product_id)
+SELECT 
+    m.id,
+    p.id
+FROM musician m
+CROSS JOIN LATERAL (
+    SELECT id FROM product
+    WHERE id NOT IN (SELECT product_id FROM musician_product WHERE musician_id = m.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) p;
+
+-- Добавление связей жанров и пользователей
+INSERT INTO genre_user (genre_id, user_id)
+SELECT 
+    g.id,
+    u.id
+FROM "user" u
+CROSS JOIN LATERAL (
+    SELECT id FROM genre
+    WHERE id NOT IN (SELECT genre_id FROM genre_user WHERE user_id = u.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) g;
+
+-- Добавление связей типов музыкантов и пользователей
+INSERT INTO type_of_musician_user (type_of_musician_id, user_id)
+SELECT 
+    t.id,
+    u.id
+FROM "user" u
+CROSS JOIN LATERAL (
+    SELECT id FROM type_of_musician
+    WHERE id NOT IN (SELECT type_of_musician_id FROM type_of_musician_user WHERE user_id = u.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) t;
+
+-- Добавление связей продуктов и жанров
+INSERT INTO product_genre (product_id, genre_id)
+SELECT 
+    p.id,
+    g.id
+FROM product p
+CROSS JOIN LATERAL (
+    SELECT id FROM genre
+    WHERE id NOT IN (SELECT genre_id FROM product_genre WHERE product_id = p.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) g;
+
+-- Добавление связей музыкантов и жанров
+INSERT INTO musician_genre (musician_id, genre_id)
+SELECT 
+    m.id,
+    g.id
+FROM musician m
+CROSS JOIN LATERAL (
+    SELECT id FROM genre
+    WHERE id NOT IN (SELECT genre_id FROM musician_genre WHERE musician_id = m.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) g;
+
+-- Добавление подписок пользователей на музыкантов
+INSERT INTO user_musician_subscription (user_id, musician_id)
+SELECT 
+    u.id,
+    m.id
+FROM "user" u
+CROSS JOIN LATERAL (
+    SELECT id FROM musician
+    WHERE id NOT IN (SELECT musician_id FROM user_musician_subscription WHERE user_id = u.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) m;
+
+-- Добавление связей типов музыкантов и музыкантов
+INSERT INTO type_of_musician_musician (type_of_musician_id, musician_id)
+SELECT 
+    t.id,
+    m.id
+FROM musician m
+CROSS JOIN LATERAL (
+    SELECT id FROM type_of_musician
+    WHERE id NOT IN (SELECT type_of_musician_id FROM type_of_musician_musician WHERE musician_id = m.id)
+    ORDER BY random()
+    LIMIT floor(random() * 4 + 2)
+) t;

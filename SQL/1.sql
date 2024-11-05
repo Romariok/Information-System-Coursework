@@ -23,19 +23,10 @@ CREATE TABLE type_of_product (
     name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE type_of_user (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
 CREATE TABLE musician (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    subscribers INTEGER NOT NULL,
-    genre_id INTEGER,
-    type_of_musician_id INTEGER,
-    CONSTRAINT fk_musician_genre FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE SET NULL,
-    CONSTRAINT fk_musician_type_of_musician FOREIGN KEY (type_of_musician_id) REFERENCES type_of_musician (id) ON DELETE SET NULL
+    subscribers INTEGER NOT NULL
 );
 
 CREATE TABLE "user" (
@@ -44,9 +35,7 @@ CREATE TABLE "user" (
     login VARCHAR(100) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     password_salt TEXT NOT NULL,
-    type_of_user_id INTEGER,
-    subscriptions INTEGER,
-    CONSTRAINT fk_user_type_of_user FOREIGN KEY (type_of_user_id) REFERENCES type_of_user (id) ON DELETE SET NULL
+    subscriptions INTEGER
 );
 
 CREATE TABLE product (
@@ -119,20 +108,20 @@ CREATE TABLE product_genre (
     CONSTRAINT fk_product_genre_genre FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE
 );
 
-CREATE TABLE type_of_user_user (
-    type_of_user_id INTEGER,
-    user_id INTEGER,
-    CONSTRAINT pk_type_of_user_user PRIMARY KEY (type_of_user_id, user_id),
-    CONSTRAINT fk_type_of_user_user_type_of_user FOREIGN KEY (type_of_user_id) REFERENCES type_of_user (id) ON DELETE CASCADE,
-    CONSTRAINT fk_type_of_user_user_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
-);
-
 CREATE TABLE type_of_musician_user (
     type_of_musician_id INTEGER,
     user_id INTEGER,
     CONSTRAINT pk_type_of_musician_user PRIMARY KEY (type_of_musician_id, user_id),
     CONSTRAINT fk_type_of_musician_user_type_of_musician FOREIGN KEY (type_of_musician_id) REFERENCES type_of_musician (id) ON DELETE CASCADE,
     CONSTRAINT fk_type_of_musician_user_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
+);
+
+CREATE TABLE type_of_musician_musician (
+    type_of_musician_id INTEGER,
+    musician_id INTEGER,
+    CONSTRAINT pk_type_of_musician_musician PRIMARY KEY (type_of_musician_id, musician_id),
+    CONSTRAINT fk_type_of_musician_musician_type_of_musician FOREIGN KEY (type_of_musician_id) REFERENCES type_of_musician (id) ON DELETE CASCADE,
+    CONSTRAINT fk_type_of_musician_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE genre_user (
@@ -166,44 +155,3 @@ CREATE TABLE product_articles (
     CONSTRAINT fk_product_articles_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_product_articles_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
 );
-
--- Индексы для поиска статей
-CREATE INDEX idx_articles_header ON articles (header);
-
-CREATE INDEX idx_articles_tags ON articles (tags);
-
-CREATE INDEX idx_articles_accepted ON articles (accepted);
-
--- Индексы для поиска продуктов
-CREATE INDEX idx_product_name ON product (name);
-
-CREATE INDEX idx_product_brand_id ON product (brand_id);
-
-CREATE INDEX idx_product_type_of_product_id ON product (type_of_product_id);
-
--- Индексы для поиска музыкантов
-CREATE INDEX idx_musician_name ON musician (name);
-
-CREATE INDEX idx_musician_genre_id ON musician (genre_id);
-
--- Составной индекс для поиска отзывов по продукту
-CREATE INDEX idx_feedback_product_stars ON feedback (product_id, stars);
-
-/**
-Обоснование индексов на русском языке:
-Индексы для статей:
-idx_articles_header: ускорит поиск статей по заголовкам (Прецедент 1, 5)
-idx_articles_tags: оптимизирует поиск статей по тегам
-idx_articles_accepted: ускорит выборку только одобренных статей
-Индексы для продуктов:
-idx_product_name: ускорит поиск конкретных моделей гитар (Прецедент 5)
-idx_product_brand_id: оптимизирует поиск по производителям
-idx_product_type_of_product_id: ускорит фильтрацию по типам продуктов
-Индексы для музыкантов:
-idx_musician_name: ускорит поиск музыкантов по имени (Прецедент 3, 4)
-idx_musician_genre_id: оптимизирует поиск музыкантов определенного жанра
-Составной индекс для отзывов:
-idx_feedback_product_stars: ускорит выборку отзывов по конкретному продукту с сортировкой по рейтингу (Прецедент 5)
-Эти индексы значительно ускорят основные операции поиска и фильтрации, которые часто используются в описанных прецедентах. 
-Особенно это важно для функций поиска статей, информации о музыкантах и их оборудовании, а также при работе с отзывами о продуктах.
-**/
