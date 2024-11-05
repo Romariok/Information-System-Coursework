@@ -37,7 +37,6 @@
 
 
 ## Содержание
-
 - [Сущности](#сущности)
   - [Тип музыканта (type\_of\_musician)](#тип-музыканта-type_of_musician)
   - [Жанр (genre)](#жанр-genre)
@@ -49,6 +48,11 @@
   - [Продукт (product)](#продукт-product)
   - [Статьи (articles)](#статьи-articles)
   - [Отзывы (feedback)](#отзывы-feedback)
+- [Связи](#связи)
+- [Целостность данных](#целостность-данных)
+  - [Триггеры](#триггеры)
+- [SQL-скрипты](#sql-скрипты)
+- [Функции и процедуры](#функции-и-процедуры)
 - [ER-модель](#er-модель)
 - [Даталогическая модель](#даталогическая-модель)
 
@@ -175,7 +179,97 @@ CONSTRAINT fk_... FOREIGN KEY (..._id) REFERENCES ... (id) ON DELETE CASCADE
 is_admin BOOLEAN DEFAULT FALSE
 ```
 
+### Триггеры
 
+- Изменение среднего рейтинга продукта: AFTER INSERT OR UPDATE OR DELETE ON feedback
+
+```sql
+CREATE OR REPLACE FUNCTION update_product_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE product
+    SET rate = (
+        SELECT AVG(stars)::numeric(2,1)
+        FROM feedback
+        WHERE product_id = NEW.product_id
+    )
+    WHERE id = NEW.product_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```    
+
+- Изменение количества подписок пользователя: AFTER INSERT OR DELETE ON user_musician_subscription
+
+```sql
+CREATE OR REPLACE FUNCTION update_user_subscriptions()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE "user"
+        SET subscriptions = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE user_id = NEW.user_id
+        )
+        WHERE id = NEW.user_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE "user"
+        SET subscriptions = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE user_id = OLD.user_id
+        )
+        WHERE id = OLD.user_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+```
+
+- Изменение количества подписчиков музыканта: AFTER INSERT OR DELETE ON user_musician_subscription
+
+```sql
+CREATE OR REPLACE FUNCTION update_musician_subscribers()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE musician 
+        SET subscribers = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE musician_id = NEW.musician_id
+        )
+        WHERE id = NEW.musician_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE musician 
+        SET subscribers = (
+            SELECT COUNT(*) 
+            FROM user_musician_subscription 
+            WHERE musician_id = OLD.musician_id
+        )
+        WHERE id = OLD.musician_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+```
+
+## SQL-скрипты
+
+- [initScript.sql](/SQL/initScript.sql)
+- [insertTestData.sql](/SQL/insertTestData.sql)
+- [deleteAll.sql](/SQL/deleteAll.sql)
+
+## Функции и процедуры
+
+- Процедура добавления отзыва с обновлением рейтинга продукта
+- Процедура подписки на музыканта
+- Функция для модерации статей
+
+[functions.sql](/SQL/functions.sql)
 
 ## ER-модель
 
