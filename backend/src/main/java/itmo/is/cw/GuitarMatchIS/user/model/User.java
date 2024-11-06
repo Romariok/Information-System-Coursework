@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_user")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

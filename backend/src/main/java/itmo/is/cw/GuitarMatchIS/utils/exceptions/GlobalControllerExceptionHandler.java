@@ -43,6 +43,27 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleMusicianAlreadyExistsException(MusicianAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler(GenreAlreadyExistsException.class)
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleGenreAlreadyExistsException(GenreAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler(GenreNotFoundException.class)
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleGenreNotFoundException(GenreNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
             List<String> errors = e.getBindingResult()
                         .getFieldErrors()
