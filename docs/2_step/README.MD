@@ -116,6 +116,7 @@
 | guitar_form_id | INTEGER | - | guitar_form(id) |
 | type_of_product_id | INTEGER | - | type_of_product(id) |
 | lads | INTEGER | - | - |
+| color | VARCHAR(100) | NOT NULL | - |
 | strings | INTEGER | - | - |
 | tip_material | VARCHAR(100) | - | - |
 | body_material | VARCHAR(100) | - | - |

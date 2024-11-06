@@ -16,7 +16,7 @@ FROM generate_series(1, 130);
 
 -- Добавление продуктов
 INSERT INTO product (name, description, price, rate, brand_id, guitar_form_id, type_of_product_id, 
-                    lads, strings, tip_material, body_material, pickup_configuration, type_combo_amplifier)
+                    lads, color, strings, tip_material, body_material, pickup_configuration, type_combo_amplifier)
 SELECT 
     'Product ' || generate_series,
     'Description for product ' || generate_series,
@@ -26,6 +26,7 @@ SELECT
     floor(random() * 10 + 1)::int,
     floor(random() * 9 + 1)::int,
     floor(random() * 24 + 1)::int,
+    (ARRAY['BLACK', 'WHITE', 'RED', 'BLUE', 'GREEN', 'YELLOW', 'PURPLE', 'ORANGE', 'PINK', 'BROWN', 'GREY', 'GOLD', 'SILVER'])[floor(random() * 13 + 1)],
     floor(random() * 12 + 1)::int,
     (ARRAY['Wood', 'Metal', 'Plastic', 'Composite'])[floor(random() * 4 + 1)],
     (ARRAY['Mahogany', 'Maple', 'Ash', 'Alder', 'Basswood'])[floor(random() * 5 + 1)],
