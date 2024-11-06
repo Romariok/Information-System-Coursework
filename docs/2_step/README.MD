@@ -102,7 +102,6 @@
 | is_admin | BOOLEAN | DEFAULT FALSE | - |
 | login | VARCHAR(100) | UNIQUE NOT NULL | - |
 | password | TEXT | NOT NULL | - |
-| password_salt | TEXT | NOT NULL | - |
 | subscriptions | INTEGER | - | - |
 
 ### Продукт (product)
