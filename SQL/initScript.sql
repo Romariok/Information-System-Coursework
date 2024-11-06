@@ -29,7 +29,7 @@ CREATE TABLE musician (
     subscribers INTEGER NOT NULL
 );
 
-CREATE TABLE "user" (
+CREATE TABLE app_user (
     id SERIAL PRIMARY KEY,
     is_admin BOOLEAN DEFAULT FALSE,
     login VARCHAR(100) UNIQUE NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE articles (
     date DATE NOT NULL,
     tags VARCHAR(200),
     accepted BOOLEAN DEFAULT FALSE,
-    CONSTRAINT fk_articles_user FOREIGN KEY (author) REFERENCES "user" (id) ON DELETE SET NULL
+    CONSTRAINT fk_articles_user FOREIGN KEY (author) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
 CREATE TABLE feedback (
@@ -78,7 +78,7 @@ CREATE TABLE feedback (
         stars >= 1
         AND stars <= 5
     ),
-    CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE,
+    CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_feedback_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_feedback_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
 );
@@ -87,7 +87,7 @@ CREATE TABLE user_musician_subscription (
     user_id INTEGER,
     musician_id INTEGER,
     CONSTRAINT pk_user_musician PRIMARY KEY (user_id, musician_id),
-    CONSTRAINT fk_user_musician_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_musician_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_user_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
@@ -112,13 +112,16 @@ CREATE TABLE type_of_musician_user (
     user_id INTEGER,
     CONSTRAINT pk_type_of_musician_user PRIMARY KEY (type_of_musician_id, user_id),
     CONSTRAINT fk_type_of_musician_user_type_of_musician FOREIGN KEY (type_of_musician_id) REFERENCES type_of_musician (id) ON DELETE CASCADE,
-    CONSTRAINT fk_type_of_musician_user_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
+    CONSTRAINT fk_type_of_musician_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE type_of_musician_musician (
     type_of_musician_id INTEGER,
     musician_id INTEGER,
-    CONSTRAINT pk_type_of_musician_musician PRIMARY KEY (type_of_musician_id, musician_id),
+    CONSTRAINT pk_type_of_musician_musician PRIMARY KEY (
+        type_of_musician_id,
+        musician_id
+    ),
     CONSTRAINT fk_type_of_musician_musician_type_of_musician FOREIGN KEY (type_of_musician_id) REFERENCES type_of_musician (id) ON DELETE CASCADE,
     CONSTRAINT fk_type_of_musician_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
@@ -128,7 +131,7 @@ CREATE TABLE genre_user (
     user_id INTEGER,
     CONSTRAINT pk_genre_user PRIMARY KEY (genre_id, user_id),
     CONSTRAINT fk_genre_user_genre FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE,
-    CONSTRAINT fk_genre_user_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
+    CONSTRAINT fk_genre_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE musician_product (
@@ -144,7 +147,7 @@ CREATE TABLE product_user (
     user_id INTEGER,
     CONSTRAINT pk_product_user PRIMARY KEY (product_id, user_id),
     CONSTRAINT fk_product_user_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_user_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
+    CONSTRAINT fk_product_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_articles (
@@ -169,15 +172,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_product_rating
-AFTER INSERT OR UPDATE OR DELETE ON feedback
-FOR EACH ROW EXECUTE FUNCTION update_product_rating();
+CREATE TRIGGER trigger_update_product_rating AFTER
+INSERT
+    OR
+UPDATE
+OR DELETE ON feedback FOR EACH ROW
+EXECUTE FUNCTION update_product_rating ();
 
 CREATE OR REPLACE FUNCTION update_user_subscriptions()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE "user"
+        UPDATE app_user
         SET subscriptions = (
             SELECT COUNT(*) 
             FROM user_musician_subscription 
@@ -185,7 +191,7 @@ BEGIN
         )
         WHERE id = NEW.user_id;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE "user"
+        UPDATE app_user
         SET subscriptions = (
             SELECT COUNT(*) 
             FROM user_musician_subscription 
@@ -197,9 +203,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_user_subscriptions
-AFTER INSERT OR DELETE ON user_musician_subscription
-FOR EACH ROW EXECUTE FUNCTION update_user_subscriptions();
+CREATE TRIGGER trigger_update_user_subscriptions AFTER
+INSERT
+    OR DELETE ON user_musician_subscription FOR EACH ROW
+EXECUTE FUNCTION update_user_subscriptions ();
 
 CREATE OR REPLACE FUNCTION update_musician_subscribers()
 RETURNS TRIGGER AS $$
@@ -225,23 +232,68 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_subscribers
-AFTER INSERT OR DELETE ON user_musician_subscription
-FOR EACH ROW EXECUTE FUNCTION update_musician_subscribers();
+CREATE TRIGGER trigger_update_subscribers AFTER
+INSERT
+    OR DELETE ON user_musician_subscription FOR EACH ROW
+EXECUTE FUNCTION update_musician_subscribers ();
 
-INSERT INTO type_of_musician (name)
-VALUES ('MUSICAL PRODUCER'), ('GUITARIST'), ('DRUMMER'), ('BASSIST'), ('SINGER'), ('RAPPER'), ('KEYBOARDIST');
+INSERT INTO
+    type_of_musician (name)
+VALUES ('MUSICAL PRODUCER'),
+    ('GUITARIST'),
+    ('DRUMMER'),
+    ('BASSIST'),
+    ('SINGER'),
+    ('RAPPER'),
+    ('KEYBOARDIST');
 
-INSERT INTO genre (name)
-VALUES ('BLUES'), ('ROCK'), ('POP'), ('JAZZ'), ('RAP'), ('METAL'), ('CLASSICAL'), ('REGGAE'), ('ELECTRONIC'), ('HIP-HOP');
+INSERT INTO
+    genre (name)
+VALUES ('BLUES'),
+    ('ROCK'),
+    ('POP'),
+    ('JAZZ'),
+    ('RAP'),
+    ('METAL'),
+    ('CLASSICAL'),
+    ('REGGAE'),
+    ('ELECTRONIC'),
+    ('HIP-HOP');
 
-INSERT INTO brand (name)
-VALUES ('FENDER'), ('GIBSON'), ('YAMAHA'), ('IBANEZ'), ('ESP'), ('PRS'), ('SQUIER'), ('MARTIN'), ('COLLINGS'), ('TAYLOR');
+INSERT INTO
+    brand (name)
+VALUES ('FENDER'),
+    ('GIBSON'),
+    ('YAMAHA'),
+    ('IBANEZ'),
+    ('ESP'),
+    ('PRS'),
+    ('SQUIER'),
+    ('MARTIN'),
+    ('COLLINGS'),
+    ('TAYLOR');
 
-INSERT INTO guitar_form (name)
-VALUES ('STRATOCASTER'), ('TELECASTER'), ('THINLINE'), ('LES PAUL'), ('V'), ('JAGUAR'), ('JAZZ-MASTER'), ('MOCKINGBIRD'), ('STAR'),
-('MUSTANG');
+INSERT INTO
+    guitar_form (name)
+VALUES ('STRATOCASTER'),
+    ('TELECASTER'),
+    ('THINLINE'),
+    ('LES PAUL'),
+    ('V'),
+    ('JAGUAR'),
+    ('JAZZ-MASTER'),
+    ('MOCKINGBIRD'),
+    ('STAR'),
+    ('MUSTANG');
 
-INSERT INTO type_of_product (name)
-VALUES ('PEDALS_AND_EFFECTS'), ('ELECTRIC_GUITAR'), ('STUDIO_RECORDING_GEAR'), ('KEYS_AND_MIDI'), ('AMPLIFIER'), ('DRUMS_AND_PERCUSSION'),
-('BASS_GUITAR'), ('ACOUSTIC_GUITAR'), ('SOFTWARE_AND_ACCESSORIES');
+INSERT INTO
+    type_of_product (name)
+VALUES ('PEDALS_AND_EFFECTS'),
+    ('ELECTRIC_GUITAR'),
+    ('STUDIO_RECORDING_GEAR'),
+    ('KEYS_AND_MIDI'),
+    ('AMPLIFIER'),
+    ('DRUMS_AND_PERCUSSION'),
+    ('BASS_GUITAR'),
+    ('ACOUSTIC_GUITAR'),
+    ('SOFTWARE_AND_ACCESSORIES');

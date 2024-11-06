@@ -44,7 +44,7 @@
   - [Форма гитары (guitar\_form)](#форма-гитары-guitar_form)
   - [Тип продукта (type\_of\_product)](#тип-продукта-type_of_product)
   - [Музыкант (musician)](#музыкант-musician)
-  - [Пользователь (user)](#пользователь-user)
+  - [Пользователь (app_user)](#пользователь-app_user)
   - [Продукт (product)](#продукт-product)
   - [Статьи (articles)](#статьи-articles)
   - [Отзывы (feedback)](#отзывы-feedback)
@@ -95,7 +95,7 @@
 | name | VARCHAR(100) | NOT NULL | - |
 | subscribers | INTEGER | NOT NULL | - |
 
-### Пользователь (user)
+### Пользователь (app_user)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -145,19 +145,19 @@
 
 ## Связи
 
-- user-musician: M:M
+- app_user-musician: M:M
 - product-brand: M:1
 - product-guitar_form: M:1
 - product-type_of_product: M:1
 - product-article: M:M
-- articles-user: 1:M
-- feedback-user: M:1
+- articles-app_user: 1:M
+- feedback-app_user: M:1
 - feedback-product: M:1
 - feedback-articles: M:1
 - genre-product: M:M
 - musician-genre: M:M
-- user-genre: M:M
-- user-type_of_musician: M:M
+- app_user-genre: M:M
+- app_user-type_of_musician: M:M
 - musician-type_of_musician: M:M
 - musician-product: M:M
 
@@ -205,7 +205,7 @@ CREATE OR REPLACE FUNCTION update_user_subscriptions()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE "user"
+        UPDATE app_user
         SET subscriptions = (
             SELECT COUNT(*) 
             FROM user_musician_subscription 
@@ -213,7 +213,7 @@ BEGIN
         )
         WHERE id = NEW.user_id;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE "user"
+        UPDATE app_user
         SET subscriptions = (
             SELECT COUNT(*) 
             FROM user_musician_subscription 
