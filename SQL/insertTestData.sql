@@ -6,7 +6,7 @@ SELECT
 FROM generate_series(1, 130);
 
 -- Добавление пользователей
-INSERT INTO "user" (login, password, is_admin, subscriptions)
+INSERT INTO app_user (login, password, is_admin, subscriptions)
 SELECT 
     'user' || generate_series,
     md5(random()::text),
@@ -55,118 +55,175 @@ SELECT
 FROM generate_series(1, 130);
 
 -- Добавление связей продуктов и статей
-INSERT INTO product_articles (product_id, article_id)
-SELECT 
-    p.id,
-    a.id
+INSERT INTO
+    product_articles (product_id, article_id)
+SELECT p.id, a.id
 FROM product p
-CROSS JOIN LATERAL (
-    SELECT id FROM articles
-    WHERE id NOT IN (SELECT article_id FROM product_articles WHERE product_id = p.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) a;
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM articles
+        WHERE
+            id NOT IN(
+                SELECT article_id
+                FROM product_articles
+                WHERE
+                    product_id = p.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) a;
 
 -- Добавление связей продуктов и пользователей
-INSERT INTO product_user (product_id, user_id)
-SELECT 
-    p.id,
-    u.id 
-FROM "user" u
-CROSS JOIN LATERAL (
-    SELECT id FROM product 
-    WHERE id NOT IN (SELECT product_id FROM product_user WHERE user_id = u.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) p;
+INSERT INTO
+    product_user (product_id, user_id)
+SELECT p.id, u.id
+FROM app_user u
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM product
+        WHERE
+            id NOT IN(
+                SELECT product_id
+                FROM product_user
+                WHERE
+                    user_id = u.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) p;
 
 -- Добавление связей музыкантов и продуктов
-INSERT INTO musician_product (musician_id, product_id)
-SELECT 
-    m.id,
-    p.id
+INSERT INTO
+    musician_product (musician_id, product_id)
+SELECT m.id, p.id
 FROM musician m
-CROSS JOIN LATERAL (
-    SELECT id FROM product
-    WHERE id NOT IN (SELECT product_id FROM musician_product WHERE musician_id = m.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) p;
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM product
+        WHERE
+            id NOT IN(
+                SELECT product_id
+                FROM musician_product
+                WHERE
+                    musician_id = m.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) p;
 
 -- Добавление связей жанров и пользователей
-INSERT INTO genre_user (genre_id, user_id)
-SELECT 
-    g.id,
-    u.id
-FROM "user" u
-CROSS JOIN LATERAL (
-    SELECT id FROM genre
-    WHERE id NOT IN (SELECT genre_id FROM genre_user WHERE user_id = u.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) g;
+INSERT INTO
+    genre_user (genre_id, user_id)
+SELECT g.id, u.id
+FROM app_user u
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM genre
+        WHERE
+            id NOT IN(
+                SELECT genre_id
+                FROM genre_user
+                WHERE
+                    user_id = u.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) g;
 
 -- Добавление связей типов музыкантов и пользователей
-INSERT INTO type_of_musician_user (type_of_musician_id, user_id)
-SELECT 
-    t.id,
-    u.id
-FROM "user" u
-CROSS JOIN LATERAL (
-    SELECT id FROM type_of_musician
-    WHERE id NOT IN (SELECT type_of_musician_id FROM type_of_musician_user WHERE user_id = u.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) t;
+INSERT INTO
+    type_of_musician_user (type_of_musician_id, user_id)
+SELECT t.id, u.id
+FROM app_user u
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM type_of_musician
+        WHERE
+            id NOT IN(
+                SELECT type_of_musician_id
+                FROM type_of_musician_user
+                WHERE
+                    user_id = u.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) t;
 
 -- Добавление связей продуктов и жанров
-INSERT INTO product_genre (product_id, genre_id)
-SELECT 
-    p.id,
-    g.id
+INSERT INTO
+    product_genre (product_id, genre_id)
+SELECT p.id, g.id
 FROM product p
-CROSS JOIN LATERAL (
-    SELECT id FROM genre
-    WHERE id NOT IN (SELECT genre_id FROM product_genre WHERE product_id = p.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) g;
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM genre
+        WHERE
+            id NOT IN(
+                SELECT genre_id
+                FROM product_genre
+                WHERE
+                    product_id = p.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) g;
 
 -- Добавление связей музыкантов и жанров
-INSERT INTO musician_genre (musician_id, genre_id)
-SELECT 
-    m.id,
-    g.id
+INSERT INTO
+    musician_genre (musician_id, genre_id)
+SELECT m.id, g.id
 FROM musician m
-CROSS JOIN LATERAL (
-    SELECT id FROM genre
-    WHERE id NOT IN (SELECT genre_id FROM musician_genre WHERE musician_id = m.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) g;
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM genre
+        WHERE
+            id NOT IN(
+                SELECT genre_id
+                FROM musician_genre
+                WHERE
+                    musician_id = m.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) g;
 
 -- Добавление подписок пользователей на музыкантов
-INSERT INTO user_musician_subscription (user_id, musician_id)
-SELECT 
-    u.id,
-    m.id
-FROM "user" u
-CROSS JOIN LATERAL (
-    SELECT id FROM musician
-    WHERE id NOT IN (SELECT musician_id FROM user_musician_subscription WHERE user_id = u.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) m;
+INSERT INTO
+    user_musician_subscription (user_id, musician_id)
+SELECT u.id, m.id
+FROM app_user u
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM musician
+        WHERE
+            id NOT IN(
+                SELECT musician_id
+                FROM user_musician_subscription
+                WHERE
+                    user_id = u.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) m;
 
 -- Добавление связей типов музыкантов и музыкантов
-INSERT INTO type_of_musician_musician (type_of_musician_id, musician_id)
-SELECT 
-    t.id,
-    m.id
+INSERT INTO
+    type_of_musician_musician (
+        type_of_musician_id,
+        musician_id
+    )
+SELECT t.id, m.id
 FROM musician m
-CROSS JOIN LATERAL (
-    SELECT id FROM type_of_musician
-    WHERE id NOT IN (SELECT type_of_musician_id FROM type_of_musician_musician WHERE musician_id = m.id)
-    ORDER BY random()
-    LIMIT floor(random() * 4 + 2)
-) t;
+    CROSS JOIN LATERAL (
+        SELECT id
+        FROM type_of_musician
+        WHERE
+            id NOT IN(
+                SELECT type_of_musician_id
+                FROM type_of_musician_musician
+                WHERE
+                    musician_id = m.id
+            )
+        ORDER BY random ()
+        LIMIT floor(random () * 4 + 2)
+    ) t;

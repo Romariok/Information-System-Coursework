@@ -41,7 +41,7 @@ BEGIN
     SET subscribers = subscribers + 1
     WHERE id = p_musician_id;
     
-    UPDATE "user"
+    UPDATE app_user
     SET subscriptions = subscriptions + 1
     WHERE id = p_user_id;
 END;
@@ -57,7 +57,7 @@ DECLARE
     v_is_admin BOOLEAN;
 BEGIN
     SELECT is_admin INTO v_is_admin
-    FROM "user"
+    FROM app_user
     WHERE id = p_moderator_id;
     
     IF NOT v_is_admin THEN
@@ -70,4 +70,4 @@ BEGIN
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql; 
+$$ LANGUAGE plpgsql;
