@@ -6,10 +6,9 @@ SELECT
 FROM generate_series(1, 130);
 
 -- Добавление пользователей
-INSERT INTO "user" (login, password, password_salt, is_admin, subscriptions)
+INSERT INTO "user" (login, password, is_admin, subscriptions)
 SELECT 
     'user' || generate_series,
-    md5(random()::text),
     md5(random()::text),
     (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)],
     floor(random() * 1000)::int
