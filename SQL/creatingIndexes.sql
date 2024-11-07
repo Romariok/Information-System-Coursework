@@ -1,6 +1,3 @@
-CREATE INDEX idx_user_musician_subscription_user ON user_musician_subscription (user_id);
-CREATE INDEX idx_user_musician_subscription_musician ON user_musician_subscription (musician_id);
-
 CREATE INDEX idx_product_price_rate_brand ON product (price, rate, brand_id);
 
 CREATE INDEX idx_product_brand ON product (brand_id);
