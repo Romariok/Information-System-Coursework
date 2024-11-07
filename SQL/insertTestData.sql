@@ -3,7 +3,7 @@ INSERT INTO musician (name, subscribers)
 SELECT 
     'Musician ' || generate_series,
     floor(random() * 1000000)::int
-FROM generate_series(1, 130);
+FROM generate_series(1, 13000);
 
 -- Добавление пользователей
 INSERT INTO app_user (login, password, is_admin, subscriptions)
@@ -12,7 +12,7 @@ SELECT
     md5(random()::text),
     (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)],
     floor(random() * 1000)::int
-FROM generate_series(1, 130);
+FROM generate_series(1, 13000);
 
 -- Добавление продуктов
 INSERT INTO product (name, description, price, rate, brand_id, guitar_form_id, type_of_product_id, 
@@ -32,28 +32,28 @@ SELECT
     (ARRAY['Mahogany', 'Maple', 'Ash', 'Alder', 'Basswood'])[floor(random() * 5 + 1)],
     (ARRAY['SSS', 'HSS', 'HH', 'P90', 'Single'])[floor(random() * 5 + 1)],
     (ARRAY['Tube', 'Solid State', 'Hybrid', 'Modeling'])[floor(random() * 4 + 1)]а
-FROM generate_series(1, 130);
+FROM generate_series(1, 130000);
 
 -- Добавление статей
 INSERT INTO articles (header, text, author, date, tags, accepted)
 SELECT 
     'Article Header ' || generate_series,
     'Article Text ' || generate_series,
-    floor(random() * 130 + 1)::int,
+    floor(random() * 13000 + 1)::int,
     current_date - (random() * 365)::int,
     'tag1, tag2, tag3',
     random() > 0.5
-FROM generate_series(1, 130);
+FROM generate_series(1, 300);
 
 -- Добавление отзывов
 INSERT INTO feedback (user_id, product_id, article_id, text, stars)
 SELECT 
-    floor(random() * 130 + 1)::int,
-    floor(random() * 130 + 1)::int,
-    floor(random() * 130 + 1)::int,
+    floor(random() * 13000 + 1)::int,
+    floor(random() * 130000 + 1)::int,
+    floor(random() * 200 + 1)::int,
     'Feedback text ' || generate_series,
     floor(random() * 5 + 1)::int
-FROM generate_series(1, 130);
+FROM generate_series(1, 5000);
 
 -- Добавление связей продуктов и статей
 INSERT INTO
@@ -128,7 +128,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) g;
 
 -- Добавление связей типов музыкантов и пользователей
@@ -147,7 +147,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) t;
 
 -- Добавление связей продуктов и жанров
@@ -166,7 +166,7 @@ FROM product p
                     product_id = p.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) g;
 
 -- Добавление связей музыкантов и жанров
@@ -185,7 +185,7 @@ FROM musician m
                     musician_id = m.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) g;
 
 -- Добавление подписок пользователей на музыкантов
@@ -226,5 +226,5 @@ FROM musician m
                     musician_id = m.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 3 + 1)
     ) t;
