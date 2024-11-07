@@ -259,9 +259,9 @@ $$ LANGUAGE plpgsql;
 
 ## SQL-скрипты
 
-- [initScript.sql](/SQL/initScript.sql)
-- [insertTestData.sql](/SQL/insertTestData.sql)
-- [deleteAll.sql](/SQL/deleteAll.sql)
+- [Создание базы данных, таблиц, функций ...](/SQL/initScript.sql)
+- [Вставка тестовых данных](/SQL/insertTestData.sql)
+- [Скрипт для удаления](/SQL/deleteAll.sql)
 
 ## Функции и процедуры
 
@@ -269,7 +269,7 @@ $$ LANGUAGE plpgsql;
 - Процедура подписки на музыканта
 - Функция для модерации статей
 
-[functions.sql](/SQL/functions.sql)
+[Функции](/SQL/functions.sql)
 
 ## ER-модель
 
@@ -278,3 +278,124 @@ $$ LANGUAGE plpgsql;
 ## Даталогическая модель
 
 ![2 Этап](/SQL/erd.png)
+
+## Тестирование производительности, создание индексов
+
+[Триггеры](/SQL/functions.sql)
+
+- Триггеры по `id` для основных характеристик продукта
+
+- Триггеры для связей `many-to-many` между пользователями, продуктами
+
+- Запрос для фильтрации продукта по бренду и цене
+
+```sql
+EXPLAIN ANALYZE 
+SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+```
+
+Было: 12,644 мс
+
+Стало: 3,285 мс
+
+- Фильтрация продукта по цене, рейтингу и бренду
+
+```sql
+EXPLAIN ANALYZE 
+SELECT * 
+FROM product 
+WHERE price BETWEEN 300 AND 1000 
+  AND rate >= 4 
+  AND brand_id = 5;
+```
+
+Было: 16,621 мс
+
+Стало: 1,174 мс
+
+- Список определённого продукта (гитары) с определённой формой
+
+```sql
+EXPLAIN ANALYZE 
+SELECT * 
+FROM product 
+WHERE type_of_product_id = 2
+  AND guitar_form_id = 3;
+```
+
+Было: 9,648 мс
+
+Стало: 2,197 мс
+
+- Топ 10 музыкантов по подписчикам
+
+```sql
+EXPLAIN ANALYZE 
+SELECT m.name, COUNT(s.user_id) AS subscriber_count
+FROM musician m
+JOIN user_musician_subscription s ON m.id = s.musician_id
+GROUP BY m.name
+ORDER BY subscriber_count DESC
+LIMIT 10;
+```
+
+Было: 20,779 мс
+
+Стало: 19,325 мс
+
+- Фильтр гитары с определённо формой, ценой, брендом
+
+```sql
+EXPLAIN ANALYZE 
+SELECT * 
+FROM product 
+WHERE brand_id = 5 
+  AND guitar_form_id = 3 
+  AND type_of_product_id = 2 
+  AND price BETWEEN 500 AND 1500;
+```
+
+Было: 17,258 мс
+
+Стало: 1,768 мс
+
+- Список избранного для конкретного юзера
+
+```sql
+EXPLAIN ANALYZE 
+SELECT p.* 
+FROM product p
+JOIN product_user uf ON p.id = uf.product_id
+WHERE uf.user_id = 123;
+```
+
+Было: 0,676 мс
+
+Стало: 0,644 мс
+
+- Выбор гитары с определённым жанром
+
+```sql
+EXPLAIN ANALYZE 
+SELECT p.* 
+FROM product p
+JOIN product_genre pg ON p.id = pg.product_id
+WHERE pg.genre_id = 2;
+```
+
+Было: 114,516 мс
+
+Стало: 72,256 мс
+
+Стало (после добавления `idx_product_genre_genre_id`): 56,293
+
+- Выбор продукта с определённым брендом и ценой
+
+```sql
+EXPLAIN ANALYZE 
+SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+```
+
+Было: 4,712 мс
+
+Стало: 0,195 мс
