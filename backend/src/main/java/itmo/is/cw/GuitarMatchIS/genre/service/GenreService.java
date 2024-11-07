@@ -9,16 +9,7 @@ import itmo.is.cw.GuitarMatchIS.genre.dao.GenreRepository;
 import itmo.is.cw.GuitarMatchIS.genre.dto.CreateGenreDTO;
 import itmo.is.cw.GuitarMatchIS.genre.dto.GenreDTO;
 import itmo.is.cw.GuitarMatchIS.genre.model.Genre;
-import itmo.is.cw.GuitarMatchIS.musician.dto.CreateMusicianDTO;
-import itmo.is.cw.GuitarMatchIS.musician.dto.MusicianDTO;
-import itmo.is.cw.GuitarMatchIS.musician.model.Musician;
-import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
-import itmo.is.cw.GuitarMatchIS.user.dao.UserRepository;
-import itmo.is.cw.GuitarMatchIS.user.model.User;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.GenreAlreadyExistsException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.GenreNotFoundException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.MusicianAlreadyExistsException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
