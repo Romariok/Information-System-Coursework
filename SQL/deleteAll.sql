@@ -16,8 +16,6 @@ DROP TABLE IF EXISTS musician_genre CASCADE;
 
 DROP TABLE IF EXISTS user_musician_subscription CASCADE;
 
-DROP TABLE IF EXISTS custom_product_collection_product CASCADE;
-
 DROP TABLE IF EXISTS shop_product CASCADE;
 
 DROP TABLE IF EXISTS shop CASCADE;
@@ -61,3 +59,30 @@ DROP TYPE IF EXISTS country_enum;
 DROP TYPE IF EXISTS type_of_musician_enum;
 
 DROP TYPE IF EXISTS genre_enum;
+
+DROP TRIGGER IF EXISTS update_product_avg_price ON product;
+
+
+DROP TRIGGER IF EXISTS trigger_update_product_average_price ON shop_product;
+DROP FUNCTION IF EXISTS update_product_average_price();
+
+DROP TRIGGER IF EXISTS trigger_update_product_rating ON feedback;
+DROP FUNCTION IF EXISTS update_product_rating();
+
+DROP TRIGGER IF EXISTS trigger_update_user_subscriptions ON user_musician_subscription;
+DROP FUNCTION IF EXISTS update_user_subscriptions();
+
+DROP TRIGGER IF EXISTS trigger_update_subscribers ON user_musician_subscription;
+DROP FUNCTION IF EXISTS update_musician_subscribers();
+DROP TRIGGER IF EXISTS trigger_update_product_average_price ON shop_product;
+DROP FUNCTION IF EXISTS update_product_average_price();
+
+DROP TRIGGER IF EXISTS trigger_update_product_rating ON feedback;
+DROP FUNCTION IF EXISTS update_product_rating();
+
+DROP TRIGGER IF EXISTS trigger_update_user_subscriptions ON user_musician_subscription;
+DROP FUNCTION IF EXISTS update_user_subscriptions();
+
+DROP TRIGGER IF EXISTS trigger_update_subscribers ON user_musician_subscription;
+DROP FUNCTION IF EXISTS update_musician_subscribers();
+
