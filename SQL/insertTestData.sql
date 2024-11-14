@@ -95,15 +95,15 @@ SELECT
     'Description for forum topic ' || generate_series,
     floor(random() * 13000 + 1)::int,
     (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)]
-FROM generate_series(1, 300);
+FROM generate_series(1, 50);
 
 -- Добавление постов на форуме
 INSERT INTO forum_post (topic_id, content, author_id)
 SELECT 
-    floor(random() * 300 + 1)::int,
+    floor(random() * 50 + 1)::int,
     'Content for forum post ' || generate_series,
     floor(random() * 13000 + 1)::int
-FROM generate_series(1, 1000);
+FROM generate_series(1, 100);
 
 
 
