@@ -38,130 +38,128 @@
 
 ## Содержание
 - [Сущности](#сущности)
-  - [Тип музыканта (type\_of\_musician)](#тип-музыканта-type_of_musician)
-  - [Жанр (genre)](#жанр-genre)
   - [Бренд (brand)](#бренд-brand)
-  - [Форма гитары (guitar\_form)](#форма-гитары-guitar_form)
-  - [Тип продукта (type\_of\_product)](#тип-продукта-type_of_product)
   - [Музыкант (musician)](#музыкант-musician)
-  - [Пользователь (app_user)](#пользователь-app_user)
+  - [Пользователь (app\_user)](#пользователь-app_user)
   - [Продукт (product)](#продукт-product)
   - [Статьи (articles)](#статьи-articles)
   - [Отзывы (feedback)](#отзывы-feedback)
-- [Связи](#связи)
+  - [Форумная тема (forum\_topic)](#форумная-тема-forum_topic)
+  - [Форумный пост (forum\_post)](#форумный-пост-forum_post)
+  - [Магазин (shop)](#магазин-shop)
+  - [Продукт магазина (shop\_product)](#продукт-магазина-shop_product)
 - [Целостность данных](#целостность-данных)
   - [Триггеры](#триггеры)
 - [SQL-скрипты](#sql-скрипты)
 - [Функции и процедуры](#функции-и-процедуры)
 - [ER-модель](#er-модель)
 - [Даталогическая модель](#даталогическая-модель)
+- [Тестирование производительности, создание индексов](#тестирование-производительности-создание-индексов)
 
 ## Сущности
-
-### Тип музыканта (type_of_musician)
-| Название | Тип | Настройки | Ссылки |
-|----------|-----|-----------|---------|
-| id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
-
-### Жанр (genre)
-| Название | Тип | Настройки | Ссылки |
-|----------|-----|-----------|---------|
-| id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
 
 ### Бренд (brand)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
-
-### Форма гитары (guitar_form)
-| Название | Тип | Настройки | Ссылки |
-|----------|-----|-----------|---------|
-| id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
-
-### Тип продукта (type_of_product)
-| Название | Тип | Настройки | Ссылки |
-|----------|-----|-----------|---------|
-| id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
+| name | TEXT | NOT NULL | - |
+| country | country_enum | NOT NULL | - |
+| website | TEXT | - | - |
+| email | TEXT | - | - |
 
 ### Музыкант (musician)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
-| subscribers | INTEGER | NOT NULL | - |
+| name | TEXT | NOT NULL | - |
+| subscribers | INTEGER | NOT NULL CHECK (subscribers >= 0) DEFAULT 0 | - |
 
 ### Пользователь (app_user)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
 | is_admin | BOOLEAN | DEFAULT FALSE | - |
-| login | VARCHAR(100) | UNIQUE NOT NULL | - |
+| login | TEXT | UNIQUE NOT NULL | - |
 | password | TEXT | NOT NULL | - |
-| subscriptions | INTEGER | - | - |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
+| subscriptions | INTEGER | CHECK (subscriptions >= 0) DEFAULT 0 | - |
 
 ### Продукт (product)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
-| name | VARCHAR(100) | NOT NULL | - |
+| name | TEXT | NOT NULL | - |
 | description | TEXT | - | - |
-| price | NUMERIC(10,2) | NOT NULL | - |
-| rate | NUMERIC(2,1) | - | - |
+| rate | NUMERIC(2,1) | CHECK (rate >= 0 AND rate <= 5) DEFAULT 0 | - |
 | brand_id | INTEGER | - | brand(id) |
-| guitar_form_id | INTEGER | - | guitar_form(id) |
-| type_of_product_id | INTEGER | - | type_of_product(id) |
+| guitar_form | guitar_form_enum | - | - |
+| type_of_product | type_of_product_enum | NOT NULL | - |
 | lads | INTEGER | - | - |
-| color | VARCHAR(100) | NOT NULL | - |
+| avg_price | NUMERIC(10,2) | CHECK (avg_price >= 0) DEFAULT 0 | - |
+| color | color_enum | NOT NULL | - |
 | strings | INTEGER | - | - |
-| tip_material | VARCHAR(100) | - | - |
-| body_material | VARCHAR(100) | - | - |
-| pickup_configuration | VARCHAR(100) | - | - |
-| type_combo_amplifier | VARCHAR(100) | - | - |
+| tip_material | tip_material_enum | - | - |
+| body_material | body_material_enum | - | - |
+| pickup_configuration | pickup_configuration_enum | - | - |
+| type_combo_amplifier | type_combo_amplifier_enum | - | - |
 
 ### Статьи (articles)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
-| header | VARCHAR(200) | NOT NULL | - |
+| header | TEXT | NOT NULL | - |
 | text | TEXT | NOT NULL | - |
-| author | INTEGER | - | user(id) |
-| date | DATE | NOT NULL | - |
-| tags | VARCHAR(200) | - | - |
+| author_id | INTEGER | - | app_user(id) |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
 | accepted | BOOLEAN | DEFAULT FALSE | - |
 
 ### Отзывы (feedback)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
-| user_id | INTEGER | - | user(id) |
+| author_id | INTEGER | NOT NULL | app_user(id) |
 | product_id | INTEGER | - | product(id) |
 | article_id | INTEGER | - | articles(id) |
-| text | TEXT | - | - |
-| stars | INTEGER | CHECK (stars >= 1 AND stars <= 5) | - |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
+| text | TEXT | NOT NULL | - |
+| stars | INTEGER | CHECK (stars >= 0 AND stars <= 5) | - |
 
-## Связи
+### Форумная тема (forum_topic)
+| Название | Тип | Настройки | Ссылки |
+|----------|-----|-----------|---------|
+| id | SERIAL | PRIMARY KEY | - |
+| title | TEXT | NOT NULL | - |
+| description | TEXT | - | - |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
+| author_id | INTEGER | - | app_user(id) |
+| is_closed | BOOLEAN | DEFAULT FALSE | - |
 
-- app_user-musician: M:M
-- product-brand: M:1
-- product-guitar_form: M:1
-- product-type_of_product: M:1
-- product-article: M:M
-- articles-app_user: 1:M
-- feedback-app_user: M:1
-- feedback-product: M:1
-- feedback-articles: M:1
-- genre-product: M:M
-- musician-genre: M:M
-- app_user-genre: M:M
-- app_user-type_of_musician: M:M
-- musician-type_of_musician: M:M
-- musician-product: M:M
+### Форумный пост (forum_post)
+| Название | Тип | Настройки | Ссылки |
+|----------|-----|-----------|---------|
+| id | SERIAL | PRIMARY KEY | - |
+| topic_id | INTEGER | NOT NULL | forum_topic(id) |
+| content | TEXT | NOT NULL | - |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
+| author_id | INTEGER | - | app_user(id) |
 
+### Магазин (shop)
+| Название | Тип | Настройки | Ссылки |
+|----------|-----|-----------|---------|
+| id | SERIAL | PRIMARY KEY | - |
+| name | TEXT | NOT NULL | - |
+| description | TEXT | - | - |
+| website | TEXT | - | - |
+| email | TEXT | - | - |
+| address | TEXT | - | - |
+
+### Продукт магазина (shop_product)
+| Название | Тип | Настройки | Ссылки |
+|----------|-----|-----------|---------|
+| shop_id | INTEGER | NOT NULL | shop(id) |
+| product_id | INTEGER | NOT NULL | product(id) |
+| price | NUMERIC(10,2) | NOT NULL CHECK (price >= 0) | - |
+| available | BOOLEAN | DEFAULT TRUE | - |
 
 ## Целостность данных
 
@@ -255,6 +253,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+```
+
+- Изменение средней цены продукта: AFTER INSERT OR UPDATE OR DELETE ON shop_product
+
+```sql
+CREATE OR REPLACE FUNCTION update_product_average_price()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        UPDATE product
+        SET avg_price = (
+            SELECT AVG(price)::numeric(10,2)
+            FROM shop_product
+            WHERE product_id = OLD.product_id AND available = true
+        )
+        WHERE id = OLD.product_id;
+    ELSE
+        UPDATE product
+        SET avg_price = (
+            SELECT AVG(price)::numeric(10,2)
+            FROM shop_product
+            WHERE product_id = NEW.product_id AND available = true
+        )
+        WHERE id = NEW.product_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
 ## SQL-скрипты
