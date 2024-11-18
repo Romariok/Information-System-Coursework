@@ -125,7 +125,7 @@ CREATE TABLE app_user (
     is_admin BOOLEAN DEFAULT FALSE,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     subscriptions INTEGER CHECK (subscriptions >= 0) DEFAULT 0
 );
 
@@ -137,7 +137,7 @@ CREATE TABLE product (
         rate >= 0
         AND rate <= 5
     ) DEFAULT 0,
-    brand_id INTEGER,
+    brand_id INTEGER NOT NULL,
     guitar_form guitar_form_enum,
     type_of_product type_of_product_enum NOT NULL,
     lads INTEGER,
@@ -155,23 +155,23 @@ CREATE TABLE articles (
     id SERIAL PRIMARY KEY,
     header TEXT NOT NULL,
     text TEXT NOT NULL,
-    author_id INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    accepted BOOLEAN DEFAULT FALSE,
+    author_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    accepted BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT fk_articles_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
 CREATE TABLE feedback (
     id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL,
-    product_id INTEGER,
-    article_id INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    product_id INTEGER NOT NULL,
+    article_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     text TEXT NOT NULL,
     stars INTEGER CHECK (
         stars >= 0
         AND stars <= 5
-    ),
+    ) NOT NULL,
     CONSTRAINT fk_feedback_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_feedback_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_feedback_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
@@ -181,9 +181,9 @@ CREATE TABLE forum_topic (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    author_id INTEGER,
-    is_closed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    author_id INTEGER NOT NULL,
+    is_closed BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT fk_forum_topic_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
@@ -191,8 +191,8 @@ CREATE TABLE forum_post (
     id SERIAL PRIMARY KEY,
     topic_id INTEGER NOT NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    author_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    author_id INTEGER NOT NULL,
     CONSTRAINT fk_forum_post_topic FOREIGN KEY (topic_id) REFERENCES forum_topic (id) ON DELETE CASCADE,
     CONSTRAINT fk_forum_post_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
@@ -211,7 +211,7 @@ CREATE TABLE shop_product (
     shop_id INTEGER,
     product_id INTEGER,
     price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-    available BOOLEAN DEFAULT TRUE,
+    available BOOLEAN DEFAULT TRUE NOT NULL,
     CONSTRAINT pk_shop_product PRIMARY KEY (shop_id, product_id),
     CONSTRAINT fk_shop_product_shop FOREIGN KEY (shop_id) REFERENCES shop (id) ON DELETE CASCADE,
     CONSTRAINT fk_shop_product_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
