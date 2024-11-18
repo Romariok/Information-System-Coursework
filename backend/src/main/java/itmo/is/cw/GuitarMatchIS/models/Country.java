@@ -1,0 +1,5 @@
+package itmo.is.cw.GuitarMatchIS.models;
+
+public enum Country {
+   USA, JAPAN, GERMANY, UNITED_KINGDOM, CHINA, SOUTH_KOREA, INDONESIA, MEXICO, CANADA, ITALY, FRANCE, BRAZIL, AUSTRALIA, RUSSIA
+}
