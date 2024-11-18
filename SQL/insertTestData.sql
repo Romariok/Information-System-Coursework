@@ -13,7 +13,7 @@ INSERT INTO musician (name, subscribers)
 SELECT 
     'Musician ' || generate_series,
     floor(random() * 1000000)::int
-FROM generate_series(1, 13000);
+FROM generate_series(1, 1300);
 
 -- Добавление пользователей
 INSERT INTO app_user (login, password, is_admin, subscriptions)
@@ -50,7 +50,7 @@ SELECT
     floor(random() * 13000 + 1)::int,
     current_date - (random() * 365)::int,
     random() > 0.5
-FROM generate_series(1, 300);
+FROM generate_series(1, 500);
 
 -- Добавление отзывов
 INSERT INTO feedback (author_id, product_id, article_id, text, stars, created_at)
@@ -71,7 +71,7 @@ SELECT
     'http://shop' || generate_series || '.com',
     'shop' || generate_series || '@example.com',
     'Address ' || generate_series
-FROM generate_series(1, 15);
+FROM generate_series(1, 300);
 
 -- Добавление продуктов в магазины
 INSERT INTO shop_product (shop_id, product_id, price, available)
@@ -85,7 +85,7 @@ CROSS JOIN LATERAL (
     SELECT id
     FROM shop
     ORDER BY random()
-    LIMIT floor(random() * 4 + 1)
+    LIMIT floor(random() * 2 + 1)
 ) s;
 
 -- Добавление тем форума
@@ -103,7 +103,7 @@ SELECT
     floor(random() * 50 + 1)::int,
     'Content for forum post ' || generate_series,
     floor(random() * 13000 + 1)::int
-FROM generate_series(1, 100);
+FROM generate_series(1, 200);
 
 
 
@@ -123,7 +123,7 @@ FROM product p
                     product_id = p.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 1)
     ) a;
 
 -- Добавление связей продуктов и пользователей
@@ -142,7 +142,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) p;
 
 -- Добавление связей музыкантов и продуктов
@@ -161,7 +161,7 @@ FROM musician m
                     musician_id = m.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 2 + 2)
     ) p;
 
 -- Добавление связей жанров и пользователей
@@ -256,7 +256,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 2)
+        LIMIT floor(random () * 4 + 1)
     ) m;
 
 -- Добавление связей типов музыкантов и музыкантов
