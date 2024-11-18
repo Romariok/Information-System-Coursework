@@ -138,16 +138,16 @@ CREATE TABLE product (
         AND rate <= 5
     ) DEFAULT 0,
     brand_id INTEGER,
-    guitar_form guitar_form_enum, -- why not not null ? #TODO
+    guitar_form guitar_form_enum,
     type_of_product type_of_product_enum NOT NULL,
-    lads INTEGER, -- why not not null check>0 ? #TODO
+    lads INTEGER,
     avg_price FLOAT CHECK (avg_price >= 0) DEFAULT 0,
     color color_enum NOT NULL,
-    strings INTEGER, -- why not check > 0 not null ? #TODO
-    tip_material tip_material_enum, -- why not not null ? #TODO
-    body_material body_material_enum, -- why not not null ? #TODO
-    pickup_configuration pickup_configuration_enum, -- why not not null ? #TODO
-    type_combo_amplifier type_combo_amplifier_enum, -- why not not null ? #TODO
+    strings INTEGER,
+    tip_material tip_material_enum,
+    body_material body_material_enum,
+    pickup_configuration pickup_configuration_enum,
+    type_combo_amplifier type_combo_amplifier_enum,
     CONSTRAINT fk_product_brand FOREIGN KEY (brand_id) REFERENCES brand (id) ON DELETE SET NULL
 );
 
@@ -180,7 +180,7 @@ CREATE TABLE feedback (
 CREATE TABLE forum_topic (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
-    description TEXT, -- why not not null ? #TODO
+    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     author_id INTEGER,
     is_closed BOOLEAN DEFAULT FALSE,
@@ -245,34 +245,34 @@ CREATE TABLE user_musician_subscription (
 
 CREATE TABLE musician_genre (
     musician_id INTEGER,
-    genre genre_enum, -- why not not null ? #TODO
+    genre genre_enum NOT NULL, 
     CONSTRAINT pk_musician_genre PRIMARY KEY (musician_id, genre),
     CONSTRAINT fk_musician_genre_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_genre (
     product_id INTEGER,
-    genre genre_enum, -- why not not null ? #TODO
+    genre genre_enum NOT NULL,
     CONSTRAINT pk_product_genre PRIMARY KEY (product_id, genre),
     CONSTRAINT fk_product_genre_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
 );
 
 CREATE TABLE type_of_musician_user (
-    type_of_musician type_of_musician_enum, -- why not not null ? #TODO
+    type_of_musician type_of_musician_enum NOT NULL,
     user_id INTEGER,
     CONSTRAINT pk_type_of_musician_user PRIMARY KEY (type_of_musician, user_id),
     CONSTRAINT fk_type_of_musician_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE type_of_musician_musician (
-    type_of_musician type_of_musician_enum, -- why not not null ? #TODO
+    type_of_musician type_of_musician_enum NOT NULL,
     musician_id INTEGER,
     CONSTRAINT pk_type_of_musician_musician PRIMARY KEY (type_of_musician, musician_id),
     CONSTRAINT fk_type_of_musician_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE genre_user (
-    genre genre_enum, -- why not not null ? #TODO
+    genre genre_enum NOT NULL,
     user_id INTEGER,
     CONSTRAINT pk_genre_user PRIMARY KEY (genre, user_id),
     CONSTRAINT fk_genre_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
