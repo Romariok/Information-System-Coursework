@@ -123,7 +123,7 @@ CREATE TABLE musician (
 CREATE TABLE app_user (
     id SERIAL PRIMARY KEY,
     is_admin BOOLEAN DEFAULT FALSE,
-    login TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     subscriptions INTEGER CHECK (subscriptions >= 0) DEFAULT 0

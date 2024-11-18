@@ -16,7 +16,7 @@ SELECT
 FROM generate_series(1, 1300);
 
 -- Добавление пользователей
-INSERT INTO app_user (login, password, is_admin, subscriptions)
+INSERT INTO app_user (username, password, is_admin, subscriptions)
 SELECT 
     'user' || generate_series,
     md5(random()::text),
