@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import itmo.is.cw.GuitarMatchIS.user.dao.UserRepository;
+import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
