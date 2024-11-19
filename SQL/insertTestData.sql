@@ -171,16 +171,15 @@ SELECT g.genre, u.id
 FROM app_user u
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM genre_user
-                WHERE
-                    user_id = u.id
+            genre NOT IN (
+                SELECT gu.genre
+                FROM genre_user gu
+                WHERE gu.user_id = u.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление связей типов музыкантов и пользователей
@@ -190,17 +189,17 @@ SELECT t.type_of_musician, u.id
 FROM app_user u
     CROSS JOIN LATERAL (
         SELECT type_of_musician
-        FROM (SELECT enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
+        FROM unnest(enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
         WHERE
-            type_of_musician NOT IN(
-                SELECT type_of_musician
-                FROM type_of_musician_user
-                WHERE
-                    user_id = u.id
+            type_of_musician NOT IN (
+                SELECT tum.type_of_musician
+                FROM type_of_musician_user tum
+                WHERE tum.user_id = u.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) t;
+
 
 -- Добавление связей продуктов и жанров
 INSERT INTO
@@ -209,16 +208,15 @@ SELECT p.id, g.genre
 FROM product p
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM product_genre
-                WHERE
-                    product_id = p.id
+            genre NOT IN (
+                SELECT pg.genre
+                FROM product_genre pg
+                WHERE pg.product_id = p.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление связей музыкантов и жанров
@@ -228,16 +226,15 @@ SELECT m.id, g.genre
 FROM musician m
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM musician_genre
-                WHERE
-                    musician_id = m.id
+            genre NOT IN (
+                SELECT mg.genre
+                FROM musician_genre mg
+                WHERE mg.musician_id = m.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление подписок пользователей на музыкантов
@@ -269,14 +266,13 @@ SELECT t.type_of_musician, m.id
 FROM musician m
     CROSS JOIN LATERAL (
         SELECT type_of_musician
-        FROM (SELECT enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
+        FROM unnest(enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
         WHERE
-            type_of_musician NOT IN(
+            type_of_musician NOT IN (
                 SELECT type_of_musician
                 FROM type_of_musician_musician
-                WHERE
-                    musician_id = m.id
+                WHERE musician_id = m.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 3 + 1)
+        ORDER BY random()
+        LIMIT floor(random() * 3 + 1)
     ) t;
