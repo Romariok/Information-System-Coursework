@@ -1,6 +1,6 @@
 package itmo.is.cw.GuitarMatchIS.models;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,7 +30,7 @@ public class Feedback {
    private Articles article;
 
    @Column(name = "created_at", nullable = false)
-   private Timestamp createdAt;
+   private LocalDateTime createdAt;
 
    @Column(name = "text", nullable = false)
    private String text;

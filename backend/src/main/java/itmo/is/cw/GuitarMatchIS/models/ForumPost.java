@@ -6,30 +6,28 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "articles")
-@Builder(toBuilder = true)
+@Table(name = "forum_post")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class Articles {
+public class ForumPost {
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
 
-   @Column(name = "header", nullable = false)
-   private String header;
-
-   @Column(name = "text", nullable = false)
-   private String text;
+   @ManyToOne
+   @JoinColumn(name = "topic_id", nullable = false)
+   private ForumTopic topic;
 
    @ManyToOne
    @JoinColumn(name = "author_id")
    private User author;
 
+
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
 
-   @Column(name = "accepted", nullable = false)
-   private Boolean accepted;
+   @Column(name = "content", nullable = false)
+   private String content;
 }
