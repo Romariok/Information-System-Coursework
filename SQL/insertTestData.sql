@@ -30,7 +30,7 @@ INSERT INTO product (name, description, brand_id, guitar_form, type_of_product,
 SELECT 
     'Product ' || generate_series,
     'Description for product ' || generate_series,
-    floor(random() * 10 + 1)::int,
+    floor(random() * 100 + 1)::int,
     (SELECT enum_range(NULL::guitar_form_enum))[floor(random() * array_length(enum_range(NULL::guitar_form_enum), 1) + 1)],
     (SELECT enum_range(NULL::type_of_product_enum))[floor(random() * array_length(enum_range(NULL::type_of_product_enum), 1) + 1)],
     floor(random() * 24 + 1)::int,
@@ -50,18 +50,18 @@ SELECT
     floor(random() * 13000 + 1)::int,
     current_date - (random() * 365)::int,
     random() > 0.5
-FROM generate_series(1, 500);
+FROM generate_series(1, 1000);
 
 -- Добавление отзывов
 INSERT INTO feedback (author_id, product_id, article_id, text, stars, created_at)
 SELECT 
     floor(random() * 13000 + 1)::int,
     floor(random() * 130000 + 1)::int,
-    floor(random() * 300 + 1)::int,
+    floor(random() * 1000 + 1)::int,
     'Feedback text ' || generate_series,
     floor(random() * 5 + 1)::int,
     current_date - (random() * 365)::int
-FROM generate_series(1, 5000);
+FROM generate_series(1, 10000);
 
 -- Добавление магазинов
 INSERT INTO shop (name, description, website, email, address)
@@ -85,7 +85,7 @@ CROSS JOIN LATERAL (
     SELECT id
     FROM shop
     ORDER BY random()
-    LIMIT floor(random() * 2 + 1)
+    LIMIT floor(random() * 4 + 1)
 ) s;
 
 -- Добавление тем форума
@@ -95,15 +95,15 @@ SELECT
     'Description for forum topic ' || generate_series,
     floor(random() * 13000 + 1)::int,
     (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)]
-FROM generate_series(1, 50);
+FROM generate_series(1, 200);
 
 -- Добавление постов на форуме
 INSERT INTO forum_post (topic_id, content, author_id)
 SELECT 
-    floor(random() * 50 + 1)::int,
+    floor(random() * 200 + 1)::int,
     'Content for forum post ' || generate_series,
     floor(random() * 13000 + 1)::int
-FROM generate_series(1, 200);
+FROM generate_series(1, 2500);
 
 
 
@@ -123,7 +123,7 @@ FROM product p
                     product_id = p.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 1)
+        LIMIT floor(random () * 4 + 1)
     ) a;
 
 -- Добавление связей продуктов и пользователей
@@ -142,7 +142,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        LIMIT floor(random () * 4 + 2)
     ) p;
 
 -- Добавление связей музыкантов и продуктов
@@ -161,7 +161,7 @@ FROM musician m
                     musician_id = m.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        LIMIT floor(random () * 4 + 2)
     ) p;
 
 -- Добавление связей жанров и пользователей
@@ -171,16 +171,15 @@ SELECT g.genre, u.id
 FROM app_user u
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM genre_user
-                WHERE
-                    user_id = u.id
+            genre NOT IN (
+                SELECT gu.genre
+                FROM genre_user gu
+                WHERE gu.user_id = u.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление связей типов музыкантов и пользователей
@@ -190,17 +189,17 @@ SELECT t.type_of_musician, u.id
 FROM app_user u
     CROSS JOIN LATERAL (
         SELECT type_of_musician
-        FROM (SELECT enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
+        FROM unnest(enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
         WHERE
-            type_of_musician NOT IN(
-                SELECT type_of_musician
-                FROM type_of_musician_user
-                WHERE
-                    user_id = u.id
+            type_of_musician NOT IN (
+                SELECT tum.type_of_musician
+                FROM type_of_musician_user tum
+                WHERE tum.user_id = u.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) t;
+
 
 -- Добавление связей продуктов и жанров
 INSERT INTO
@@ -209,16 +208,15 @@ SELECT p.id, g.genre
 FROM product p
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM product_genre
-                WHERE
-                    product_id = p.id
+            genre NOT IN (
+                SELECT pg.genre
+                FROM product_genre pg
+                WHERE pg.product_id = p.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление связей музыкантов и жанров
@@ -228,16 +226,15 @@ SELECT m.id, g.genre
 FROM musician m
     CROSS JOIN LATERAL (
         SELECT genre
-        FROM (SELECT enum_range(NULL::genre_enum)) AS g(genre)
+        FROM unnest(enum_range(NULL::genre_enum)) AS g(genre)
         WHERE
-            genre NOT IN(
-                SELECT genre
-                FROM musician_genre
-                WHERE
-                    musician_id = m.id
+            genre NOT IN (
+                SELECT mg.genre
+                FROM musician_genre mg
+                WHERE mg.musician_id = m.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        ORDER BY random()
+        LIMIT floor(random() * 2 + 2)
     ) g;
 
 -- Добавление подписок пользователей на музыкантов
@@ -256,7 +253,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 1)
+        LIMIT floor(random () * 5 + 1)
     ) m;
 
 -- Добавление связей типов музыкантов и музыкантов
@@ -269,14 +266,13 @@ SELECT t.type_of_musician, m.id
 FROM musician m
     CROSS JOIN LATERAL (
         SELECT type_of_musician
-        FROM (SELECT enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
+        FROM unnest(enum_range(NULL::type_of_musician_enum)) AS t(type_of_musician)
         WHERE
-            type_of_musician NOT IN(
+            type_of_musician NOT IN (
                 SELECT type_of_musician
                 FROM type_of_musician_musician
-                WHERE
-                    musician_id = m.id
+                WHERE musician_id = m.id
             )
-        ORDER BY random ()
-        LIMIT floor(random () * 3 + 1)
+        ORDER BY random()
+        LIMIT floor(random() * 3 + 1)
     ) t;

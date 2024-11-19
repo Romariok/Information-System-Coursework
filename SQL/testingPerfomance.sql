@@ -1,63 +1,151 @@
--- Time before: 12,644
--- Time after: 3,285
+-- Time before:
+-- Time after: 
+-- Retrieve products of a specific type with additional filters like color, average price range, and rating.
 EXPLAIN ANALYZE 
-SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+SELECT 
+    p.id, p.name, p.avg_price, p.rate, p.color, p.type_of_product 
+FROM 
+    product p
+WHERE 
+    p.type_of_product = 'ELECTRIC_GUITAR'
+    AND p.color = 'RED'
+    AND p.avg_price BETWEEN 500 AND 1500
+    AND p.rate >= 4.0
+ORDER BY 
+    p.avg_price ASC;
 
--- Time before: 16,621
--- Time after: 1,174
-EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE price BETWEEN 300 AND 1000 
-  AND rate >= 4 
-  AND brand_id = 5;
 
--- Time before: 9,648
--- Time after: 2,197
+-- Time before:
+-- Time after: 
+-- Retrieve a list of shops where a specific product is available, along with the price.
 EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE type_of_product_id = 2
-  AND guitar_form_id = 3;
+SELECT 
+    s.id AS shop_id, s.name AS shop_name, sp.price, sp.available
+FROM 
+    shop_product sp
+    JOIN shop s ON sp.shop_id = s.id
+WHERE 
+    (sp.product_id BETWEEN 10 and 50)
+    AND sp.available = TRUE
+ORDER BY 
+    sp.price ASC;
 
--- Time before: 20,779
--- Time after: 19,325
+-- Time before:
+-- Time after: 
+-- Retrieve musicians with their genres and subscriber counts, sorted by popularity.
 EXPLAIN ANALYZE 
-SELECT m.name, COUNT(s.user_id) AS subscriber_count
-FROM musician m
-JOIN user_musician_subscription s ON m.id = s.musician_id
-GROUP BY m.name
-ORDER BY subscriber_count DESC
-LIMIT 10;
+SELECT 
+    m.id AS musician_id, 
+    m.name AS musician_name, 
+    m.subscribers, 
+    STRING_AGG(mg.genre::TEXT, ', ') AS genres
+FROM 
+    musician m
+    JOIN musician_genre mg ON m.id = mg.musician_id
+GROUP BY 
+    m.id
+ORDER BY 
+    m.subscribers DESC;
 
--- Time before: 17,258
--- Time after: 1,768
+-- Time before:
+-- Time after: 
+-- Find products associated with a specific musician
 EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE brand_id = 5 
-  AND guitar_form_id = 3 
-  AND type_of_product_id = 2 
-  AND price BETWEEN 500 AND 1500;
+SELECT 
+    p.id AS product_id, 
+    p.name AS product_name, 
+    p.avg_price, 
+    p.rate
+FROM 
+    musician_product mp
+    JOIN product p ON mp.product_id = p.id
+WHERE 
+    mp.musician_id = 5;
 
--- Time before: 0,676
--- Time after: 0,644
+-- Time before:
+-- Time after: 
+-- Retrieve all articles related to a specific product, along with their authors.
 EXPLAIN ANALYZE 
-SELECT p.* 
-FROM product p
-JOIN product_user uf ON p.id = uf.product_id
-WHERE uf.user_id = 123;
+SELECT 
+    a.id AS article_id, 
+    a.header AS article_title, 
+    a.text AS article_content, 
+    u.username AS author_name, 
+    a.created_at
+FROM 
+    product_articles pa
+    JOIN articles a ON pa.article_id = a.id
+    JOIN app_user u ON a.author_id = u.id
+WHERE 
+    pa.product_id = 2
+ORDER BY 
+    a.created_at DESC;
 
--- Time before: 114,516
--- Time after: 72,256
--- Time after `idx_product_genre_genre_id`: 56,293
+-- Time before:
+-- Time after: 
+-- Retrieve user feedback for a specific product, including the rating and feedback text.
 EXPLAIN ANALYZE 
-SELECT p.* 
-FROM product p
-JOIN product_genre pg ON p.id = pg.product_id
-WHERE pg.genre_id = 2;
+SELECT 
+    f.id AS feedback_id, 
+    u.username AS author_name, 
+    f.stars, 
+    f.text, 
+    f.created_at
+FROM 
+    feedback f
+    JOIN app_user u ON f.author_id = u.id
+WHERE 
+    f.product_id = 3
+ORDER BY 
+    f.created_at DESC;
 
--- Time before: 4,712
--- Time after: 0,195
+-- Time before:
+-- Time after: 
+-- Retrieve the list of musicians a user is subscribed to.
 EXPLAIN ANALYZE 
-SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+SELECT 
+    m.id AS musician_id, 
+    m.name AS musician_name, 
+    m.subscribers
+FROM 
+    user_musician_subscription ums
+    JOIN musician m ON ums.musician_id = m.id
+WHERE 
+    ums.user_id = 4
+ORDER BY 
+    m.subscribers DESC;
+
+-- Time before:
+-- Time after: 
+-- Forum topics created by a user
+EXPLAIN ANALYZE 
+SELECT 
+    ft.id AS topic_id, 
+    ft.title, 
+    ft.description, 
+    ft.created_at, 
+    ft.is_closed
+FROM 
+    forum_topic ft
+WHERE 
+    ft.author_id = 4
+ORDER BY 
+    ft.created_at DESC;
+
+
+-- Time before:
+-- Time after: 
+-- Top-rated products across all types
+EXPLAIN ANALYZE 
+SELECT 
+    p.id AS product_id, 
+    p.name AS product_name, 
+    p.rate, 
+    p.avg_price, 
+    p.type_of_product
+FROM 
+    product p
+WHERE 
+    p.rate >= 4.5
+ORDER BY 
+    p.rate DESC, p.avg_price ASC;
