@@ -30,7 +30,7 @@ INSERT INTO product (name, description, brand_id, guitar_form, type_of_product,
 SELECT 
     'Product ' || generate_series,
     'Description for product ' || generate_series,
-    floor(random() * 10 + 1)::int,
+    floor(random() * 100 + 1)::int,
     (SELECT enum_range(NULL::guitar_form_enum))[floor(random() * array_length(enum_range(NULL::guitar_form_enum), 1) + 1)],
     (SELECT enum_range(NULL::type_of_product_enum))[floor(random() * array_length(enum_range(NULL::type_of_product_enum), 1) + 1)],
     floor(random() * 24 + 1)::int,
@@ -50,18 +50,18 @@ SELECT
     floor(random() * 13000 + 1)::int,
     current_date - (random() * 365)::int,
     random() > 0.5
-FROM generate_series(1, 500);
+FROM generate_series(1, 1000);
 
 -- Добавление отзывов
 INSERT INTO feedback (author_id, product_id, article_id, text, stars, created_at)
 SELECT 
     floor(random() * 13000 + 1)::int,
     floor(random() * 130000 + 1)::int,
-    floor(random() * 300 + 1)::int,
+    floor(random() * 1000 + 1)::int,
     'Feedback text ' || generate_series,
     floor(random() * 5 + 1)::int,
     current_date - (random() * 365)::int
-FROM generate_series(1, 5000);
+FROM generate_series(1, 10000);
 
 -- Добавление магазинов
 INSERT INTO shop (name, description, website, email, address)
@@ -85,7 +85,7 @@ CROSS JOIN LATERAL (
     SELECT id
     FROM shop
     ORDER BY random()
-    LIMIT floor(random() * 2 + 1)
+    LIMIT floor(random() * 4 + 1)
 ) s;
 
 -- Добавление тем форума
@@ -95,15 +95,15 @@ SELECT
     'Description for forum topic ' || generate_series,
     floor(random() * 13000 + 1)::int,
     (ARRAY[TRUE, FALSE])[floor(random() * 2 + 1)]
-FROM generate_series(1, 50);
+FROM generate_series(1, 200);
 
 -- Добавление постов на форуме
 INSERT INTO forum_post (topic_id, content, author_id)
 SELECT 
-    floor(random() * 50 + 1)::int,
+    floor(random() * 200 + 1)::int,
     'Content for forum post ' || generate_series,
     floor(random() * 13000 + 1)::int
-FROM generate_series(1, 200);
+FROM generate_series(1, 2500);
 
 
 
@@ -123,7 +123,7 @@ FROM product p
                     product_id = p.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 1)
+        LIMIT floor(random () * 4 + 1)
     ) a;
 
 -- Добавление связей продуктов и пользователей
@@ -142,7 +142,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        LIMIT floor(random () * 4 + 2)
     ) p;
 
 -- Добавление связей музыкантов и продуктов
@@ -161,7 +161,7 @@ FROM musician m
                     musician_id = m.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 2 + 2)
+        LIMIT floor(random () * 4 + 2)
     ) p;
 
 -- Добавление связей жанров и пользователей
@@ -253,7 +253,7 @@ FROM app_user u
                     user_id = u.id
             )
         ORDER BY random ()
-        LIMIT floor(random () * 4 + 1)
+        LIMIT floor(random () * 5 + 1)
     ) m;
 
 -- Добавление связей типов музыкантов и музыкантов
