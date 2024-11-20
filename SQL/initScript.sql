@@ -164,8 +164,8 @@ CREATE TABLE articles (
 CREATE TABLE feedback (
     id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    article_id INTEGER NOT NULL,
+    product_id INTEGER,
+    article_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     text TEXT NOT NULL,
     stars INTEGER CHECK (
@@ -193,6 +193,7 @@ CREATE TABLE forum_post (
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     author_id INTEGER NOT NULL,
+    vote INTEGER DEFAULT 0,
     CONSTRAINT fk_forum_post_topic FOREIGN KEY (topic_id) REFERENCES forum_topic (id) ON DELETE CASCADE,
     CONSTRAINT fk_forum_post_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );

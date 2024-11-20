@@ -142,7 +142,7 @@
 | content | TEXT | NOT NULL | - |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
 | author_id | INTEGER | - | app_user(id) |
-
+| vote | INTEGER | DEFAULT 0 | - |
 ### Магазин (shop)
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|

@@ -98,11 +98,12 @@ SELECT
 FROM generate_series(1, 200);
 
 -- Добавление постов на форуме
-INSERT INTO forum_post (topic_id, content, author_id)
+INSERT INTO forum_post (topic_id, content, author_id, vote)
 SELECT 
     floor(random() * 200 + 1)::int,
     'Content for forum post ' || generate_series,
-    floor(random() * 13000 + 1)::int
+    floor(random() * 13000 + 1)::int,
+    floor(random() * 1000)::int
 FROM generate_series(1, 2500);
 
 
