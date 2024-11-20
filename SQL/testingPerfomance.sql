@@ -1,5 +1,5 @@
--- Time before:
--- Time after: 
+-- Time before: 73,711
+-- Time after: 1,993
 -- Retrieve products of a specific type with additional filters like color, average price range, and rating.
 EXPLAIN ANALYZE 
 SELECT 
@@ -15,8 +15,8 @@ ORDER BY
     p.avg_price ASC;
 
 
--- Time before:
--- Time after: 
+-- Time before: 0,348
+-- Time after: 0,089
 -- Retrieve a list of shops where a specific product is available, along with the price.
 EXPLAIN ANALYZE 
 SELECT 
@@ -30,8 +30,8 @@ WHERE
 ORDER BY 
     sp.price ASC;
 
--- Time before:
--- Time after: 
+-- Time before: 2,559
+-- Time after: 2,354
 -- Retrieve musicians with their genres and subscriber counts, sorted by popularity.
 EXPLAIN ANALYZE 
 SELECT 
@@ -47,8 +47,8 @@ GROUP BY
 ORDER BY 
     m.subscribers DESC;
 
--- Time before:
--- Time after: 
+-- Time before: 0,027
+-- Time after: 0,026
 -- Find products associated with a specific musician
 EXPLAIN ANALYZE 
 SELECT 
@@ -62,8 +62,8 @@ FROM
 WHERE 
     mp.musician_id = 5;
 
--- Time before:
--- Time after: 
+-- Time before: 0,053
+-- Time after: 0,044
 -- Retrieve all articles related to a specific product, along with their authors.
 EXPLAIN ANALYZE 
 SELECT 
@@ -81,8 +81,8 @@ WHERE
 ORDER BY 
     a.created_at DESC;
 
--- Time before:
--- Time after: 
+-- Time before: 0,447
+-- Time after: 0,026
 -- Retrieve user feedback for a specific product, including the rating and feedback text.
 EXPLAIN ANALYZE 
 SELECT 
@@ -99,8 +99,8 @@ WHERE
 ORDER BY 
     f.created_at DESC;
 
--- Time before:
--- Time after: 
+-- Time before: 0,035
+-- Time after: 0,032
 -- Retrieve the list of musicians a user is subscribed to.
 EXPLAIN ANALYZE 
 SELECT 
@@ -115,8 +115,8 @@ WHERE
 ORDER BY 
     m.subscribers DESC;
 
--- Time before:
--- Time after: 
+-- Time before: 0,034
+-- Time after: 0,026
 -- Forum topics created by a user
 EXPLAIN ANALYZE 
 SELECT 
@@ -133,8 +133,8 @@ ORDER BY
     ft.created_at DESC;
 
 
--- Time before:
--- Time after: 
+-- Time before: 16,732
+-- Time after: 2,834
 -- Top-rated products across all types
 EXPLAIN ANALYZE 
 SELECT 

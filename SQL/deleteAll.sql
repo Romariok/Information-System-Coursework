@@ -1,3 +1,63 @@
+DROP INDEX IF EXISTS idx_product_brand_id;
+DROP INDEX IF EXISTS idx_product_type_of_product;
+DROP INDEX IF EXISTS idx_product_guitar_form;
+
+DROP INDEX IF EXISTS idx_shop_product_shop_id;
+DROP INDEX IF EXISTS idx_shop_product_product_id;
+
+DROP INDEX IF EXISTS idx_feedback_author_id;
+DROP INDEX IF EXISTS idx_feedback_product_id;
+DROP INDEX IF EXISTS idx_feedback_article_id;
+
+DROP INDEX IF EXISTS idx_articles_author_id;
+
+DROP INDEX IF EXISTS idx_forum_topic_author_id;
+
+DROP INDEX IF EXISTS idx_forum_post_topic_id;
+DROP INDEX IF EXISTS idx_forum_post_author_id;
+
+DROP INDEX IF EXISTS idx_musician_name;
+
+DROP INDEX IF EXISTS idx_user_musician_subscription_user_id;
+DROP INDEX IF EXISTS idx_user_musician_subscription_musician_id;
+
+DROP INDEX IF EXISTS idx_musician_genre_genre;
+DROP INDEX IF EXISTS idx_musician_genre_musician_id;
+
+DROP INDEX IF EXISTS idx_product_genre_genre;
+DROP INDEX IF EXISTS idx_product_genre_product_id;
+
+DROP INDEX IF EXISTS idx_type_of_musician_user_user_id;
+DROP INDEX IF EXISTS idx_type_of_musician_user_type_of_musician;
+
+DROP INDEX IF EXISTS idx_type_of_musician_musician_musician_id;
+DROP INDEX IF EXISTS idx_type_of_musician_musician_type_of_musician;
+
+DROP INDEX IF EXISTS idx_genre_user_genre;
+DROP INDEX IF EXISTS idx_genre_user_user_id;
+
+DROP INDEX IF EXISTS idx_musician_product_musician_id;
+DROP INDEX IF EXISTS idx_musician_product_product_id;
+
+DROP INDEX IF EXISTS idx_product_user_product_id;
+DROP INDEX IF EXISTS idx_product_user_user_id;
+
+DROP INDEX IF EXISTS idx_product_articles_product_id;
+DROP INDEX IF EXISTS idx_product_articles_article_id;
+
+DROP INDEX IF EXISTS idx_shop_name;
+
+DROP INDEX IF EXISTS idx_product_avg_price;
+DROP INDEX IF EXISTS idx_product_rate;
+DROP INDEX IF EXISTS idx_feedback_stars;
+DROP INDEX IF EXISTS idx_shop_product_price;
+
+DROP INDEX IF EXISTS idx_product_name;
+DROP INDEX IF EXISTS idx_product_description;
+DROP INDEX IF EXISTS idx_shop_address;
+DROP INDEX IF EXISTS idx_articles_header;
+DROP INDEX IF EXISTS idx_forum_topic_title;
+
 DROP TABLE IF EXISTS product_articles CASCADE;
 
 DROP TABLE IF EXISTS product_user CASCADE;
