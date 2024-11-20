@@ -37,6 +37,7 @@
 
 
 ## Содержание
+
 - [Сущности](#сущности)
   - [Бренд (brand)](#бренд-brand)
   - [Музыкант (musician)](#музыкант-musician)
@@ -59,6 +60,7 @@
 ## Сущности
 
 ### Бренд (brand)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -68,6 +70,7 @@
 | email | TEXT | - | - |
 
 ### Музыкант (musician)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -75,6 +78,7 @@
 | subscribers | INTEGER | NOT NULL CHECK (subscribers >= 0) DEFAULT 0 | - |
 
 ### Пользователь (app_user)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -85,6 +89,7 @@
 | subscriptions | INTEGER | CHECK (subscriptions >= 0) DEFAULT 0 | - |
 
 ### Продукт (product)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -104,6 +109,7 @@
 | type_combo_amplifier | type_combo_amplifier_enum | - | - |
 
 ### Статьи (articles)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -114,6 +120,7 @@
 | accepted | BOOLEAN | DEFAULT FALSE | - |
 
 ### Отзывы (feedback)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -125,6 +132,7 @@
 | stars | INTEGER | CHECK (stars >= 0 AND stars <= 5) | - |
 
 ### Форумная тема (forum_topic)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -135,6 +143,7 @@
 | is_closed | BOOLEAN | DEFAULT FALSE | - |
 
 ### Форумный пост (forum_post)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -143,7 +152,9 @@
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | - |
 | author_id | INTEGER | - | app_user(id) |
 | vote | INTEGER | DEFAULT 0 | - |
+
 ### Магазин (shop)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | id | SERIAL | PRIMARY KEY | - |
@@ -154,6 +165,7 @@
 | address | TEXT | - | - |
 
 ### Продукт магазина (shop_product)
+
 | Название | Тип | Настройки | Ссылки |
 |----------|-----|-----------|---------|
 | shop_id | INTEGER | NOT NULL | shop(id) |
@@ -177,7 +189,7 @@ CONSTRAINT fk_... FOREIGN KEY (..._id) REFERENCES ... (id) ON DELETE CASCADE
 is_admin BOOLEAN DEFAULT FALSE
 ```
 
-### Триггеры
+### [Триггеры](/SQL/functions.sql)
 
 - Изменение среднего рейтинга продукта: AFTER INSERT OR UPDATE OR DELETE ON feedback
 
@@ -195,7 +207,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-```    
+```
 
 - Изменение количества подписок пользователя: AFTER INSERT OR DELETE ON user_musician_subscription
 
@@ -307,121 +319,248 @@ $$ LANGUAGE plpgsql;
 
 ## Тестирование производительности, создание индексов
 
-[Триггеры](/SQL/functions.sql)
+### [Индексы](/SQL/creatingIndexes.sql)
 
-- Триггеры по `id` для основных характеристик продукта
-
-- Триггеры для связей `many-to-many` между пользователями, продуктами
-
-- Запрос для фильтрации продукта по бренду и цене
+### Поиск товаров определенного типа с помощью дополнительных фильтров, таких как цвет, средний ценовой диапазон и рейтинг
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+EXPLAIN ANALYZE
+SELECT
+p.id, p.name, p.avg_price, p.rate, p.color, p.type_of_product
+FROM
+product p
+WHERE
+p.type_of_product = 'ELECTRIC_GUITAR'
+AND p.color = 'RED'
+AND p.avg_price BETWEEN 500 AND 1500
+AND p.rate >= 4.0
+ORDER BY
+p.avg_price ASC;
 ```
 
-Было: 12,644 мс
+Было: 73,711 мс
 
-Стало: 3,285 мс
+Стало: 1,993 мс
 
-- Фильтрация продукта по цене, рейтингу и бренду
+### Получить список магазинов, в которых доступен конкретный товар, а также информацию о цене
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE price BETWEEN 300 AND 1000 
-  AND rate >= 4 
-  AND brand_id = 5;
+EXPLAIN ANALYZE
+SELECT
+s.id AS shop_id, s.name AS shop_name, sp.price, sp.available
+FROM
+shop_product sp
+JOIN shop s ON sp.shop_id = s.id
+WHERE
+(sp.product_id BETWEEN 10 and 50)
+AND sp.available = TRUE
+ORDER BY
+sp.price ASC;
 ```
 
-Было: 16,621 мс
+Было: 0,348 мс
 
-Стало: 1,174 мс
+Стало: 0,089 мс
 
-- Список определённого продукта (гитары) с определённой формой
+### Поиск музыкантов с указанием их жанров и количества подписчиков, отсортированных по популярности
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE type_of_product_id = 2
-  AND guitar_form_id = 3;
+EXPLAIN ANALYZE
+SELECT
+m.id AS musician_id,
+m.name AS musician_name,
+m.subscribers,
+STRING_AGG(mg.genre::TEXT, ', ') AS genres
+FROM
+musician m
+JOIN musician_genre mg ON m.id = mg.musician_id
+GROUP BY
+m.id
+ORDER BY
+m.subscribers DESC;
 ```
 
-Было: 9,648 мс
+Было: 2,559 мс
 
-Стало: 2,197 мс
+Стало: 2,354 мс
 
-- Топ 10 музыкантов по подписчикам
+### Найти товары, связанные с конкретным музыкантом
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT m.name, COUNT(s.user_id) AS subscriber_count
-FROM musician m
-JOIN user_musician_subscription s ON m.id = s.musician_id
-GROUP BY m.name
-ORDER BY subscriber_count DESC
-LIMIT 10;
+EXPLAIN ANALYZE
+SELECT
+p.id AS product_id,
+p.name AS product_name,
+p.avg_price,
+p.rate
+FROM
+musician_product mp
+JOIN product p ON mp.product_id = p.id
+WHERE
+mp.musician_id = 5;
 ```
 
-Было: 20,779 мс
+Было: 0,027 мс
 
-Стало: 19,325 мс
+Стало: 0,026 мс
 
-- Фильтр гитары с определённо формой, ценой, брендом
+### Найти все статьи, относящиеся к конкретному продукту, вместе с их авторами
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * 
-FROM product 
-WHERE brand_id = 5 
-  AND guitar_form_id = 3 
-  AND type_of_product_id = 2 
-  AND price BETWEEN 500 AND 1500;
+EXPLAIN ANALYZE
+SELECT
+a.id AS article_id,
+a.header AS article_title,
+a.text AS article_content,
+u.username AS author_name,
+a.created_at
+FROM
+product_articles pa
+JOIN articles a ON pa.article_id = a.id
+JOIN app_user u ON a.author_id = u.id
+WHERE
+pa.product_id = 2
+ORDER BY
+a.created_at DESC;
 ```
 
-Было: 17,258 мс
+Было: 0,053 мс
 
-Стало: 1,768 мс
+Стало: 0,044 мс
 
-- Список избранного для конкретного юзера
+### Получение отзывов пользователей о конкретном продукте, включая рейтинг и текст отзыва
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT p.* 
-FROM product p
-JOIN product_user uf ON p.id = uf.product_id
-WHERE uf.user_id = 123;
+EXPLAIN ANALYZE
+SELECT
+f.id AS feedback_id,
+u.username AS author_name,
+f.stars,
+f.text,
+f.created_at
+FROM
+feedback f
+JOIN app_user u ON f.author_id = u.id
+WHERE
+f.product_id = 3
+ORDER BY
+f.created_at DESC;
 ```
 
-Было: 0,676 мс
+Было: 0,447 мс
 
-Стало: 0,644 мс
+Стало: 0,026 мс
 
-- Выбор гитары с определённым жанром
+### Получить список музыкантов, на которых подписан пользователь
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT p.* 
-FROM product p
-JOIN product_genre pg ON p.id = pg.product_id
-WHERE pg.genre_id = 2;
+EXPLAIN ANALYZE
+SELECT
+m.id AS musician_id,
+m.name AS musician_name,
+m.subscribers
+FROM
+user_musician_subscription ums
+JOIN musician m ON ums.musician_id = m.id
+WHERE
+ums.user_id = 4
+ORDER BY
+m.subscribers DESC;
 ```
 
-Было: 114,516 мс
+Было: 0,035 мс
 
-Стало: 72,256 мс
+Стало: 0,032 мс
 
-Стало (после добавления `idx_product_genre_genre_id`): 56,293
-
-- Выбор продукта с определённым брендом и ценой
+### Получить темы форума, созданные пользователем
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT * FROM product WHERE brand_id = 3 AND price < 500 AND rate >= 4;
+EXPLAIN ANALYZE
+SELECT
+ft.id AS topic_id,
+ft.title,
+ft.description,
+ft.created_at,
+ft.is_closed
+FROM
+forum_topic ft
+WHERE
+ft.author_id = 4
+ORDER BY
+ft.created_at DESC;
 ```
 
-Было: 4,712 мс
+Было: 0,034 мс
 
-Стало: 0,195 мс
+Стало: 0,026 мс
+
+### Поиск продуктов с самым высоким рейтингом по всем типам
+
+```sql
+EXPLAIN ANALYZE
+SELECT
+p.id AS product_id,
+p.name AS product_name,
+p.rate,
+p.avg_price,
+p.type_of_product
+FROM
+product p
+WHERE
+p.rate >= 4.5
+ORDER BY
+p.rate DESC, p.avg_price ASC;
+```
+
+Было: 16,732 мс
+
+Стало: 2,834 мс
+
+### Список всех пользователей, музыкантов, на которых они подписаны, продукты, на которые они оставили отзывы, статьи, на которые они написали отзывы, магазины, продающие эти продукты, и жанр музыканта
+
+```sql
+EXPLAIN ANALYZE
+SELECT
+au.username AS user_name,
+m.name AS musician_name,
+m.subscribers AS musician_subscribers,
+p.name AS product_name,
+p.type_of_product AS product_type,
+p.avg_price AS average_price,
+f.text AS feedback_text,
+f.stars AS feedback_rating,
+a.header AS article_title,
+a.accepted AS article_status,
+s.name AS shop_name,
+sp.price AS shop_price,
+g.genre AS musician_genre
+FROM app_user au
+LEFT JOIN user_musician_subscription ums
+ON au.id = ums.user_id
+LEFT JOIN musician m
+ON ums.musician_id = m.id
+LEFT JOIN feedback f
+ON f.author_id = au.id
+LEFT JOIN product p
+ON f.product_id = p.id
+LEFT JOIN articles a
+ON f.article_id = a.id
+LEFT JOIN shop_product sp
+ON p.id = sp.product_id
+LEFT JOIN shop s
+ON sp.shop_id = s.id
+LEFT JOIN musician_genre mg
+ON m.id = mg.musician_id
+LEFT JOIN genre_user g
+ON mg.genre = g.genre AND g.user_id = au.id
+WHERE
+p.avg_price > 500
+AND f.stars >= 4
+AND a.accepted = TRUE
+ORDER BY
+au.username, p.avg_price DESC;
+```
+
+Было: 171,304 мс
+
+Стало: 128,234 мс
