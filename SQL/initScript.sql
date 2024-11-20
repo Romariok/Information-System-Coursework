@@ -161,7 +161,7 @@ CREATE TABLE articles (
     CONSTRAINT fk_articles_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
-CREATE TABLE feedback (
+CREATE TABLE feedback ( 
     id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL,
     product_id INTEGER,
@@ -174,7 +174,11 @@ CREATE TABLE feedback (
     ) NOT NULL,
     CONSTRAINT fk_feedback_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_feedback_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
-    CONSTRAINT fk_feedback_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
+    CONSTRAINT fk_feedback_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE,
+    CONSTRAINT chk_feedback_target CHECK (
+        (product_id IS NOT NULL AND article_id IS NULL)
+        OR (product_id IS NULL AND article_id IS NOT NULL)
+    )
 );
 
 CREATE TABLE forum_topic (
