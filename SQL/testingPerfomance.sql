@@ -149,3 +149,54 @@ WHERE
     p.rate >= 4.5
 ORDER BY 
     p.rate DESC, p.avg_price ASC;
+
+
+-- Lists all users, their subscribed musicians, products they gave feedback on,
+-- articles they wrote feedback for, shops selling those products, and the musician's genre.
+
+-- Time before: 171,304
+-- Time after: 128,234
+EXPLAIN ANALYZE
+SELECT 
+    au.username AS user_name,
+    m.name AS musician_name,
+    m.subscribers AS musician_subscribers,
+    p.name AS product_name,
+    p.type_of_product AS product_type,
+    p.avg_price AS average_price,
+    f.text AS feedback_text,
+    f.stars AS feedback_rating,
+    a.header AS article_title,
+    a.accepted AS article_status,
+    s.name AS shop_name,
+    sp.price AS shop_price,
+    g.genre AS musician_genre
+FROM app_user au
+-- Join with user-music subscription
+LEFT JOIN user_musician_subscription ums 
+    ON au.id = ums.user_id
+LEFT JOIN musician m 
+    ON ums.musician_id = m.id
+-- Join with feedback
+LEFT JOIN feedback f 
+    ON f.author_id = au.id
+LEFT JOIN product p 
+    ON f.product_id = p.id
+LEFT JOIN articles a 
+    ON f.article_id = a.id
+-- Join product with shop_product
+LEFT JOIN shop_product sp 
+    ON p.id = sp.product_id
+LEFT JOIN shop s 
+    ON sp.shop_id = s.id
+-- Join musician with musician_genre
+LEFT JOIN musician_genre mg 
+    ON m.id = mg.musician_id
+LEFT JOIN genre_user g 
+    ON mg.genre = g.genre AND g.user_id = au.id
+WHERE 
+    p.avg_price > 500 -- Filter for products with average price > 500
+    AND f.stars >= 4 -- Filter for highly rated feedback
+    AND a.accepted = TRUE -- Filter for accepted articles
+ORDER BY 
+    au.username, p.avg_price DESC;
