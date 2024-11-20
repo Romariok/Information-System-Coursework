@@ -11,6 +11,7 @@ CREATE INDEX idx_shop_product_product_id ON shop_product(product_id);
 CREATE INDEX idx_feedback_author_id ON feedback(author_id);
 CREATE INDEX idx_feedback_product_id ON feedback(product_id);
 CREATE INDEX idx_feedback_article_id ON feedback(article_id);
+CREATE INDEX idx_feedback_author_product_article ON feedback(author_id, product_id, article_id);
 
 -- articles table
 CREATE INDEX idx_articles_author_id ON articles(author_id);
@@ -32,6 +33,7 @@ CREATE INDEX idx_user_musician_subscription_musician_id ON user_musician_subscri
 -- musician_genre table
 CREATE INDEX idx_musician_genre_genre ON musician_genre(genre);
 CREATE INDEX idx_musician_genre_musician_id ON musician_genre(musician_id);
+CREATE INDEX idx_musician_genre_musician_genre ON musician_genre(musician_id, genre);
 
 -- product_genre table
 CREATE INDEX idx_product_genre_genre ON product_genre(genre);
@@ -63,6 +65,8 @@ CREATE INDEX idx_product_articles_article_id ON product_articles(article_id);
 
 -- shop table
 CREATE INDEX idx_shop_name ON shop(name);
+-- shop_product table
+CREATE INDEX idx_shop_product_shop_price ON shop_product(shop_id, price);
 
 -- Optimize filters and sorting
 CREATE INDEX idx_product_avg_price ON product(avg_price);
