@@ -189,7 +189,7 @@ CONSTRAINT fk_... FOREIGN KEY (..._id) REFERENCES ... (id) ON DELETE CASCADE
 is_admin BOOLEAN DEFAULT FALSE
 ```
 
-### [Триггеры](/SQL/functions.sql)
+### Триггеры
 
 - Изменение среднего рейтинга продукта: AFTER INSERT OR UPDATE OR DELETE ON feedback
 
