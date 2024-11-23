@@ -222,24 +222,6 @@ CREATE TABLE shop_product (
     CONSTRAINT fk_shop_product_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
 );
 
--- CREATE TABLE custom_product_collection (
---     id SERIAL PRIMARY KEY,
---     name TEXT NOT NULL,
---     description TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     author_id INTEGER,
---     CONSTRAINT fk_custom_product_collection_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
--- );
-
--- CREATE TABLE custom_product_collection_product (
---     collection_id INTEGER,
---     product_id INTEGER,
---     CONSTRAINT pk_custom_product_collection_product PRIMARY KEY (collection_id, product_id),
---     CONSTRAINT fk_custom_product_collection_product_collection FOREIGN KEY (collection_id) REFERENCES custom_product_collection (id) ON DELETE CASCADE,
---     CONSTRAINT fk_custom_product_collection_product_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
--- );
-
-
 CREATE TABLE user_musician_subscription (
     user_id INTEGER,
     musician_id INTEGER,
