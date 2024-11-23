@@ -23,6 +23,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Процедура добавления отзыва с обновлением рейтинга статьи
+CREATE OR REPLACE PROCEDURE add_article_feedback(
+    p_user_id INTEGER,
+    p_article_id INTEGER,
+    p_text TEXT,
+    p_stars INTEGER
+) AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM articles WHERE id = p_article_id) THEN
+        RAISE EXCEPTION 'Статья не найдена';
+    END IF;
+    
+    INSERT INTO feedback (user_id, article_id, text, stars)
+    VALUES (p_user_id, p_article_id, p_text, p_stars);
+    
+    UPDATE articles
+    SET rate = (
+        SELECT ROUND(AVG(stars)::numeric(2,1), 1)
+        FROM feedback
+        WHERE article_id = p_article_id
+    )
+    WHERE id = p_article_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Процедура подписки на музыканта
 CREATE OR REPLACE PROCEDURE subscribe_to_musician(
     p_user_id INTEGER,
