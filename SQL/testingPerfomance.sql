@@ -200,3 +200,22 @@ WHERE
     AND a.accepted = TRUE -- Filter for accepted articles
 ORDER BY 
     au.username, p.avg_price DESC;
+
+
+SELECT DISTINCT p.*
+FROM product p
+JOIN shop_product sp ON p.id = sp.product_id
+JOIN musician_product mp ON p.id = mp.product_id
+JOIN user_musician_subscription ums ON mp.musician_id = ums.musician_id
+JOIN (
+    SELECT author_id
+    FROM articles
+    GROUP BY author_id
+    HAVING COUNT(*) >= 2
+) a ON ums.user_id = a.author_id
+WHERE sp.available = TRUE
+  AND p.type_of_product IN (
+      'ELECTRIC_GUITAR',
+      'ACOUSTIC_GUITAR',
+      'BASS_GUITAR'
+  );
