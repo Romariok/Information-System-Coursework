@@ -6,8 +6,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import itmo.is.cw.GuitarMatchIS.dto.AuthResponseDTO;
-import itmo.is.cw.GuitarMatchIS.dto.LoginUserDTO;
-import itmo.is.cw.GuitarMatchIS.dto.RegisterUserDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserDTO;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
@@ -24,7 +23,7 @@ public class AuthService {
         private final PasswordEncoder passwordEncoder;
         private final AuthenticationManager authenticationManager;
 
-        public AuthResponseDTO register(RegisterUserDTO registerUserDto) {
+        public AuthResponseDTO register(UserDTO registerUserDto) {
                 if (userRepository.existsByUsername(registerUserDto.getUsername()))
                         throw new UserAlreadyExistException(
                                         String.format("Username %s already exists", registerUserDto.getUsername()));
@@ -47,7 +46,7 @@ public class AuthService {
                                 token);
         }
 
-        public AuthResponseDTO login(LoginUserDTO loginUserDto) {
+        public AuthResponseDTO login(UserDTO loginUserDto) {
                 User user = userRepository.findByUsername(loginUserDto.getUsername())
                                 .orElseThrow(() -> new UserNotFoundException(
                                                 String.format("Username %s not found", loginUserDto.getUsername())));

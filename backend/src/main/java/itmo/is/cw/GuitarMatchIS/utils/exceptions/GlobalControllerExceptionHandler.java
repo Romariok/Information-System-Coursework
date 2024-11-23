@@ -28,6 +28,13 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleArticleAlreadyExistsException(ArticleAlreadyExustsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleMForbiddenException(ForbiddenException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());

@@ -27,7 +27,7 @@ public class Feedback {
 
    @ManyToOne
    @JoinColumn(name = "article_id", nullable = false)
-   private Articles article;
+   private Article article;
 
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
