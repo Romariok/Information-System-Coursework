@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.*;
 import itmo.is.cw.GuitarMatchIS.models.Feedback;
-import itmo.is.cw.GuitarMatchIS.models.Musician;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.models.Article;
@@ -77,7 +76,7 @@ public class FeedbackService {
             .orElseThrow(() -> new ProductNotFoundException(
                   String.format("Product with id %s not found", feedbackDTO.getProductId())));
       if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("User not found");
+         throw new UserNotFoundException("You are not authorized to add feedback");
       }
       User user = findUserByRequest(request);
       feedbackRepository.addProductFeedback(user.getId(), product.getId(), feedbackDTO.getText(),
@@ -92,7 +91,7 @@ public class FeedbackService {
             .orElseThrow(() -> new ArticleNotFoundException(
                   String.format("Product with id %s not found", feedbackDTO.getArticleId())));
       if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("User not found");
+         throw new UserNotFoundException("You are not authorized to add feedback");
       }
       User user = findUserByRequest(request);
       feedbackRepository.addArticleFeedback(user.getId(), article.getId(), feedbackDTO.getText(),

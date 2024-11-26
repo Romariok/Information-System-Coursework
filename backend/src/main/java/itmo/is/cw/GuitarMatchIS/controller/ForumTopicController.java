@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-import itmo.is.cw.GuitarMatchIS.dto.CreateForumPostDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateForumTopicDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ForumPostDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ForumTopicDTO;
