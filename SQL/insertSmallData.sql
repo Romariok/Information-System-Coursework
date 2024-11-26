@@ -26,7 +26,7 @@ FROM generate_series(1, 130);
 
 -- Добавление продуктов
 INSERT INTO product (name, description, brand_id, guitar_form, type_of_product, 
-    lads, color, strings, tip_material, body_material, pickup_configuration, type_combo_amplifier)
+    lads, color, strings, tip_material, body_material, pickup_configuration, type_combo_amplifier, avg_price)
 SELECT 
     'Product ' || generate_series,
     'Description for product ' || generate_series,
@@ -39,7 +39,8 @@ SELECT
     (SELECT enum_range(NULL::tip_material_enum))[floor(random() * array_length(enum_range(NULL::tip_material_enum), 1) + 1)],
     (SELECT enum_range(NULL::body_material_enum))[floor(random() * array_length(enum_range(NULL::body_material_enum), 1) + 1)],
     (SELECT enum_range(NULL::pickup_configuration_enum))[floor(random() * array_length(enum_range(NULL::pickup_configuration_enum), 1) + 1)],
-    (SELECT enum_range(NULL::type_combo_amplifier_enum))[floor(random() * array_length(enum_range(NULL::type_combo_amplifier_enum), 1) + 1)]
+    (SELECT enum_range(NULL::type_combo_amplifier_enum))[floor(random() * array_length(enum_range(NULL::type_combo_amplifier_enum), 1) + 1)],
+    0
 FROM generate_series(1, 1300);
 
 -- Добавление статей
