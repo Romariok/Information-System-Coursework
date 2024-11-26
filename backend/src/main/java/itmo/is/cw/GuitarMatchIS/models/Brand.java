@@ -1,5 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.models;
 
+import org.hibernate.annotations.ColumnTransformer;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +22,7 @@ public class Brand {
 
     @Column(name = "country", nullable = false)
     @Enumerated(EnumType.STRING)
+    @ColumnTransformer(write = "CAST(? AS country_enum)", read = "CAST(country AS VARCHAR)")
     private Country country;
 
     @Column(name = "website")
