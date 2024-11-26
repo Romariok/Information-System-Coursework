@@ -35,6 +35,20 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleForumTopicAlreadyExistsException(ForumTopicAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleForumPostAlreadyExists(ForumPostAlreadyExists e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleArticleAlreadyExistsException(ArticleAlreadyExistsException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
@@ -43,6 +57,13 @@ public class GlobalControllerExceptionHandler {
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleArticleNotFoundException(ArticleNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleForumTopicNotFoundException(ForumTopicNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
       }

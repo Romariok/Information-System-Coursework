@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder(toBuilder = true)
 public class ForumTopic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
