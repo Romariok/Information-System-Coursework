@@ -21,7 +21,7 @@ public class ShopController {
    }
 
    @GetMapping("/{shopId}/products")
-   public List<ShopProductDTO> getShopProducts(@PathVariable Long shopId, @RequestParam int from, @RequestParam int size) {
+   public ShopProductDTO getShopProducts(@PathVariable Long shopId, @RequestParam int from, @RequestParam int size) {
       return shopService.getShopProducts(shopId, from, size);
    }
 }
