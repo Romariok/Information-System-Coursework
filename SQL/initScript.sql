@@ -163,9 +163,9 @@ CREATE TABLE articles (
 
 CREATE TABLE feedback ( 
     id SERIAL PRIMARY KEY,
-    author_id INTEGER NOT NULL,
-    product_id INTEGER,
-    article_id INTEGER,
+    author_id BIGINT NOT NULL,
+    product_id BIGINT,
+    article_id BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     text TEXT NOT NULL,
     stars INTEGER CHECK (
@@ -186,17 +186,17 @@ CREATE TABLE forum_topic (
     title TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    author_id INTEGER NOT NULL,
+    author_id BIGINT NOT NULL,
     is_closed BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT fk_forum_topic_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
 CREATE TABLE forum_post (
     id SERIAL PRIMARY KEY,
-    topic_id INTEGER NOT NULL,
+    topic_id BIGINT NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    author_id INTEGER NOT NULL,
+    author_id BIGINT NOT NULL,
     vote INTEGER DEFAULT 0,
     CONSTRAINT fk_forum_post_topic FOREIGN KEY (topic_id) REFERENCES forum_topic (id) ON DELETE CASCADE,
     CONSTRAINT fk_forum_post_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
@@ -213,8 +213,8 @@ CREATE TABLE shop (
 );
 
 CREATE TABLE shop_product (
-    shop_id INTEGER,
-    product_id INTEGER,
+    shop_id BIGINT,
+    product_id BIGINT,
     price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
     available BOOLEAN DEFAULT TRUE NOT NULL,
     CONSTRAINT pk_shop_product PRIMARY KEY (shop_id, product_id),
@@ -223,22 +223,22 @@ CREATE TABLE shop_product (
 );
 
 CREATE TABLE user_musician_subscription (
-    user_id INTEGER,
-    musician_id INTEGER,
+    user_id BIGINT,
+    musician_id BIGINT,
     CONSTRAINT pk_user_musician PRIMARY KEY (user_id, musician_id),
     CONSTRAINT fk_user_musician_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_user_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE musician_genre (
-    musician_id INTEGER,
+    musician_id BIGINT,
     genre genre_enum NOT NULL, 
     CONSTRAINT pk_musician_genre PRIMARY KEY (musician_id, genre),
     CONSTRAINT fk_musician_genre_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_genre (
-    product_id INTEGER,
+    product_id BIGINT,
     genre genre_enum NOT NULL,
     CONSTRAINT pk_product_genre PRIMARY KEY (product_id, genre),
     CONSTRAINT fk_product_genre_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
@@ -246,44 +246,44 @@ CREATE TABLE product_genre (
 
 CREATE TABLE type_of_musician_user (
     type_of_musician type_of_musician_enum NOT NULL,
-    user_id INTEGER,
+    user_id BIGINT,
     CONSTRAINT pk_type_of_musician_user PRIMARY KEY (type_of_musician, user_id),
     CONSTRAINT fk_type_of_musician_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE type_of_musician_musician (
     type_of_musician type_of_musician_enum NOT NULL,
-    musician_id INTEGER,
+    musician_id BIGINT,
     CONSTRAINT pk_type_of_musician_musician PRIMARY KEY (type_of_musician, musician_id),
     CONSTRAINT fk_type_of_musician_musician_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE
 );
 
 CREATE TABLE genre_user (
     genre genre_enum NOT NULL,
-    user_id INTEGER,
+    user_id BIGINT,
     CONSTRAINT pk_genre_user PRIMARY KEY (genre, user_id),
     CONSTRAINT fk_genre_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE musician_product (
-    musician_id INTEGER,
-    product_id INTEGER,
+    musician_id BIGINT,
+    product_id BIGINT,
     CONSTRAINT pk_musician_product PRIMARY KEY (musician_id, product_id),
     CONSTRAINT fk_musician_product_musician FOREIGN KEY (musician_id) REFERENCES musician (id) ON DELETE CASCADE,
     CONSTRAINT fk_musician_product_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_user (
-    product_id INTEGER,
-    user_id INTEGER,
+    product_id BIGINT,
+    user_id BIGINT,
     CONSTRAINT pk_product_user PRIMARY KEY (product_id, user_id),
     CONSTRAINT fk_product_user_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_product_user_user FOREIGN KEY (user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
 CREATE TABLE product_articles (
-    product_id INTEGER,
-    article_id INTEGER,
+    product_id BIGINT,
+    article_id BIGINT,
     CONSTRAINT pk_product_articles PRIMARY KEY (product_id, article_id),
     CONSTRAINT fk_product_articles_product FOREIGN KEY (product_id) REFERENCES product (id) ON DELETE CASCADE,
     CONSTRAINT fk_product_articles_article FOREIGN KEY (article_id) REFERENCES articles (id) ON DELETE CASCADE
