@@ -48,7 +48,7 @@ CREATE TYPE pickup_configuration_enum AS ENUM(
 
 CREATE TYPE type_combo_amplifier_enum AS ENUM(
     'TUBE',
-    'SOLID STATE',
+    'SOLID_STATE',
     'HYBRID',
     'MODELING'
 );
@@ -57,10 +57,10 @@ CREATE TYPE guitar_form_enum AS ENUM(
     'STRATOCASTER',
     'TELECASTER',
     'THINLINE',
-    'LES PAUL',
+    'LES_PAUL',
     'V',
     'JAGUAR',
-    'JAZZ-MASTER',
+    'JAZZ_MASTER',
     'MOCKINGBIRD',
     'STAR',
     'MUSTANG'
@@ -70,9 +70,9 @@ CREATE TYPE country_enum AS ENUM(
     'USA',
     'JAPAN',
     'GERMANY',
-    'UNITED KINGDOM',
+    'UNITED_KINGDOM',
     'CHINA',
-    'SOUTH KOREA',
+    'SOUTH_KOREA',
     'INDONESIA',
     'MEXICO',
     'CANADA',
@@ -84,7 +84,7 @@ CREATE TYPE country_enum AS ENUM(
 );
 
 CREATE TYPE type_of_musician_enum AS ENUM(
-    'MUSICAL PRODUCER',
+    'MUSICAL_PRODUCER',
     'GUITARIST',
     'DRUMMER',
     'BASSIST',
@@ -103,7 +103,7 @@ CREATE TYPE genre_enum AS ENUM(
     'CLASSICAL',
     'REGGAE',
     'ELECTRONIC',
-    'HIP-HOP'
+    'HIP_HOP'
 );
 
 CREATE TABLE brand (
