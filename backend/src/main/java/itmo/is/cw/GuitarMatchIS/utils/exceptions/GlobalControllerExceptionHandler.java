@@ -28,6 +28,27 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleSubscriptionNotFoundException(SubscriptionNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleMusicianNotFoundException(MusicianNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleSubscriptionAlreadyExistsException(SubscriptionAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleProductNotFoundException(ProductNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
