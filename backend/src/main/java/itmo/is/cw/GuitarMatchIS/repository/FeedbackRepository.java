@@ -1,22 +1,33 @@
 package itmo.is.cw.GuitarMatchIS.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 
 import itmo.is.cw.GuitarMatchIS.models.Feedback;
 
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
-   List<Feedback> findByProductId(Long productId);
-   List<Feedback> findByArticleId(Long articleId);
-   
-   @Query("SELECT add_product_feedback(:userId, :productId, :text, :stars)")
-   boolean addProductFeedback(Long userId, Long productId, String text, int stars);
+   Page<Feedback> findByProductId(Long productId, Pageable pageable);
 
-   @Query("SELECT add_article_feedback(:userId, :articleId, :text, :stars)")
-   boolean addArticleFeedback(Long userId, Long articleId, String text, int stars);
+   Page<Feedback> findByArticleId(Long articleId, Pageable pageable);
+
+   @Procedure(procedureName = "add_product_feedback")
+   void addProductFeedback(
+         @Param("p_user_id") Long userId,
+         @Param("p_product_id") Long productId,
+         @Param("p_text") String text,
+         @Param("p_stars") int stars);
+
+   @Procedure(procedureName = "add_article_feedback")
+   void addArticleFeedback(
+         @Param("p_user_id") Long userId,
+         @Param("p_article_id") Long articleId,
+         @Param("p_text") String text,
+         @Param("p_stars") int stars);
 
 }

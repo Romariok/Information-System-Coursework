@@ -6,13 +6,14 @@ import org.springframework.web.bind.annotation.*;
 
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.service.ArticleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/article")
+@RequestMapping("/api/article")
 @RequiredArgsConstructor
 public class ArticleController {
    private final ArticleService articleService;
@@ -35,9 +36,9 @@ public class ArticleController {
    }
 
    @PostMapping("/moderate")
-   public boolean moderateArticle(@RequestParam Long articleId, @RequestParam boolean accepted,
+   public boolean moderateArticle(@RequestBody @Valid ModerateArticleDTO moderateArticleDTO,
          HttpServletRequest request) {
-      return articleService.moderateArticle(articleId, accepted, request);
+      return articleService.moderateArticle(moderateArticleDTO, request);
    }
 
    @PostMapping

@@ -21,6 +21,13 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleProductNotFoundException(ProductNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleUserNotFoundException(UserNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
@@ -28,7 +35,14 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
-      public ErrorResponse handleArticleAlreadyExistsException(ArticleAlreadyExustsException e) {
+      public ErrorResponse handleArticleAlreadyExistsException(ArticleAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleArticleNotFoundException(ArticleNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
       }

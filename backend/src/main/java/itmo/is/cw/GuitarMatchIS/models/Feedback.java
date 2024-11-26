@@ -22,11 +22,11 @@ public class Feedback {
    private User author;
 
    @ManyToOne
-   @JoinColumn(name = "product_id", nullable = false)
+   @JoinColumn(name = "product_id")
    private Product product;
 
    @ManyToOne
-   @JoinColumn(name = "article_id", nullable = false)
+   @JoinColumn(name = "article_id")
    private Article article;
 
    @Column(name = "created_at", nullable = false)

@@ -1,11 +1,18 @@
 package itmo.is.cw.GuitarMatchIS.models.keys;
 
-import jakarta.persistence.Embeddable;
+import itmo.is.cw.GuitarMatchIS.models.Shop;
+import itmo.is.cw.GuitarMatchIS.models.Product;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Embeddable
-public class ShopProductId {
-   private Long shopId;
-   private Long productId;
+public class ShopProductId{
+   @ManyToOne
+   @JoinColumn(name = "shop_id")
+   private Shop shop;
+
+   @ManyToOne
+   @JoinColumn(name = "product_id")
+   private Product product;
 }

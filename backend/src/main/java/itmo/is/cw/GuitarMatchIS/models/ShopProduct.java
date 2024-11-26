@@ -14,15 +14,15 @@ public class ShopProduct {
    @EmbeddedId
    private ShopProductId id;
 
-   @ManyToOne
-   @MapsId("shopId")
-   @JoinColumn(name = "shop_id", foreignKey = @ForeignKey(name = "fk_shop_product_shop"))
-   private Shop shop;
+   // @ManyToOne
+   // @MapsId("shopId")
+   // @JoinColumn(name = "shop_id", foreignKey = @ForeignKey(name = "fk_shop_product_shop"))
+   // private Shop shop;
 
-   @ManyToOne
-   @MapsId("productId")
-   @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_shop_product_product"))
-   private Product product;
+   // @ManyToOne
+   // @MapsId("productId")
+   // @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_shop_product_product"))
+   // private Product product;
 
    @Column(name = "price", nullable = false)
    private Double price;
