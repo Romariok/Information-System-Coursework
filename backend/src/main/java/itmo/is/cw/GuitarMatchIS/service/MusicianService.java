@@ -2,6 +2,7 @@ package itmo.is.cw.GuitarMatchIS.service;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 
 import itmo.is.cw.GuitarMatchIS.Pagification;
@@ -29,10 +30,11 @@ public class MusicianService {
 
       return musicians
             .stream()
-            .map(musician1 -> new MusicianDTO(
-                  musician1.getId(),
-                  musician1.getName(),
-                  musician1.getSubscribers()))
+            .map(musician1 -> MusicianDTO.builder()
+                  .id(musician1.getId())
+                  .name(musician1.getName())
+                  .subscribers(musician1.getSubscribers())
+                  .build())
             .sorted(new Comparator<MusicianDTO>() {
                @Override
                public int compare(MusicianDTO o1, MusicianDTO o2) {
@@ -42,6 +44,7 @@ public class MusicianService {
             .toList();
    }
 
+   @Transactional
    public MusicianDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
       if (musicianRepository.existsByName(createMusicianDTO.getName()))
          throw new MusicianAlreadyExistsException("Musician %s already exists".formatted(createMusicianDTO.getName()));
@@ -52,9 +55,29 @@ public class MusicianService {
             .build();
 
       musician = musicianRepository.save(musician);
-      simpMessagingTemplate.convertAndSend("/topic", "New musician added");
+      simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
 
       return new MusicianDTO(musician.getId(), musician.getName(), musician.getSubscribers());
+   }
+
+   public List<MusicianDTO> searchMusicians(String name, int from, int size) {
+      Pageable page = Pagification.createPageTemplate(from, size);
+      List<Musician> musicians = musicianRepository.findAllByNameContains(name, page).getContent();
+
+      return musicians
+            .stream()
+            .map(musician1 -> MusicianDTO.builder()
+                  .id(musician1.getId())
+                  .name(musician1.getName())
+                  .subscribers(musician1.getSubscribers())
+                  .build())
+            .sorted(new Comparator<MusicianDTO>() {
+               @Override
+               public int compare(MusicianDTO o1, MusicianDTO o2) {
+                  return o1.getId().compareTo(o2.getId());
+               }
+            })
+            .toList();
    }
 
 }

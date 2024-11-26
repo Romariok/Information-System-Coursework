@@ -2,7 +2,7 @@ package itmo.is.cw.GuitarMatchIS.models;
 
 import lombok.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,7 +33,7 @@ public class User implements UserDetails {
    private Boolean isAdmin;
 
    @Column(name = "created_at")
-   private Timestamp createdAt;
+   private LocalDateTime createdAt;
 
    @Column(name = "subscriptions", nullable = false)
    private Integer subscriptions;

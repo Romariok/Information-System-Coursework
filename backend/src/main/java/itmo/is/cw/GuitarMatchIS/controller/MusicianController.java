@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/musician")
+@RequestMapping("/api/musician")
 @RequiredArgsConstructor
 public class MusicianController {
    private final MusicianService musicianService;
@@ -20,6 +20,11 @@ public class MusicianController {
    @GetMapping
    public List<MusicianDTO> getMusicians(@RequestParam int from, @RequestParam int size) {
       return musicianService.getMusician(from, size);
+   }
+
+   @GetMapping("/name/{name}")
+   public List<MusicianDTO> searchMusicians(@PathVariable String name, @RequestParam int from, @RequestParam int size) {
+      return musicianService.searchMusicians(name, from, size);
    }
 
    @PostMapping

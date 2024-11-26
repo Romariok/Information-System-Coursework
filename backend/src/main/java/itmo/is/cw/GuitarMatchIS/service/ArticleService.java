@@ -7,16 +7,18 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import itmo.is.cw.GuitarMatchIS.models.Article;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.repository.ArticleRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleAlreadyExustsException;
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleAlreadyExistsException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +38,7 @@ public class ArticleService {
 
       return articles
             .stream()
-            .map(article -> ArticleDTO.builder()
-                  .id(article.getId())
-                  .header(article.getHeader())
-                  .text(article.getText())
-                  .author(article.getAuthor().getUsername())
-                  .createdAt(article.getCreatedAt())
-                  .accepted(article.getAccepted())
-                  .build())
+            .map(this::convertToDTO)
             .sorted(new Comparator<ArticleDTO>() {
                @Override
                public int compare(ArticleDTO o1, ArticleDTO o2) {
@@ -60,14 +55,7 @@ public class ArticleService {
 
       return articles
             .stream()
-            .map(article -> ArticleDTO.builder()
-                  .id(article.getId())
-                  .header(article.getHeader())
-                  .text(article.getText())
-                  .author(article.getAuthor().getUsername())
-                  .createdAt(article.getCreatedAt())
-                  .accepted(article.getAccepted())
-                  .build())
+            .map(this::convertToDTO)
             .sorted(new Comparator<ArticleDTO>() {
                @Override
                public int compare(ArticleDTO o1, ArticleDTO o2) {
@@ -84,14 +72,7 @@ public class ArticleService {
 
       return articles
             .stream()
-            .map(article -> ArticleDTO.builder()
-                  .id(article.getId())
-                  .header(article.getHeader())
-                  .text(article.getText())
-                  .author(article.getAuthor().getUsername())
-                  .createdAt(article.getCreatedAt())
-                  .accepted(article.getAccepted())
-                  .build())
+            .map(this::convertToDTO)
             .sorted(new Comparator<ArticleDTO>() {
                @Override
                public int compare(ArticleDTO o1, ArticleDTO o2) {
@@ -101,18 +82,20 @@ public class ArticleService {
             .toList();
    }
 
-   public boolean moderateArticle(Long articleId, boolean accepted, HttpServletRequest request) {
+   public boolean moderateArticle(ModerateArticleDTO moderateArticleDTO, HttpServletRequest request) {
       User moderator = findUserByRequest(request);
       if (!moderator.getIsAdmin())
-            throw new ForbiddenException("User have no rights to moderate article");
+         throw new ForbiddenException("User have no rights to moderate article");
 
       simpMessagingTemplate.convertAndSend("/articles", "Article was moderated");
-      return articleRepository.moderateArticle(articleId, accepted, moderator.getId());
+      return articleRepository.moderateArticle(moderateArticleDTO.getArticleId(), moderateArticleDTO.isAccepted(),
+            moderator.getId());
    }
 
+   @Transactional
    public ArticleDTO createArticle(CreateArticleDTO createArticleDTO, HttpServletRequest request) {
       if (articleRepository.existsByHeader(createArticleDTO.getHeader()))
-         throw new ArticleAlreadyExustsException(String.format("Article with header %s already exists",
+         throw new ArticleAlreadyExistsException(String.format("Article with header %s already exists",
                createArticleDTO.getHeader()));
 
       User author = findUserByRequest(request);
@@ -127,16 +110,22 @@ public class ArticleService {
       articleRepository.save(article);
       simpMessagingTemplate.convertAndSend("/articles", "New Article created");
 
-      return new ArticleDTO(article.getId(),
-            article.getHeader(),
-            article.getText(),
-            article.getAuthor().getUsername(),
-            article.getCreatedAt(),
-            article.getAccepted());
+      return convertToDTO(article);
    }
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
       return userRepository.findByUsername(username).get();
+   }
+
+   private ArticleDTO convertToDTO(Article article) {
+      return ArticleDTO.builder()
+            .id(article.getId())
+            .header(article.getHeader())
+            .text(article.getText())
+            .author(article.getAuthor().getUsername())
+            .createdAt(article.getCreatedAt())
+            .accepted(article.getAccepted())
+            .build();
    }
 }

@@ -1,6 +1,9 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +36,7 @@ public class AuthService {
                                 .username(registerUserDto.getUsername())
                                 .password(passwordEncoder.encode(registerUserDto.getPassword()))
                                 .isAdmin(false)
+                                .createdAt(LocalDateTime.now())
                                 .subscriptions(0)
                                 .build();
 
@@ -43,6 +47,7 @@ public class AuthService {
                                 user.getUsername(),
                                 user.getIsAdmin(),
                                 user.getSubscriptions(),
+                                user.getCreatedAt(),
                                 token);
         }
 
@@ -60,6 +65,7 @@ public class AuthService {
                                 user.getUsername(),
                                 user.getIsAdmin(),
                                 user.getSubscriptions(),
+                                user.getCreatedAt(),
                                 token);
         }
 
