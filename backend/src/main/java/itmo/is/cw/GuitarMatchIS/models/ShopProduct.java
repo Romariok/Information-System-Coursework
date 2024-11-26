@@ -10,19 +10,23 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@IdClass(ShopProductId.class)
 public class ShopProduct {
-   @EmbeddedId
-   private ShopProductId id;
+   @Id
+   @Column(name = "shop_id")
+   private Long shopId;
 
-   // @ManyToOne
-   // @MapsId("shopId")
-   // @JoinColumn(name = "shop_id", foreignKey = @ForeignKey(name = "fk_shop_product_shop"))
-   // private Shop shop;
-
-   // @ManyToOne
-   // @MapsId("productId")
-   // @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_shop_product_product"))
-   // private Product product;
+   @Id
+   @Column(name = "product_id")
+   private Long productId;
+   
+   @ManyToOne
+   @JoinColumn(name = "shop_id", foreignKey = @ForeignKey(name = "fk_shop_product_shop"))
+   private Shop shop;
+   
+   @ManyToOne
+   @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_shop_product_product"))
+   private Product product;
 
    @Column(name = "price", nullable = false)
    private Double price;
