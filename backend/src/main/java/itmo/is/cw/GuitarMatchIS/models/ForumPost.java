@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder(toBuilder = true)
 @Setter
 public class ForumPost {
    @Id
