@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 
 import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
 import itmo.is.cw.GuitarMatchIS.service.MusicianService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,8 +30,19 @@ public class MusicianController {
       return musicianService.searchMusicians(name, from, size);
    }
 
+   @GetMapping("/{musicianId}/genres")
+   public MusicianGenreDTO getMusiciansByGenre(@PathVariable Long musicianId) {
+      return musicianService.getMusiciansByGenre(musicianId);
+   }
+
+   @GetMapping("/{musicianId}/types")
+   public MusicianTypeOfMusicianDTO getMusiciansByTypeOfMusician(@PathVariable Long musicianId) {
+      return musicianService.getMusiciansByTypeOfMusician(musicianId);
+   }
+
    @PostMapping
-   public MusicianDTO createMusician(@RequestBody @Valid CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
+   public MusicianDTO createMusician(@RequestBody @Valid CreateMusicianDTO createMusicianDTO,
+         HttpServletRequest request) {
       return musicianService.createMusician(createMusicianDTO, request);
    }
 
