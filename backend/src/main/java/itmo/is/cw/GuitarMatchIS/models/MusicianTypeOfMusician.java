@@ -2,7 +2,7 @@ package itmo.is.cw.GuitarMatchIS.models;
 
 import org.hibernate.annotations.ColumnTransformer;
 
-import itmo.is.cw.GuitarMatchIS.models.keys.MusicianGenreId;
+import itmo.is.cw.GuitarMatchIS.models.keys.MusicianTypeOfMusicianId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,9 +15,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "type_of_musician_musician")
 @Builder(toBuilder = true)
-@IdClass(MusicianGenreId.class)
-public class MusicianGenre {
+@IdClass(MusicianTypeOfMusicianId.class)
+public class MusicianTypeOfMusician {
    @Id
    @Column(name = "musician_id")
    private Long musicianId;
@@ -27,8 +28,8 @@ public class MusicianGenre {
    private Musician musician;
 
    @Id
-   @Column(name = "genre")
+   @Column(name = "type_of_musician")
    @Enumerated(EnumType.STRING)
-   @ColumnTransformer(write = "CAST(? AS genre_enum)", read = "CAST(genre AS VARCHAR)")
-   private Genre genre;
+   @ColumnTransformer(write = "CAST(? AS type_of_musician_enum)", read = "CAST(type_of_musician AS VARCHAR)")
+   private TypeOfMusician typeOfMusician;
 }

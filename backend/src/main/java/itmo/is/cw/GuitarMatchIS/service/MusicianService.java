@@ -8,10 +8,16 @@ import org.springframework.data.domain.Pageable;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
 import itmo.is.cw.GuitarMatchIS.models.Musician;
+import itmo.is.cw.GuitarMatchIS.models.MusicianGenre;
+import itmo.is.cw.GuitarMatchIS.models.MusicianTypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.models.User;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianGenreRepository;
 import itmo.is.cw.GuitarMatchIS.repository.MusicianRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianTypeOfMusicianRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserMusicianRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
@@ -30,6 +36,8 @@ import java.util.Comparator;
 @RequiredArgsConstructor
 public class MusicianService {
    private final MusicianRepository musicianRepository;
+   private final MusicianGenreRepository musicianGenreRepository;
+   private final MusicianTypeOfMusicianRepository musicianTypeOfMusicianRepository;
    private final JwtUtils jwtUtils;
    private final UserMusicianRepository userMusicianRepository;
    private final SimpMessagingTemplate simpMessagingTemplate;
@@ -89,7 +97,7 @@ public class MusicianService {
       if (userMusicianRepository.existsByUserAndMusician(user, musician)) {
          throw new SubscriptionAlreadyExistsException("You are already subscribed to this musician");
       }
-
+      simpMessagingTemplate.convertAndSend("/musicians", "New subscriber to musician");
       userMusicianRepository.subscribeToMusician(user.getId(), subscribeDTO.getMusicianId());
       return true;
    }
@@ -109,7 +117,7 @@ public class MusicianService {
       if (!userMusicianRepository.existsByUserAndMusician(user, musician)) {
          throw new SubscriptionNotFoundException("You have no subscription to this musician");
       }
-
+      simpMessagingTemplate.convertAndSend("/musicians", "Deleted subscription to musician");
       userMusicianRepository.deleteByUserAndMusician(user, musician);
       return true;
    }
@@ -132,6 +140,32 @@ public class MusicianService {
                }
             })
             .toList();
+   }
+
+   public MusicianGenreDTO getMusiciansByGenre(Long musicianId) {
+      Musician musician = musicianRepository.findById(musicianId)
+            .orElseThrow(() -> new MusicianNotFoundException(
+                  "Musician with id %s not found".formatted(musicianId)));
+
+      List<MusicianGenre> musicianGenres = musicianGenreRepository.findByMusician(musician);
+
+      return MusicianGenreDTO.builder()
+            .musician(musician)
+            .genres(musicianGenres.stream().map(MusicianGenre::getGenre).toList())
+            .build();
+   }
+
+   public MusicianTypeOfMusicianDTO getMusiciansByTypeOfMusician(Long musicianId) {
+      Musician musician = musicianRepository.findById(musicianId)
+            .orElseThrow(() -> new MusicianNotFoundException(
+                  "Musician with id %s not found".formatted(musicianId)));
+
+      List<MusicianTypeOfMusician> musicianTypeOfMusicians = musicianTypeOfMusicianRepository.findByMusician(musician);
+
+      return MusicianTypeOfMusicianDTO.builder()
+            .musician(musician)
+            .typeOfMusicians(musicianTypeOfMusicians.stream().map(MusicianTypeOfMusician::getTypeOfMusician).toList())
+            .build();
    }
 
    private User findUserByRequest(HttpServletRequest request) {
