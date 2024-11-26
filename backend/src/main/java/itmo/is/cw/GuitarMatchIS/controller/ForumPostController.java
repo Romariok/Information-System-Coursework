@@ -1,7 +1,5 @@
 package itmo.is.cw.GuitarMatchIS.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.*;
 
 import itmo.is.cw.GuitarMatchIS.dto.CreateForumPostDTO;
