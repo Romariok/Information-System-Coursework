@@ -546,13 +546,6 @@ BEGIN
     INSERT INTO user_musician_subscription (user_id, musician_id)
     VALUES (p_user_id, p_musician_id);
     
-    UPDATE musician
-    SET subscribers = subscribers + 1
-    WHERE id = p_musician_id;
-    
-    UPDATE app_user
-    SET subscriptions = subscriptions + 1
-    WHERE id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
 
