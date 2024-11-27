@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.StatusArticlesDTO;
 import itmo.is.cw.GuitarMatchIS.service.ArticleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -21,6 +22,11 @@ public class ArticleController {
    @GetMapping
    public List<ArticleDTO> getArticles(@RequestParam int from, @RequestParam int size) {
       return articleService.getArticles(from, size);
+   }
+
+   @GetMapping("/unaccepted")
+   public List<StatusArticlesDTO> getStatusArticles(@RequestParam int from, @RequestParam int size) {
+      return articleService.getStatusArticles(from, size);
    }
 
    @GetMapping("/header/{header}")
