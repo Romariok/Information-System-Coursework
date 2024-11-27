@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductGenreDTO;
 import itmo.is.cw.GuitarMatchIS.models.BodyMaterial;
 import itmo.is.cw.GuitarMatchIS.models.Color;
 import itmo.is.cw.GuitarMatchIS.models.GuitarForm;
@@ -30,6 +31,11 @@ public class ProductController {
    public List<ProductDTO> getProductsByBrandName(@RequestParam String brandName, @RequestParam int from,
          @RequestParam int size) {
       return productService.getProductsByBrandName(brandName.replaceAll("_", " "), from, size);
+   }
+
+   @GetMapping("/{name}/genres")
+   public ProductGenreDTO getGenresByProductName(@PathVariable String name) {
+      return productService.getGenresByProductName(name.replaceAll("_", " "));
    }
 
    @GetMapping("/{name}/articles")
