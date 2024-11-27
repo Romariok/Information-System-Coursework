@@ -21,6 +21,34 @@ public class GlobalControllerExceptionHandler {
 
       @ExceptionHandler
       @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleProductUserAlreadyExistsException(ProductUserAlreadyExistsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleProductUserNotFoundException(ProductUserNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleProductMusicianNotFoundException(ProductMusicianNotFoundException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
+      public ErrorResponse handleProductMusicianAlreadyExists(ProductMusicianAlreadyExists e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(),
+                        e.getMessage());
+      }
+
+      @ExceptionHandler
+      @ResponseStatus(HttpStatus.BAD_REQUEST)
       public ErrorResponse handleBrandNotFoundException(BrandNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
