@@ -5,11 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import itmo.is.cw.GuitarMatchIS.models.Brand;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
-   Page<Product> findAllByBrandId(Long brandId, Pageable pageable);
+   Page<Product> findAllByBrand(Brand brand, Pageable pageable);
 
    Page<Product> findAllByTypeOfProduct(TypeOfProduct typeOfProduct, Pageable pageable);
 

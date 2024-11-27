@@ -4,11 +4,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import itmo.is.cw.GuitarMatchIS.repository.specification.ProductSpecification;
-
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.BrandNotFoundException;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.models.*;
+import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -19,11 +20,19 @@ import java.util.Comparator;
 @RequiredArgsConstructor
 public class ProductService {
    private final ProductRepository productRepository;
+   private final BrandRepository brandRepository;
 
-   public List<ProductDTO> getProductsByBrandId(Long brandId, int from, int size) {
+   public List<ProductDTO> getProductsByBrandName(String brandName, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      return productRepository.findAllByBrandId(brandId, page).getContent().stream().map(this::convertToDTO)
+
+      if (!brandRepository.existsByName(brandName)) {
+         throw new BrandNotFoundException("Brand %s not found".formatted(brandName));
+      }
+
+      Brand brand = brandRepository.findByName(brandName);
+
+      return productRepository.findAllByBrand(brand, page).getContent().stream().map(this::convertToDTO)
             .sorted(new Comparator<ProductDTO>() {
                @Override
                public int compare(ProductDTO o1, ProductDTO o2) {

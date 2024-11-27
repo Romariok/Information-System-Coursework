@@ -25,10 +25,10 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
    private final ProductService productService;
 
-   @GetMapping("/brand/{brandId}")
-   public List<ProductDTO> getProductsByBrandId(@PathVariable Long brandId, @RequestParam int from,
+   @GetMapping()
+   public List<ProductDTO> getProductsByBrandName(@RequestParam String brandName, @RequestParam int from,
          @RequestParam int size) {
-      return productService.getProductsByBrandId(brandId, from, size);
+      return productService.getProductsByBrandName(brandName.replaceAll("_", " "), from, size);
    }
 
    @GetMapping("/type/{typeOfProduct}")
@@ -37,7 +37,7 @@ public class ProductController {
       return productService.getProductsByTypeOfProduct(typeOfProduct, from, size);
    }
 
-   @GetMapping("/name/{name}")
+   @GetMapping("/{name}")
    public List<ProductDTO> getProductsByNameContains(@PathVariable String name, @RequestParam int from,
          @RequestParam int size) {
       return productService.getProductsByNameContains(name, from, size);
