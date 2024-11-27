@@ -1,6 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,6 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.MusicianAlreadyExistsException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.MusicianNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.SubscriptionAlreadyExistsException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.SubscriptionNotFoundException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -68,9 +68,6 @@ public class MusicianService {
    public MusicianDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
       if (musicianRepository.existsByName(createMusicianDTO.getName()))
          throw new MusicianAlreadyExistsException("Musician %s already exists".formatted(createMusicianDTO.getName()));
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to add musician");
-      }
 
       Musician musician = Musician.builder()
             .name(createMusicianDTO.getName())
@@ -84,10 +81,6 @@ public class MusicianService {
    }
 
    public Boolean subscribeToMusician(SubscribeDTO subscribeDTO, HttpServletRequest request) {
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to subscribe to musician");
-      }
-
       User user = findUserByRequest(request);
 
       Musician musician = musicianRepository.findById(subscribeDTO.getMusicianId())
@@ -104,10 +97,6 @@ public class MusicianService {
 
    @Transactional
    public Boolean unsubscribeFromMusician(SubscribeDTO subscribeDTO, HttpServletRequest request) {
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to unsubscribe from musician");
-      }
-
       User user = findUserByRequest(request);
 
       Musician musician = musicianRepository.findById(subscribeDTO.getMusicianId())
@@ -170,7 +159,9 @@ public class MusicianService {
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username).get();
+      return userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                  String.format("Username %s not found", username)));
    }
 
 }

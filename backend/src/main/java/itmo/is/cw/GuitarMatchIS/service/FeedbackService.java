@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,6 @@ import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -75,9 +75,7 @@ public class FeedbackService {
       Product product = productRepository.findById(feedbackDTO.getProductId())
             .orElseThrow(() -> new ProductNotFoundException(
                   String.format("Product with id %s not found", feedbackDTO.getProductId())));
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to add feedback");
-      }
+
       User user = findUserByRequest(request);
       feedbackRepository.addProductFeedback(user.getId(), product.getId(), feedbackDTO.getText(),
             feedbackDTO.getStars());
@@ -89,10 +87,8 @@ public class FeedbackService {
    public Boolean addArticleFeedback(CreateArticleFeedbackDTO feedbackDTO, HttpServletRequest request) {
       Article article = articleRepository.findById(feedbackDTO.getArticleId())
             .orElseThrow(() -> new ArticleNotFoundException(
-                  String.format("Product with id %s not found", feedbackDTO.getArticleId())));
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to add feedback");
-      }
+                  String.format("Article with id %s not found", feedbackDTO.getArticleId())));
+
       User user = findUserByRequest(request);
       feedbackRepository.addArticleFeedback(user.getId(), article.getId(), feedbackDTO.getText(),
             feedbackDTO.getStars());
@@ -102,7 +98,9 @@ public class FeedbackService {
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username).get();
+      return userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                  String.format("Username %s not found", username)));
    }
 
    private FeedbackDTO convertToDTO(Feedback feedback) {

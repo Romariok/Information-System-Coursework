@@ -6,12 +6,12 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.CreateForumPostDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ForumPostDTO;
-import itmo.is.cw.GuitarMatchIS.dto.ForumTopicDTO;
 import itmo.is.cw.GuitarMatchIS.models.ForumPost;
 import itmo.is.cw.GuitarMatchIS.models.ForumTopic;
 import itmo.is.cw.GuitarMatchIS.models.User;
@@ -20,7 +20,6 @@ import itmo.is.cw.GuitarMatchIS.repository.ForumTopicRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForumTopicNotFoundException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -57,10 +56,6 @@ public class ForumPostService {
       ForumTopic topic = forumTopicRepository.findById(forumPostDTO.getForumTopicId())
             .orElseThrow(() -> new ForumTopicNotFoundException(
                   String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId())));
-      
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to create a post");
-      }
 
       User author = findUserByRequest(request);
 
@@ -89,6 +84,8 @@ public class ForumPostService {
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username).get();
+      return userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                  String.format("Username %s not found", username)));
    }
 }
