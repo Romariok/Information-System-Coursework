@@ -11,9 +11,11 @@ import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductGenreDTO;
 import itmo.is.cw.GuitarMatchIS.models.*;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductArticleRepository;
+import itmo.is.cw.GuitarMatchIS.repository.ProductGenreRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class ProductService {
    private final ProductRepository productRepository;
    private final BrandRepository brandRepository;
    private final ProductArticleRepository productArticleRepository;
+   private final ProductGenreRepository productGenreRepository;
 
    public List<ProductDTO> getProductsByBrandName(String brandName, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
@@ -56,6 +59,21 @@ public class ProductService {
                   return o1.getId().compareTo(o2.getId());
                }
             }).toList();
+   }
+
+   public ProductGenreDTO getGenresByProductName(String productName) {
+      if (!productRepository.existsByName(productName)) {
+         throw new ProductNotFoundException("Product %s not found".formatted(productName));
+      }
+
+      Product product = productRepository.findByName(productName);
+
+      List<ProductGenre> productGenres = productGenreRepository.findByProduct(product);
+
+      return ProductGenreDTO.builder()
+            .product(convertToDTO(product))
+            .genres(productGenres.stream().map(productGenre -> productGenre.getGenre()).toList())
+            .build();
    }
 
    public List<ProductDTO> getProductsByNameContains(String name, int from, int size) {
