@@ -5,11 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import itmo.is.cw.GuitarMatchIS.repository.specification.ProductSpecification;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.BrandNotFoundException;
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import itmo.is.cw.GuitarMatchIS.Pagification;
+import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.models.*;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
+import itmo.is.cw.GuitarMatchIS.repository.ProductArticleRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +25,10 @@ import java.util.Comparator;
 public class ProductService {
    private final ProductRepository productRepository;
    private final BrandRepository brandRepository;
+   private final ProductArticleRepository productArticleRepository;
 
    public List<ProductDTO> getProductsByBrandName(String brandName, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
-
 
       if (!brandRepository.existsByName(brandName)) {
          throw new BrandNotFoundException("Brand %s not found".formatted(brandName));
@@ -65,6 +69,32 @@ public class ProductService {
                   return o1.getId().compareTo(o2.getId());
                }
             }).toList();
+   }
+
+   public ProductArticleDTO getProductArticles(String productName, int from, int size) {
+      Pageable page = Pagification.createPageTemplate(from, size);
+
+      if (!productRepository.existsByName(productName)) {
+         throw new ProductNotFoundException("Product %s not found".formatted(productName));
+      }
+
+      Product product = productRepository.findByName(productName);
+
+      List<ProductArticle> productArticles = productArticleRepository
+            .findByProductIdAndAccepted(product.getId(), true, page)
+            .getContent();
+
+      return new ProductArticleDTO(convertToDTO(product),
+            productArticles.stream().map(productArticle -> productArticle.getArticle())
+                  .map(article -> ArticleDTO.builder()
+                        .id(article.getId())
+                        .header(article.getHeader())
+                        .text(article.getText())
+                        .author(article.getAuthor().getUsername())
+                        .createdAt(article.getCreatedAt())
+                        .accepted(article.getAccepted())
+                        .build())
+                  .toList());
    }
 
    public List<ProductDTO> getProductsByFilter(String name,

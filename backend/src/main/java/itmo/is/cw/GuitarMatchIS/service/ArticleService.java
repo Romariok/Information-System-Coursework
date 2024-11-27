@@ -11,16 +11,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import itmo.is.cw.GuitarMatchIS.models.Article;
+import itmo.is.cw.GuitarMatchIS.models.Product;
+import itmo.is.cw.GuitarMatchIS.models.ProductArticle;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.StatusArticlesDTO;
 import itmo.is.cw.GuitarMatchIS.repository.ArticleRepository;
+import itmo.is.cw.GuitarMatchIS.repository.ProductArticleRepository;
+import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleAlreadyExistsException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +38,8 @@ public class ArticleService {
    private final ArticleRepository articleRepository;
    private final JwtUtils jwtUtils;
    private final UserRepository userRepository;
+   private final ProductRepository productRepository;
+   private final ProductArticleRepository productArticleRepository;
    private final SimpMessagingTemplate simpMessagingTemplate;
 
    public List<ArticleDTO> getArticles(int from, int size) {
@@ -95,6 +105,11 @@ public class ArticleService {
 
    @Transactional
    public ArticleDTO createArticle(CreateArticleDTO createArticleDTO, HttpServletRequest request) {
+      if (!productRepository.existsByName(createArticleDTO.getProductName()))
+         throw new ProductNotFoundException(String.format("Product %s not found", createArticleDTO.getProductName()));
+
+      Product product = productRepository.findByName(createArticleDTO.getProductName());
+
       if (articleRepository.existsByHeader(createArticleDTO.getHeader()))
          throw new ArticleAlreadyExistsException(String.format("Article with header %s already exists",
                createArticleDTO.getHeader()));
@@ -106,12 +121,35 @@ public class ArticleService {
             .text(createArticleDTO.getText())
             .author(author)
             .createdAt(LocalDateTime.now())
-            .accepted(createArticleDTO.getAccepted())
+            .accepted(false)
             .build();
       articleRepository.save(article);
-      simpMessagingTemplate.convertAndSend("/articles", "New Article created");
+
+      ProductArticle productArticle = new ProductArticle();
+      productArticle.setArticleId(article.getId());
+      productArticle.setProductId(product.getId());
+      productArticleRepository.save(productArticle);
+
+      simpMessagingTemplate.convertAndSend("/articles", "New Article created for product " + product.getName());
 
       return convertToDTO(article);
+   }
+
+   public List<StatusArticlesDTO> getStatusArticles(int from, int size) {
+      Pageable page = Pagification.createPageTemplate(from, size);
+
+      List<ProductArticle> productArticles = productArticleRepository.findByAccepted(false, page).getContent();
+
+      return productArticles
+            .stream()
+            .map(this::convertToDTO)
+            .sorted(new Comparator<StatusArticlesDTO>() {
+               @Override
+               public int compare(StatusArticlesDTO o1, StatusArticlesDTO o2) {
+                  return o1.getProduct().getId().compareTo(o2.getProduct().getId());
+               }
+            })
+            .toList();
    }
 
    private User findUserByRequest(HttpServletRequest request) {
@@ -129,6 +167,39 @@ public class ArticleService {
             .author(article.getAuthor().getUsername())
             .createdAt(article.getCreatedAt())
             .accepted(article.getAccepted())
+            .build();
+   }
+
+   private StatusArticlesDTO convertToDTO(ProductArticle productArticle) {
+      return StatusArticlesDTO.builder()
+            .product(convertToDTO(productArticle.getProduct()))
+            .article(convertToDTO(productArticle.getArticle()))
+            .build();
+   }
+
+   private ProductDTO convertToDTO(Product product) {
+      return ProductDTO.builder()
+            .id(product.getId())
+            .name(product.getName())
+            .description(product.getDescription())
+            .rate(product.getRate())
+            .brand(BrandDTO.builder()
+                  .id(product.getBrand().getId())
+                  .name(product.getBrand().getName())
+                  .country(product.getBrand().getCountry())
+                  .website(product.getBrand().getWebsite())
+                  .email(product.getBrand().getEmail())
+                  .build())
+            .guitarForm(product.getGuitarForm())
+            .typeOfProduct(product.getTypeOfProduct())
+            .lads(product.getLads())
+            .avgPrice(product.getAvgPrice())
+            .color(product.getColor())
+            .strings(product.getStrings())
+            .tipMaterial(product.getTipMaterial())
+            .bodyMaterial(product.getBodyMaterial())
+            .pickupConfiguration(product.getPickupConfiguration())
+            .typeComboAmplifier(product.getTypeComboAmplifier())
             .build();
    }
 }

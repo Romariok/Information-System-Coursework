@@ -10,6 +10,10 @@ import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+   Product findByName(String name);
+
+   boolean existsByName(String name);
+
    Page<Product> findAllByBrand(Brand brand, Pageable pageable);
 
    Page<Product> findAllByTypeOfProduct(TypeOfProduct typeOfProduct, Pageable pageable);
