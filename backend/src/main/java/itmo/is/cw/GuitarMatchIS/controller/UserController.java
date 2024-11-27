@@ -2,6 +2,7 @@ package itmo.is.cw.GuitarMatchIS.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserGenreDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.models.Genre;
@@ -27,6 +30,21 @@ public class UserController {
    @GetMapping("/role/{username}")
    public Role getRoleByUsername(@PathVariable String username) {
       return userService.getRoleByUsername(username);
+   }
+
+   @GetMapping("/products")
+   public List<ProductDTO> getUserProducts(HttpServletRequest request) {
+      return userService.getUserProducts(request);
+   }
+
+   @PostMapping("/product")
+   public Boolean addProductToUser(HttpServletRequest request, @RequestBody AddUserProductDTO addUserProductDTO) {
+      return userService.addProductToUser(addUserProductDTO, request);
+   }
+
+   @DeleteMapping("/product")
+   public Boolean deleteProductFromUser(HttpServletRequest request, @RequestBody AddUserProductDTO addUserProductDTO) {
+      return userService.deleteProductFromUser(addUserProductDTO, request);
    }
 
    @GetMapping("/genres")
@@ -49,4 +67,6 @@ public class UserController {
          @RequestBody UserTypeOfMusicianDTO typesOfMusicians) {
       return userService.setTypesOfMusiciansToUser(request, typesOfMusicians.getTypesOfMusicians());
    }
+
+
 }
