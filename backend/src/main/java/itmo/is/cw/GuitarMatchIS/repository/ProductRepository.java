@@ -1,5 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +13,10 @@ import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
    Product findByName(String name);
+
+   boolean existsById(Long id);
+
+   Optional<Product> findById(Long id);
 
    boolean existsByName(String name);
 
