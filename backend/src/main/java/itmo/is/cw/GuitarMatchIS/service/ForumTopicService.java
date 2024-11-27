@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,9 +75,6 @@ public class ForumTopicService {
       ForumTopic topic = forumTopicRepository.findById(topicId)
             .orElseThrow(() -> new ForumTopicNotFoundException(
                   String.format("Forum topic with id %s not found", topicId)));
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new UserNotFoundException("You are not authorized to close this topic");
-      }
 
       User user = findUserByRequest(request);
       if (!user.getIsAdmin() && !user.getId().equals(topic.getAuthor().getId())) {
@@ -93,9 +91,6 @@ public class ForumTopicService {
       if (forumTopicRepository.existsByTitle(createForumTopicDTO.getTitle()))
          throw new ForumTopicAlreadyExistsException(String.format("Forum topic with title %s already exists",
                createForumTopicDTO.getTitle()));
-      if (jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request)) == null) {
-         throw new ForbiddenException("You are not authorized to create a topic");
-      }
 
       User author = findUserByRequest(request);
 
@@ -125,6 +120,8 @@ public class ForumTopicService {
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username).get();
+      return userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                  String.format("Username %s not found", username)));
    }
 }
