@@ -664,3 +664,7 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
+
+UPDATE app_user
+SET is_admin = TRUE
+WHERE username = 'userTest';
