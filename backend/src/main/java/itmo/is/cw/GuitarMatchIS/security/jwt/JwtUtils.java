@@ -45,7 +45,7 @@ public class JwtUtils {
         try {
             getParsedToken(authToken);
             return true;
-        } catch (SignatureException e) {
+        } catch (@SuppressWarnings("deprecation") SignatureException e) {
             System.out.println("Invalid JWT signature: " + e.getMessage());
         } catch (MalformedJwtException e) {
             System.out.println("Invalid JWT token: " + e.getMessage());
