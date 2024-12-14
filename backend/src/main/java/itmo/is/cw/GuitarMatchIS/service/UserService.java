@@ -6,15 +6,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import itmo.is.cw.GuitarMatchIS.dto.AddProductMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
-import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
-import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.models.Genre;
-import itmo.is.cw.GuitarMatchIS.models.Musician;
-import itmo.is.cw.GuitarMatchIS.models.MusicianProduct;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.Role;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfMusician;
