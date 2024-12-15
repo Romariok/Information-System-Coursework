@@ -76,6 +76,11 @@ public class ProductService {
             .build();
    }
 
+   public ProductDTO getProductsById(long id){
+      Product p = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(id)));
+      return convertToDTO(p);
+   }
+
    public List<ProductDTO> getProductsByNameContains(String name, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
