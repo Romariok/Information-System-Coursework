@@ -14,8 +14,10 @@ import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
    Product findByName(String name);
 
+   @SuppressWarnings("null")
    boolean existsById(Long id);
 
+   @SuppressWarnings("null")
    Optional<Product> findById(Long id);
 
    boolean existsByName(String name);
