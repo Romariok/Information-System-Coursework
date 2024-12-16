@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import {
@@ -10,6 +10,7 @@ import {
   unlikeProduct,
   subscribeToMusician,
   unsubscribeFromMusician,
+  checkMusicianSubscribed,
 } from "../services/api";
 import { Article, Musician, ProductSimple } from "../services/types";
 import api from "../services/api";
@@ -68,6 +69,27 @@ export default function Home() {
     },
   });
 
+  const { data: subscriptionStatuses } = useQuery({
+    queryKey: ["musicianSubscriptions", topMusicians],
+    queryFn: async () => {
+      if (!topMusicians) return {};
+      const statuses = await Promise.all(
+        topMusicians.map(async (musician) => ({
+          id: musician.id,
+          isSubscribed: await checkMusicianSubscribed(musician.id),
+        }))
+      );
+      return statuses.reduce(
+        (acc, { id, isSubscribed }) => ({
+          ...acc,
+          [id]: isSubscribed,
+        }),
+        {}
+      );
+    },
+    enabled: !!topMusicians,
+  });
+
   useEffect(() => {
     if (userProducts) {
       const likedMap = userProducts.reduce(
@@ -80,6 +102,12 @@ export default function Home() {
       setLikedProducts(likedMap);
     }
   }, [userProducts]);
+
+  useEffect(() => {
+    if (subscriptionStatuses) {
+      setSubscribedMusicians(subscriptionStatuses);
+    }
+  }, [subscriptionStatuses]);
 
   const likeMutation = useMutation<boolean, Error, number>({
     mutationFn: async (productId: number) => {
@@ -97,6 +125,8 @@ export default function Home() {
     },
   });
 
+  const queryClient = useQueryClient();
+
   const subscribeMutation = useMutation({
     mutationFn: async (musicianId: number) => {
       if (subscribedMusicians[musicianId]) {
@@ -110,6 +140,11 @@ export default function Home() {
         ...prev,
         [musicianId]: !prev[musicianId],
       }));
+      queryClient.invalidateQueries({ queryKey: ["musicianSubscriptions"] });
+      queryClient.invalidateQueries({ queryKey: ["topMusicians"] });
+    },
+    onError: (error) => {
+      console.error("Subscription error:", error);
     },
   });
 

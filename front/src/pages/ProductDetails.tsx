@@ -61,11 +61,7 @@ export default function ProductDetails() {
     queryKey: ["productArticles", product?.product.name, articlesPage],
     queryFn: () =>
       product?.product.name
-        ? getProductArticles(
-            product.product.name,
-            (articlesPage - 1) * pageSize,
-            pageSize
-          )
+        ? getProductArticles(id!, (articlesPage - 1) * pageSize, pageSize)
         : Promise.resolve({ items: [] }),
     enabled: !!product,
   });
@@ -239,7 +235,7 @@ export default function ProductDetails() {
             Musicians Using This Product
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {musiciansData?.items.map((musician) => (
+            {musiciansData?.items?.map((musician) => (
               <div
                 key={musician.id}
                 className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
@@ -270,10 +266,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {musiciansData?.items.length !== 0 && (
+          {musiciansData?.items?.length !== 0 && (
             <Pagination
               currentPage={musiciansPage}
-              hasMore={musiciansData?.items.length === pageSize}
+              hasMore={musiciansData?.items?.length === pageSize}
               onPageChange={setMusiciansPage}
             />
           )}
@@ -283,7 +279,7 @@ export default function ProductDetails() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Related Articles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {articlesData?.items.map((article) => (
+            {articlesData?.items?.map((article) => (
               <div
                 key={article.id}
                 className="bg-white p-6 rounded-lg shadow-md"
@@ -306,10 +302,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {articlesData?.items.length !== 0 && (
+          {articlesData?.items?.length !== 0 && (
             <Pagination
               currentPage={articlesPage}
-              hasMore={articlesData?.items.length === pageSize}
+              hasMore={articlesData?.items?.length === pageSize}
               onPageChange={setArticlesPage}
             />
           )}
@@ -347,10 +343,10 @@ export default function ProductDetails() {
             ))}
           </div>
 
-          {feedbackData?.items.length !== 0 && (
+          {feedbackData?.items?.length !== 0 && (
             <Pagination
               currentPage={feedbackPage}
-              hasMore={feedbackData?.items.length === pageSize}
+              hasMore={feedbackData?.items?.length === pageSize}
               onPageChange={setFeedbackPage}
             />
           )}
@@ -360,7 +356,7 @@ export default function ProductDetails() {
         <section>
           <h2 className="text-2xl font-bold mb-4">Where to Buy</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {shopsData?.items.map((shop) => (
+            {shopsData?.items?.map((shop) => (
               <div key={shop.id} className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold">{shop.name}</h3>
                 <p className="text-gray-600">{shop.address}</p>
@@ -381,10 +377,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {shopsData?.items.length !== 0 && (
+          {shopsData?.items?.length !== 0 && (
             <Pagination
               currentPage={shopsPage}
-              hasMore={shopsData?.items.length === pageSize}
+              hasMore={shopsData?.items?.length === pageSize}
               onPageChange={setShopsPage}
             />
           )}

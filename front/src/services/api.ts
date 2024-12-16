@@ -44,6 +44,8 @@ export const getTopArticles = async () => {
     params: {
       from: 0,
       size: 6,
+      sortBy: "CREATED_AT",
+      ascending: false,
     },
   });
   return response.data;
@@ -54,6 +56,8 @@ export const getTopMusicians = async () => {
     params: {
       from: 0,
       size: 6,
+      sortBy: "SUBSCRIBERS",
+      ascending: false,
     },
   });
   return response.data;
@@ -198,7 +202,7 @@ export const unsubscribeFromMusician = async (
   musicianId: number
 ): Promise<boolean> => {
   const response = await api.delete(`/musician/subscription`, {
-    data: { musicianId },
+    data: { musicianId: musicianId },
   });
   return response.data;
 };
@@ -206,7 +210,7 @@ export const unsubscribeFromMusician = async (
 export const checkMusicianSubscribed = async (
   musicianId: number
 ): Promise<boolean> => {
-  const response = await api.get(`/musician/${musicianId}/subscribed`);
+  const response = await api.get(`/musician/${musicianId}/subscription`);
   return response.data;
 };
 
