@@ -293,8 +293,9 @@ export default function ProductDetails() {
                   {article.text}
                 </p>
                 <div className="mt-2 text-sm text-gray-500">
-                  By <span className="font-medium">{article.author}</span> •{" "}
-                  {new Date(article.createdAt).toLocaleDateString()}
+                  By{" "}
+                  <span className="font-medium">{article.author.username}</span>{" "}
+                  • {new Date(article.createdAt).toLocaleDateString()}
                 </div>
                 <Link
                   to={`/article/${article.id}`}

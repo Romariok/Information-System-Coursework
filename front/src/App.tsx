@@ -10,6 +10,8 @@ import NotFound from "./pages/Error";
 import ArticleDetails from "./pages/ArticleDetails";
 import Catalog from "./pages/Catalog";
 import Articles from "./pages/Articles";
+import Musicians from "./pages/Musicians";
+import Forum from "./pages/Forum";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Articles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/musicians"
+              element={
+                <ProtectedRoute>
+                  <Musicians></Musicians>
+                </ProtectedRoute>
+              }
+            ></Route>
+            <Route
+              path="/forum"
+              element={
+                <ProtectedRoute>
+                  <Forum />
                 </ProtectedRoute>
               }
             />

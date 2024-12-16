@@ -49,10 +49,15 @@ export type Article = {
   id: number;
   header: string;
   text: string;
-  author: string;
+  author: Author;
   createdAt: string;
   accepted: boolean;
 };
+
+export type Author = {
+  id: number;
+  username: string;
+}
 
 export type Musician = {
   id: number;
