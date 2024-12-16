@@ -8,6 +8,7 @@ import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.StatusArticlesDTO;
+import itmo.is.cw.GuitarMatchIS.models.ArticleSort;
 import itmo.is.cw.GuitarMatchIS.service.ArticleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,9 +28,11 @@ public class ArticleController {
              description = "Возвращает список одобренных статей с пагинацией")
    @GetMapping
    public List<ArticleDTO> getAcceptedArticles(
+      @Parameter(description = "Сортировка") @RequestParam ArticleSort sortBy,
+      @Parameter(description = "Направление сортировки") @RequestParam boolean ascending,
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size) {
-      return articleService.getAcceptedArticles(from, size);
+      return articleService.getAcceptedArticles(from, size, sortBy, ascending);
    }
 
 

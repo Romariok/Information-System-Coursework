@@ -1,7 +1,9 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import itmo.is.cw.GuitarMatchIS.repository.specification.ProductSpecification;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.BrandNotFoundException;
@@ -189,53 +191,13 @@ public class ProductService {
             .and(ProductSpecification.hasPickupConfiguration(pickupConfiguration))
             .and(ProductSpecification.hasTypeComboAmplifier(typeComboAmplifier));
 
-    List<ProductDTO> allProducts = productRepository.findAll(specification)
+    Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC, 
+                       sortBy.getFieldName());
+    Pageable page = PageRequest.of(from / size, size, sort);
+
+    return productRepository.findAll(specification, page)
             .stream()
             .map(this::convertToDTO)
-            .toList();
-
-    List<ProductDTO> sortedProducts = switch (sortBy) {
-        case PRICE -> {
-            if (ascending) {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getAvgPrice))
-                        .toList();
-            } else {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getAvgPrice).reversed())
-                        .toList();
-            }
-        }
-        case NAME -> {
-            if (ascending) {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getName))
-                        .toList();
-            } else {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getName).reversed())
-                        .toList();
-            }
-        }
-        case RATE -> {
-            if (ascending) {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getRate))
-                        .toList();
-            } else {
-                yield allProducts.stream()
-                        .sorted(Comparator.comparing(ProductDTO::getRate).reversed())
-                        .toList();
-            }
-        }
-        default -> allProducts.stream()
-                .sorted(Comparator.comparing(ProductDTO::getId))
-                .toList();
-    };
-
-    return sortedProducts.stream()
-            .skip((long) from * size)
-            .limit(size)
             .toList();
 }
 

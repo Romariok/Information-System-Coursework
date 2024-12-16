@@ -4,13 +4,16 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import itmo.is.cw.GuitarMatchIS.models.Article;
+import itmo.is.cw.GuitarMatchIS.models.ArticleSort;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.ProductArticle;
 import itmo.is.cw.GuitarMatchIS.models.User;
@@ -44,21 +47,16 @@ public class ArticleService {
    private final ProductArticleRepository productArticleRepository;
    private final SimpMessagingTemplate simpMessagingTemplate;
 
-   public List<ArticleDTO> getAcceptedArticles(int from, int size) {
-      Pageable page = Pagification.createPageTemplate(from, size);
+   public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
+      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC, 
+                         sortBy.getFieldName());
+      Pageable page = PageRequest.of(from / size, size, sort);
 
       List<Article> articles = articleRepository.findByAccepted(true, page).getContent();
 
-      return articles
-            .stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<ArticleDTO>() {
-               @Override
-               public int compare(ArticleDTO o1, ArticleDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
-            .toList();
+      return articles.stream()
+                     .map(this::convertToDTO)
+                     .toList();
    }
 
    public ArticleDTO getArticleById(Long id) {
