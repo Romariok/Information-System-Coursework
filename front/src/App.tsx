@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/Error";
+import ArticleDetails from "./pages/ArticleDetails";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProductDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/article/:id"
+              element={
+                <ProtectedRoute>
+                  <ArticleDetails />
                 </ProtectedRoute>
               }
             />
