@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.models.Genre;
 import itmo.is.cw.GuitarMatchIS.models.Role;
@@ -26,6 +27,17 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Пользователи", description = "API для работы с пользователями")
 public class UserController {
    private final UserService userService;
+
+   @Operation(summary = "Получить информацию о пользователе",
+             description = "Возвращает информацию о пользователе по его id")
+   @ApiResponses(value = {
+       @ApiResponse(responseCode = "200", description = "Информация о пользователе успешно получена"),
+       @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+   })
+   @GetMapping("/id/{id}")
+   public UserInfoDTO getUserInfoById(@PathVariable Long id) {
+      return userService.getUserInfoById(id);
+   }
 
    @Operation(summary = "Получить роль пользователя",
              description = "Возвращает роль пользователя по его имени")
