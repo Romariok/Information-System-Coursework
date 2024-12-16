@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Navbar() {
-  const { logout } = useAuth()
+  const { logout } = useAuth();
 
   return (
     <nav className="bg-indigo-600 text-white shadow-lg">
@@ -13,16 +13,28 @@ export default function Navbar() {
               GMatch
             </Link>
             <div className="ml-10 flex space-x-4">
-              <Link to="/catalog" className="hover:bg-indigo-700 px-3 py-2 rounded-md">
+              <Link
+                to="/catalog"
+                className="hover:bg-indigo-700 px-3 py-2 rounded-md"
+              >
                 Catalog
               </Link>
-              <Link to="/articles" className="hover:bg-indigo-700 px-3 py-2 rounded-md">
+              <Link
+                to="/articles"
+                className="hover:bg-indigo-700 px-3 py-2 rounded-md"
+              >
                 Articles
               </Link>
-              <Link to="/musicians" className="hover:bg-indigo-700 px-3 py-2 rounded-md">
+              <Link
+                to="/musicians"
+                className="hover:bg-indigo-700 px-3 py-2 rounded-md"
+              >
                 Musicians
               </Link>
-              <Link to="/forum" className="hover:bg-indigo-700 px-3 py-2 rounded-md">
+              <Link
+                to="/forum"
+                className="hover:bg-indigo-700 px-3 py-2 rounded-md"
+              >
                 Forum
               </Link>
             </div>
@@ -36,5 +48,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
