@@ -15,7 +15,7 @@ public class ArticleDTO {
    private Long id;
    private String header;
    private String text;
-   private String author;
+   private UserInfoDTO author;
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
    private LocalDateTime createdAt;
    private Boolean accepted;

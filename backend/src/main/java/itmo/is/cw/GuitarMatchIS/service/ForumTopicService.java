@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.CreateForumTopicDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ForumTopicDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.ForumTopic;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.repository.ForumTopicRepository;
@@ -103,7 +104,7 @@ public class ForumTopicService {
             .build();
       forumTopicRepository.save(topic);
       simpMessagingTemplate.convertAndSend("/forum/topics", "Forum topic created");
-      
+
       return convertToDTO(topic);
    }
 
@@ -113,7 +114,8 @@ public class ForumTopicService {
             .title(topic.getTitle())
             .description(topic.getDescription())
             .createdAt(topic.getCreatedAt())
-            .authorId(topic.getAuthor().getId())
+            .author(UserInfoDTO.builder().id(topic.getAuthor().getId())
+                  .username(topic.getAuthor().getUsername()).build())
             .isClosed(topic.getIsClosed())
             .build();
    }

@@ -106,7 +106,7 @@ public class FeedbackService {
    private FeedbackDTO convertToDTO(Feedback feedback) {
       return FeedbackDTO.builder()
             .id(feedback.getId())
-            .authorId(feedback.getAuthor().getId())
+            .author(UserInfoDTO.builder().id(feedback.getAuthor().getId()).username(feedback.getAuthor().getUsername()).build())
             .product(feedback.getProduct() != null ? ProductDTO.builder()
                   .id(feedback.getProduct().getId())
                   .name(feedback.getProduct().getName())
@@ -134,7 +134,8 @@ public class FeedbackService {
                   .id(feedback.getArticle().getId())
                   .header(feedback.getArticle().getHeader())
                   .text(feedback.getArticle().getText())
-                  .author(feedback.getArticle().getAuthor().getUsername())
+                  .author(UserInfoDTO.builder().id(feedback.getArticle().getAuthor().getId())
+                        .username(feedback.getArticle().getAuthor().getUsername()).build())
                   .createdAt(feedback.getArticle().getCreatedAt())
                   .accepted(feedback.getArticle().getAccepted())
                   .build() : null)

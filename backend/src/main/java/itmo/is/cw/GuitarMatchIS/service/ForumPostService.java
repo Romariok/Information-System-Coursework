@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.CreateForumPostDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ForumPostDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.ForumPost;
 import itmo.is.cw.GuitarMatchIS.models.ForumTopic;
 import itmo.is.cw.GuitarMatchIS.models.User;
@@ -59,7 +60,6 @@ public class ForumPostService {
 
       User author = findUserByRequest(request);
 
-
       ForumPost post = ForumPost.builder()
             .topic(topic)
             .author(author)
@@ -76,7 +76,8 @@ public class ForumPostService {
       return ForumPostDTO.builder()
             .id(post.getId())
             .forumTopicId(post.getTopic().getId())
-            .authorId(post.getAuthor().getId())
+            .author(UserInfoDTO.builder().id(post.getAuthor().getId())
+                  .username(post.getAuthor().getUsername()).build())
             .createdAt(post.getCreatedAt())
             .content(post.getContent())
             .build();
