@@ -66,13 +66,12 @@ export const getProductArticles = async (
   id: string,
   from: number,
   size: number
-): Promise<{ items: Article[]; total: number }> => {
+): Promise<{ items: Article[] }> => {
   const response = await api.get(`/product/${id}/articles`, {
     params: { from, size },
   });
   return {
     items: response.data.items,
-    total: response.data.total,
   };
 };
 
@@ -80,13 +79,12 @@ export const getProductMusicians = async (
   id: string,
   from: number,
   size: number
-): Promise<{ items: Musician[]; total: number }> => {
+): Promise<{ items: Musician[] }> => {
   const response = await api.get(`/product/${id}/musicians`, {
     params: { from, size },
   });
   return {
     items: response.data.items,
-    total: response.data.total,
   };
 };
 
@@ -94,13 +92,12 @@ export const getProductFeedbacks = async (
   id: string,
   from: number,
   size: number
-): Promise<{ items: Feedback[]; total: number }> => {
+): Promise<{ items: Feedback[] }> => {
   const response = await api.get(`/feedback/product/${id}`, {
     params: { from, size },
   });
   return {
     items: response.data.items,
-    total: response.data.total,
   };
 };
 
@@ -108,13 +105,12 @@ export const getProductShops = async (
   id: string,
   from: number,
   size: number
-): Promise<{ items: ShopProduct[]; total: number }> => {
+): Promise<{ items: ShopProduct[] }> => {
   const response = await api.get(`/product/${id}/shops`, {
     params: { from, size },
   });
   return {
     items: response.data.items,
-    total: response.data.total,
   };
 };
 
@@ -123,7 +119,7 @@ export const checkProductLiked = async (
 ): Promise<boolean> => {
   const response = await api.get(`/user/products`);
   return response.data.some(
-    (product: Product) => product.id === Number(productId)
+    (product: Product) => product.product.id === Number(productId)
   );
 };
 
@@ -152,13 +148,12 @@ export const getArticleFeedbacks = async (
   id: string,
   from: number,
   size: number
-): Promise<{ items: Feedback[]; total: number }> => {
+): Promise<{ items: Feedback[] }> => {
   const response = await api.get(`/feedback/article/${id}`, {
     params: { from, size },
   });
   return {
     items: response.data,
-    total: response.data.length,
   };
 };
 
@@ -216,13 +211,12 @@ export const checkMusicianSubscribed = async (
 export const getArticles = async (
   from: number,
   size: number
-): Promise<{ items: Article[]; total: number }> => {
+): Promise<{ items: Article[] }> => {
   const response = await api.get("/article", {
     params: { from, size },
   });
   return {
     items: response.data,
-    total: response.data.length,
   };
 };
 
@@ -230,14 +224,14 @@ export const searchArticlesByHeader = async (
   header: string,
   from: number,
   size: number
-): Promise<{ items: Article[]; total: number }> => {
+): Promise<{ items: Article[] }> => {
   const response = await api.get(`/article/header/${header}`, {
     params: { from, size },
   });
   return {
     items: response.data,
-    total: response.data.length,
   };
 };
+
 
 export default api;

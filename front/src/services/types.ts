@@ -7,6 +7,27 @@ export type Brand = {
 };
 
 export type Product = {
+  product: {
+    id: number;
+    name: string;
+    description: string;
+    rate: number;
+    brand: Brand;
+    guitarForm: string;
+    typeOfProduct: string;
+    lads: number;
+    avgPrice: number;
+    color: string;
+    strings?: number;
+    tipMaterial: string;
+    bodyMaterial: string;
+    pickupConfiguration: string;
+    typeComboAmplifier: string;
+  };
+  genres: [string];
+};
+
+export type ProductSimple = {
   id: number;
   name: string;
   description: string;
@@ -22,7 +43,6 @@ export type Product = {
   bodyMaterial: string;
   pickupConfiguration: string;
   typeComboAmplifier: string;
-  genre: [string];
 };
 
 export type Article = {

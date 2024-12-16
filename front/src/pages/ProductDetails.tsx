@@ -57,16 +57,21 @@ export default function ProductDetails() {
     queryFn: () => getProductDetails(id!),
   });
 
-  const { data: articlesData } = useQuery<{ items: Article[]; total: number }>({
-    queryKey: ["productArticles", id, articlesPage],
+  const { data: articlesData } = useQuery<{ items: Article[] }>({
+    queryKey: ["productArticles", product?.product.name, articlesPage],
     queryFn: () =>
-      getProductArticles(id!, (articlesPage - 1) * pageSize, pageSize),
+      product?.product.name
+        ? getProductArticles(
+            product.product.name,
+            (articlesPage - 1) * pageSize,
+            pageSize
+          )
+        : Promise.resolve({ items: [] }),
     enabled: !!product,
   });
 
   const { data: musiciansData } = useQuery<{
     items: Musician[];
-    total: number;
   }>({
     queryKey: ["productMusicians", id, musiciansPage],
     queryFn: () =>
@@ -74,22 +79,18 @@ export default function ProductDetails() {
     enabled: !!product,
   });
 
-  const { data: feedbackData } = useQuery<{ items: Feedback[]; total: number }>(
-    {
-      queryKey: ["productFeedbacks", id, feedbackPage],
-      queryFn: () =>
-        getProductFeedbacks(id!, (feedbackPage - 1) * pageSize, pageSize),
-      enabled: !!product,
-    }
-  );
+  const { data: feedbackData } = useQuery<{ items: Feedback[] }>({
+    queryKey: ["productFeedbacks", id, feedbackPage],
+    queryFn: () =>
+      getProductFeedbacks(id!, (feedbackPage - 1) * pageSize, pageSize),
+    enabled: !!product,
+  });
 
-  const { data: shopsData } = useQuery<{ items: ShopProduct[]; total: number }>(
-    {
-      queryKey: ["productShops", id, shopsPage],
-      queryFn: () => getProductShops(id!, (shopsPage - 1) * pageSize, pageSize),
-      enabled: !!product,
-    }
-  );
+  const { data: shopsData } = useQuery<{ items: ShopProduct[] }>({
+    queryKey: ["productShops", product?.product.name, shopsPage],
+    queryFn: () => getProductShops(id!, (shopsPage - 1) * pageSize, pageSize),
+    enabled: !!product,
+  });
 
   const { data: liked } = useQuery<boolean>({
     queryKey: ["productLiked", id],
@@ -125,11 +126,6 @@ export default function ProductDetails() {
     },
   });
 
-  const totalArticlesPages = Math.ceil((articlesData?.total || 0) / pageSize);
-  const totalMusiciansPages = Math.ceil((musiciansData?.total || 0) / pageSize);
-  const totalFeedbackPages = Math.ceil((feedbackData?.total || 0) / pageSize);
-  const totalShopsPages = Math.ceil((shopsData?.total || 0) / pageSize);
-
   if (productError) {
     return <Navigate to="*" />;
   }
@@ -155,52 +151,55 @@ export default function ProductDetails() {
                     "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
                     "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
                     "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
-                  ][product.id % 4]
+                  ][product.product.id % 4]
                 }
-                alt={product.name}
+                alt={product.product.name}
                 className="w-full rounded-lg"
               />
             </div>
             <div>
-              <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+              <h1 className="text-3xl font-bold mb-4">
+                {product.product.name}
+              </h1>
               <div className="space-y-2">
                 <p>
-                  <span className="font-medium">Rating:</span> {product.rate}/5
+                  <span className="font-medium">Rating:</span>{" "}
+                  {product.product.rate}/5
                 </p>
                 <p>
                   <span className="font-medium">Brand:</span>{" "}
                   <Link
-                    to={`/brand/${product.brand.id}`}
+                    to={`/brand/${product.product.brand.id}`}
                     className="text-indigo-600 hover:text-indigo-800"
                   >
-                    {product.brand.name}
+                    {product.product.brand.name}
                   </Link>
                 </p>
                 <p>
                   <span className="font-medium">Type:</span>{" "}
-                  {formatProductType(product.typeOfProduct)}
+                  {formatProductType(product.product.typeOfProduct)}
                 </p>
                 <p>
                   <span className="font-medium">Price:</span> $
-                  {product.avgPrice.toFixed(2)}
+                  {product.product.avgPrice.toFixed(2)}
                 </p>
                 <p>
                   <span className="font-medium">Body Material:</span>{" "}
-                  {product.bodyMaterial.toLowerCase()}
+                  {product.product.bodyMaterial.toLowerCase()}
                 </p>
-                {product.strings && (
+                {product.product.strings && (
                   <p>
                     <span className="font-medium">Strings:</span>{" "}
-                    {product.strings}
+                    {product.product.strings}
                   </p>
                 )}
                 <p>
                   <span className="font-medium">Genres:</span>{" "}
-                  {product.genre?.join(", ")}
+                  {product.genres.join(", ")}
                 </p>
                 <p>
                   <span className="font-medium">Description:</span>{" "}
-                  {product.description}
+                  {product.product.description}
                 </p>
               </div>
               <div className="mt-4">
@@ -271,10 +270,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {totalMusiciansPages > 1 && (
+          {musiciansData?.items.length !== 0 && (
             <Pagination
               currentPage={musiciansPage}
-              totalPages={totalMusiciansPages}
+              hasMore={musiciansData?.items.length === pageSize}
               onPageChange={setMusiciansPage}
             />
           )}
@@ -306,10 +305,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {totalArticlesPages > 1 && (
+          {articlesData?.items.length !== 0 && (
             <Pagination
               currentPage={articlesPage}
-              totalPages={totalArticlesPages}
+              hasMore={articlesData?.items.length === pageSize}
               onPageChange={setArticlesPage}
             />
           )}
@@ -347,10 +346,10 @@ export default function ProductDetails() {
             ))}
           </div>
 
-          {totalFeedbackPages > 1 && (
+          {feedbackData?.items.length !== 0 && (
             <Pagination
               currentPage={feedbackPage}
-              totalPages={totalFeedbackPages}
+              hasMore={feedbackData?.items.length === pageSize}
               onPageChange={setFeedbackPage}
             />
           )}
@@ -381,10 +380,10 @@ export default function ProductDetails() {
               </div>
             ))}
           </div>
-          {totalShopsPages > 1 && (
+          {shopsData?.items.length !== 0 && (
             <Pagination
               currentPage={shopsPage}
-              totalPages={totalShopsPages}
+              hasMore={shopsData?.items.length === pageSize}
               onPageChange={setShopsPage}
             />
           )}
