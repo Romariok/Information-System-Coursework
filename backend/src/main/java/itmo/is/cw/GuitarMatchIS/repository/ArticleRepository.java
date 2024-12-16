@@ -14,7 +14,9 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
    @Query("SELECT moderate_article(:articleId, :accepted, :moderatorId)")
    boolean moderateArticle(Long articleId, boolean accepted, Long moderatorId);
 
-   Page<Article> findByHeaderContaining(String header, Pageable page);
+   Page<Article> findByHeaderContainingAndAccepted(String header, boolean accepted, Pageable page);
 
-   Page<Article> findByAuthorId(Long authorId, Pageable page);
+   Page<Article> findByAuthorIdAndAccepted(Long authorId, boolean accepted, Pageable page);
+
+   Page<Article> findByAccepted(boolean accepted, Pageable page);
 }

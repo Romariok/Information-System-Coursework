@@ -42,10 +42,10 @@ public class ArticleService {
    private final ProductArticleRepository productArticleRepository;
    private final SimpMessagingTemplate simpMessagingTemplate;
 
-   public List<ArticleDTO> getArticles(int from, int size) {
+   public List<ArticleDTO> getAcceptedArticles(int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      List<Article> articles = articleRepository.findAll(page).getContent();
+      List<Article> articles = articleRepository.findByAccepted(true, page).getContent();
 
       return articles
             .stream()
@@ -62,7 +62,7 @@ public class ArticleService {
    public List<ArticleDTO> getArticlesByHeaderContaining(String header, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      List<Article> articles = articleRepository.findByHeaderContaining(header, page).getContent();
+      List<Article> articles = articleRepository.findByHeaderContainingAndAccepted(header, true, page).getContent();
 
       return articles
             .stream()
@@ -79,7 +79,7 @@ public class ArticleService {
    public List<ArticleDTO> getArticlesByAuthorId(Long authorId, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      List<Article> articles = articleRepository.findByAuthorId(authorId, page).getContent();
+      List<Article> articles = articleRepository.findByAuthorIdAndAccepted(authorId, true, page).getContent();
 
       return articles
             .stream()
@@ -135,7 +135,11 @@ public class ArticleService {
       return convertToDTO(article);
    }
 
-   public List<StatusArticlesDTO> getStatusArticles(int from, int size) {
+   public List<StatusArticlesDTO> getStatusArticles(int from, int size, HttpServletRequest request) {
+      User user = findUserByRequest(request);
+      if (!user.getIsAdmin())
+         throw new ForbiddenException("User have no rights to get moderate articles");
+
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<ProductArticle> productArticles = productArticleRepository.findByAccepted(false, page).getContent();
