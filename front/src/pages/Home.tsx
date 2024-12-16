@@ -8,6 +8,8 @@ import {
   getTopMusicians,
   likeProduct,
   unlikeProduct,
+  subscribeToMusician,
+  unsubscribeFromMusician,
 } from "../services/api";
 import { Article, Musician, Product } from "../services/types";
 import api from "../services/api";
@@ -30,6 +32,10 @@ const formatProductType = (type: string) => {
 
 export default function Home() {
   const [likedProducts, setLikedProducts] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  const [subscribedMusicians, setSubscribedMusicians] = useState<{
     [key: number]: boolean;
   }>({});
 
@@ -91,8 +97,28 @@ export default function Home() {
     },
   });
 
+  const subscribeMutation = useMutation({
+    mutationFn: async (musicianId: number) => {
+      if (subscribedMusicians[musicianId]) {
+        return await unsubscribeFromMusician(musicianId);
+      } else {
+        return await subscribeToMusician(musicianId);
+      }
+    },
+    onSuccess: (_, musicianId) => {
+      setSubscribedMusicians((prev) => ({
+        ...prev,
+        [musicianId]: !prev[musicianId],
+      }));
+    },
+  });
+
   const handleLikeClick = (productId: number) => {
     likeMutation.mutate(productId);
+  };
+
+  const handleSubscribeClick = (musicianId: number) => {
+    subscribeMutation.mutate(musicianId);
   };
 
   return (
@@ -169,14 +195,12 @@ export default function Home() {
                           onRatingChange={() => {}}
                           size="sm"
                         />
-                        <span className="ml-2 text-gray-600">
-                          ({product.rate}/5)
-                        </span>
+                        <span className="ml-2 text-gray-600">({product.rate}/5)</span>
                       </div>
                       <p>
                         <span className="font-medium">Brand:</span>{" "}
-                        <Link
-                          to={`/brand/${product.brand.id}`}
+                        <Link 
+                          to={`/brand/${product.brand.id}`} 
                           className="text-indigo-600 hover:text-indigo-800"
                         >
                           {product.brand.name}
@@ -281,9 +305,20 @@ export default function Home() {
                         />
                       </Link>
                     </div>
-                    <h3 className="text-lg font-semibold text-center">
-                      {musician.name}
-                    </h3>
+                    <div className="flex justify-between items-start w-full mb-4">
+                      <h3 className="text-lg font-semibold">{musician.name}</h3>
+                      <button
+                        onClick={() => handleSubscribeClick(musician.id)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          subscribedMusicians[musician.id]
+                            ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                            : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        }`}
+                        disabled={subscribeMutation.isPending}
+                      >
+                        {subscribedMusicians[musician.id] ? "Subscribed" : "Subscribe"}
+                      </button>
+                    </div>
                     <p className="text-gray-600 text-sm mb-2">
                       {musician.subscribers} subscribers
                     </p>
