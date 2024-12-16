@@ -43,13 +43,6 @@ enum Color {
   NATURAL = "NATURAL",
 }
 
-enum TipMaterial {
-  PLASTIC = "PLASTIC",
-  METAL = "METAL",
-  WOOD = "WOOD",
-  STONE = "STONE",
-}
-
 enum BodyMaterial {
   MAHOGANY = "MAHOGANY",
   MAPLE = "MAPLE",
@@ -64,13 +57,6 @@ enum PickupConfiguration {
   HH = "HH",
   SS = "SS",
   P90 = "P90",
-}
-
-enum TypeComboAmplifier {
-  TUBE = "TUBE",
-  SOLID_STATE = "SOLID_STATE",
-  HYBRID = "HYBRID",
-  MODELING = "MODELING",
 }
 
 export default function Catalog() {
