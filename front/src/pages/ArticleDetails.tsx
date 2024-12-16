@@ -101,7 +101,7 @@ export default function ArticleDetails() {
                 className="bg-white p-6 rounded-lg shadow-md"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold">{feedback.author}</span>
+                  <span className="font-semibold">{feedback.author.username}</span>
                   <StarRating
                     rating={feedback.stars}
                     onRatingChange={() => {}}

@@ -67,7 +67,9 @@ export type Musician = {
 
 export type Feedback = {
   id: number;
-  author: string;
+  author: Author;
+  product: ProductSimple;
+  article: string;
   stars: number;
   text: string;
   createdAt: string;
