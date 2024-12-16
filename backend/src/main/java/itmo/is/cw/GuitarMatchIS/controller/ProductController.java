@@ -13,10 +13,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductShopsDTO;
 import itmo.is.cw.GuitarMatchIS.models.BodyMaterial;
 import itmo.is.cw.GuitarMatchIS.models.Color;
 import itmo.is.cw.GuitarMatchIS.models.GuitarForm;
@@ -47,6 +48,19 @@ public class ProductController {
                 return productService.getProductsByBrandName(brandName.replaceAll("_", " "), from, size);
         }
 
+        @Operation(summary = "Получить музыкантов по ID товара", description = "Возвращает список музыкантов, которые используют данный товар")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Список музыкантов успешно получен"),
+                        @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
+        })
+        @GetMapping("/{id}/musicians")
+        public List<MusicianInfoDTO> getMusiciansByProductId(
+                        @Parameter(description = "ID товара") @PathVariable long id,
+                        @Parameter(description = "Начальная позиция") @RequestParam int from,
+                        @Parameter(description = "Количество элементов") @RequestParam int size) {
+                return productService.getMusiciansByProductId(id, from, size);
+        }
+
         @Operation(summary = "Получить товар по id", description = "Возвращает товар по id")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Товар найден"),
@@ -74,12 +88,25 @@ public class ProductController {
                         @ApiResponse(responseCode = "200", description = "Статьи успешно получены"),
                         @ApiResponse(responseCode = "404", description = "Товар не найден")
         })
-        @GetMapping("/{name}/articles")
+        @GetMapping("/{id}/articles")
         public ProductArticleDTO getProductArticles(
-                        @Parameter(description = "Название товара") @PathVariable String name,
+                        @Parameter(description = "ID товара") @PathVariable long id,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
-                return productService.getProductArticles(name.replaceAll("_", " "), from, size);
+                return productService.getProductArticles(id, from, size);
+        }
+
+        @Operation(summary = "Получить магазины, в которых есть товар", description = "Возвращает список магазинов, в которых есть товар")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Магазины успешно получены"),
+                        @ApiResponse(responseCode = "404", description = "Товар не найден")
+        })
+        @GetMapping("/{id}/shops")
+        public ProductShopsDTO getProductShops(
+                        @Parameter(description = "ID товара") @PathVariable long id,
+                        @Parameter(description = "Начальная позиция") @RequestParam int from,
+                        @Parameter(description = "Количество элементов") @RequestParam int size) {
+                return productService.getProductShops(id, from, size);
         }
 
         @Operation(summary = "Получить товары по типу", description = "Возвращает список товаров определенного типа с пагинацией")

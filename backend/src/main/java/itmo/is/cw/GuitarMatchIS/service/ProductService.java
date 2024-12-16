@@ -9,15 +9,22 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductShopDTO;
+import itmo.is.cw.GuitarMatchIS.dto.ProductShopsDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.*;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianGenreRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianProductRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianTypeOfMusicianRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductArticleRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductGenreRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
+import itmo.is.cw.GuitarMatchIS.repository.ShopProductRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -30,6 +37,10 @@ public class ProductService {
    private final BrandRepository brandRepository;
    private final ProductArticleRepository productArticleRepository;
    private final ProductGenreRepository productGenreRepository;
+   private final MusicianProductRepository musicianProductRepository;
+   private final MusicianGenreRepository musicianGenreRepository;
+   private final MusicianTypeOfMusicianRepository musicianTypeOfMusicianRepository;
+   private final ShopProductRepository shopProductRepository;
 
    public List<ProductGenreDTO> getProductsByBrandName(String brandName, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
@@ -104,17 +115,13 @@ public class ProductService {
             .toList();
    }
 
-   public ProductArticleDTO getProductArticles(String productName, int from, int size) {
+   public ProductArticleDTO getProductArticles(long productId, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      if (!productRepository.existsByName(productName)) {
-         throw new ProductNotFoundException("Product %s not found".formatted(productName));
-      }
-
-      Product product = productRepository.findByName(productName);
+      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
 
       List<ProductArticle> productArticles = productArticleRepository
-            .findByProductIdAndAccepted(product.getId(), true, page)
+            .findByProductIdAndAccepted(productId, true, page)
             .getContent();
 
       return new ProductArticleDTO(convertToDTO(product),
@@ -129,6 +136,24 @@ public class ProductService {
                         .accepted(article.getAccepted())
                         .build())
                   .toList());
+   }
+
+   public ProductShopsDTO getProductShops(long productId, int from, int size) {
+      Pageable page = Pagification.createPageTemplate(from, size);
+      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
+      List<ShopProduct> shopProducts = shopProductRepository.findAllByProduct(product, page).getContent();
+      List<Shop> shops = shopProducts.stream().map(shopProduct -> shopProduct.getShop()).toList();
+      
+      return ProductShopsDTO.builder()
+            .product(convertToDTO(product))
+            .shops(shops.stream().map(shop -> ProductShopDTO.builder()
+                  .id(shop.getId())
+                  .name(shop.getName())
+                  .price(shopProducts.stream().filter(shopProduct -> shopProduct.getShop().getId() == shop.getId()).findFirst().orElseThrow().getPrice())
+                  .available(shopProducts.stream().filter(shopProduct -> shopProduct.getShop().getId() == shop.getId()).findFirst().orElseThrow().getAvailable())
+                  .build())
+                  .toList())
+            .build();
    }
 
    public List<ProductDTO> getProductsByFilter(String name,
@@ -170,6 +195,23 @@ public class ProductService {
                   return o1.getId().compareTo(o2.getId());
                }
             }).toList();
+   }
+
+   public List<MusicianInfoDTO> getMusiciansByProductId(long productId, int from, int size) {
+      Pageable page = Pagification.createPageTemplate(from, size);
+      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
+      List<MusicianProduct> musicianProducts = musicianProductRepository.findByProduct(product, page).getContent();
+      List<Musician> musicians = musicianProducts.stream().map(musicianProduct -> musicianProduct.getMusician()).toList();
+      return musicians.stream().map(musician -> MusicianInfoDTO.builder()
+            .id(musician.getId())
+            .name(musician.getName())
+            .subscribers(musician.getSubscribers())
+            .genres(musicianGenreRepository.findByMusician(musician).stream().map(MusicianGenre::getGenre).toList())
+            .typesOfMusicians(musicianTypeOfMusicianRepository.findByMusician(musician).stream().map(MusicianTypeOfMusician::getTypeOfMusician).toList())
+            .products(musicianProductRepository.findByMusician(musician).stream()
+                  .map(musicianProduct -> convertToDTO(musicianProduct.getProduct()))
+                  .toList())
+            .build()).toList();
    }
 
    private ProductDTO convertToDTO(Product product) {
