@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StarRating from "../components/StarRating";
-import { Product } from "../services/types";
+import { ProductSimple } from "../services/types";
 import api from "../services/api";
 import { likeProduct, unlikeProduct } from "../services/api";
 
@@ -61,7 +61,7 @@ enum PickupConfiguration {
 }
 
 type SortOption = {
-  field: keyof Product | "brand.name";
+  field: "name" | "rating" | "price";
   direction: "asc" | "desc";
 };
 
@@ -95,7 +95,7 @@ export default function Catalog() {
     typeComboAmplifier: "",
   });
 
-  const { data: userProducts } = useQuery<Product[]>({
+  const { data: userProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
       const response = await api.get("/user/products");
@@ -106,7 +106,7 @@ export default function Catalog() {
   useEffect(() => {
     if (userProducts) {
       const likedMap = userProducts.reduce(
-        (acc: { [key: number]: boolean }, product: Product) => {
+        (acc: { [key: number]: boolean }, product: ProductSimple) => {
           acc[product.id] = true;
           return acc;
         },
@@ -146,7 +146,7 @@ export default function Catalog() {
     handleFilterChange(key, numValue);
   };
 
-  const { data: products, isLoading } = useQuery<Product[]>({
+  const { data: products, isLoading } = useQuery<ProductSimple[]>({
     queryKey: ["products", filters, page, sort],
     queryFn: async () => {
       const response = await api.get("/product/filter", {
@@ -158,10 +158,6 @@ export default function Catalog() {
       });
       const sortedProducts = [...response.data].sort((a, b) => {
         const field = sort.field;
-        if (field === "brand.name") {
-          const compareResult = a.brand.name.localeCompare(b.brand.name);
-          return sort.direction === "asc" ? compareResult : -compareResult;
-        }
         if (typeof a[field] === "string") {
           const compareResult = (a[field] as string).localeCompare(
             b[field] as string
@@ -183,6 +179,14 @@ export default function Catalog() {
     setPage(1);
   };
 
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const [field, direction] = e.target.value.split("-");
+    setSort({
+      field: field as "name" | "rating" | "price",
+      direction: direction as "asc" | "desc",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -200,23 +204,15 @@ export default function Catalog() {
               </label>
               <select
                 value={`${sort.field}-${sort.direction}`}
-                onChange={(e) => {
-                  const [field, direction] = e.target.value.split("-");
-                  setSort({
-                    field: field as keyof Product | "brand.name",
-                    direction: direction as "asc" | "desc",
-                  });
-                }}
+                onChange={handleSortChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               >
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
-                <option value="rate-desc">Rating (High to Low)</option>
-                <option value="rate-asc">Rating (Low to High)</option>
-                <option value="avgPrice-asc">Price (Low to High)</option>
-                <option value="avgPrice-desc">Price (High to Low)</option>
-                <option value="brand.name-asc">Brand (A-Z)</option>
-                <option value="brand.name-desc">Brand (Z-A)</option>
+                <option value="rating-desc">Rating (High to Low)</option>
+                <option value="rating-asc">Rating (Low to High)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
               </select>
             </div>
 

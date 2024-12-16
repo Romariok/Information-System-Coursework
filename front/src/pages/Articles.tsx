@@ -34,7 +34,7 @@ export default function Articles() {
     },
   });
 
-  const totalPages = Math.ceil((articlesData?.total || 0) / pageSize);
+  const hasMore = articlesData?.items.length === pageSize;
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,11 +137,11 @@ export default function Articles() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {(articlesData?.items.length ?? 0) > 0 && (
           <div className="mt-8">
             <Pagination
               currentPage={page}
-              totalPages={totalPages}
+              hasMore={hasMore}
               onPageChange={setPage}
             />
           </div>
