@@ -216,10 +216,11 @@ export const checkMusicianSubscribed = async (
 
 export const getArticles = async (
   from: number,
-  size: number
+  size: number,
+  asc: boolean
 ): Promise<{ items: Article[] }> => {
-  const response = await api.get("/article/", {
-    params: { from, size, sortBy: "CREATED_AT", ascending: true },
+  const response = await api.get("/article", {
+    params: { from, size, sortBy: "CREATED_AT", ascending: asc },
   });
   return {
     items: response.data,
