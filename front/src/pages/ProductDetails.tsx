@@ -279,7 +279,7 @@ export default function ProductDetails() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Related Articles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {articlesData?.items?.map((article) => (
+            {articlesData?.items.map((article) => (
               <div
                 key={article.id}
                 className="bg-white p-6 rounded-lg shadow-md"
@@ -328,7 +328,9 @@ export default function ProductDetails() {
                 className="bg-white p-6 rounded-lg shadow-md"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold">{feedback.author}</span>
+                  <span className="font-semibold">
+                    {feedback.author.username}
+                  </span>
                   <StarRating
                     rating={feedback.stars}
                     onRatingChange={() => {}}

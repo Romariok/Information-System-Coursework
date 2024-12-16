@@ -77,7 +77,7 @@ export const getProductArticles = async (
     params: { from, size },
   });
   return {
-    items: response.data.items,
+    items: response.data.articles,
   };
 };
 
@@ -90,7 +90,7 @@ export const getProductMusicians = async (
     params: { from, size },
   });
   return {
-    items: response.data.items,
+    items: response.data,
   };
 };
 
@@ -103,7 +103,7 @@ export const getProductFeedbacks = async (
     params: { from, size },
   });
   return {
-    items: response.data.items,
+    items: response.data,
   };
 };
 
@@ -116,7 +116,7 @@ export const getProductShops = async (
     params: { from, size },
   });
   return {
-    items: response.data.items,
+    items: response.data.shops,
   };
 };
 
@@ -218,8 +218,8 @@ export const getArticles = async (
   from: number,
   size: number
 ): Promise<{ items: Article[] }> => {
-  const response = await api.get("/article", {
-    params: { from, size },
+  const response = await api.get("/article/", {
+    params: { from, size, sortBy: "CREATED_AT", ascending: true },
   });
   return {
     items: response.data,
