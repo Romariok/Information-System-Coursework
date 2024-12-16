@@ -22,6 +22,7 @@ import itmo.is.cw.GuitarMatchIS.models.BodyMaterial;
 import itmo.is.cw.GuitarMatchIS.models.Color;
 import itmo.is.cw.GuitarMatchIS.models.GuitarForm;
 import itmo.is.cw.GuitarMatchIS.models.PickupConfiguration;
+import itmo.is.cw.GuitarMatchIS.models.ProductSort;
 import itmo.is.cw.GuitarMatchIS.models.TipMaterial;
 import itmo.is.cw.GuitarMatchIS.models.TypeComboAmplifier;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
@@ -157,12 +158,14 @@ public class ProductController {
                         @Parameter(description = "Материал корпуса") @RequestParam(required = false) BodyMaterial bodyMaterial,
                         @Parameter(description = "Конфигурация звукоснимателей") @RequestParam(required = false) PickupConfiguration pickupConfiguration,
                         @Parameter(description = "Тип комбоусилителя") @RequestParam(required = false) TypeComboAmplifier typeComboAmplifier,
+                        @Parameter(description = "Сортировка") @RequestParam ProductSort sortBy,
+                        @Parameter(description = "Направление сортировки") @RequestParam boolean ascending,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
                 return productService.getProductsByFilter(name, minRate, maxRate, brandId, guitarForm, typeOfProduct,
                                 lads,
                                 minPrice, maxPrice, color, strings, tipMaterial, bodyMaterial, pickupConfiguration,
                                 typeComboAmplifier,
-                                from, size);
+                                sortBy, ascending, from, size);
         }
 }

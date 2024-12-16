@@ -171,10 +171,11 @@ public class ProductService {
          BodyMaterial bodyMaterial,
          PickupConfiguration pickupConfiguration,
          TypeComboAmplifier typeComboAmplifier,
+         ProductSort sortBy,
+         boolean ascending,
          int from, int size) {
-      Pageable page = Pagification.createPageTemplate(from, size);
-
-      Specification<Product> specification = Specification.where(ProductSpecification.hasBrand(brandId))
+    
+    Specification<Product> specification = Specification.where(ProductSpecification.hasBrand(brandId))
             .and(ProductSpecification.hasName(name))
             .and(ProductSpecification.hasRateBetween(minRate, maxRate))
             .and(ProductSpecification.hasGuitarForm(guitarForm))
@@ -188,14 +189,55 @@ public class ProductService {
             .and(ProductSpecification.hasPickupConfiguration(pickupConfiguration))
             .and(ProductSpecification.hasTypeComboAmplifier(typeComboAmplifier));
 
-      return productRepository.findAll(specification, page).getContent().stream().map(this::convertToDTO)
-            .sorted(new Comparator<ProductDTO>() {
-               @Override
-               public int compare(ProductDTO o1, ProductDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            }).toList();
-   }
+    List<ProductDTO> allProducts = productRepository.findAll(specification)
+            .stream()
+            .map(this::convertToDTO)
+            .toList();
+
+    List<ProductDTO> sortedProducts = switch (sortBy) {
+        case PRICE -> {
+            if (ascending) {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getAvgPrice))
+                        .toList();
+            } else {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getAvgPrice).reversed())
+                        .toList();
+            }
+        }
+        case NAME -> {
+            if (ascending) {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getName))
+                        .toList();
+            } else {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getName).reversed())
+                        .toList();
+            }
+        }
+        case RATE -> {
+            if (ascending) {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getRate))
+                        .toList();
+            } else {
+                yield allProducts.stream()
+                        .sorted(Comparator.comparing(ProductDTO::getRate).reversed())
+                        .toList();
+            }
+        }
+        default -> allProducts.stream()
+                .sorted(Comparator.comparing(ProductDTO::getId))
+                .toList();
+    };
+
+    return sortedProducts.stream()
+            .skip((long) from * size)
+            .limit(size)
+            .toList();
+}
 
    public List<MusicianInfoDTO> getMusiciansByProductId(long productId, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
