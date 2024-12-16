@@ -11,6 +11,7 @@ import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
+import itmo.is.cw.GuitarMatchIS.models.MusicianSort;
 import itmo.is.cw.GuitarMatchIS.service.MusicianService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -46,9 +47,11 @@ public class MusicianController {
    })
    @GetMapping
    public List<MusicianInfoDTO> getMusicians(
+         @Parameter(description = "Сортировка") @RequestParam MusicianSort sortBy,
+         @Parameter(description = "Направление сортировки") @RequestParam boolean ascending,
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
-      return musicianService.getMusician(from, size);
+      return musicianService.getMusician(from, size, sortBy, ascending);
    }
 
    @Operation(summary = "Поиск музыкантов по имени", description = "Возвращает список музыкантов, чьи имена содержат указанную строку")
