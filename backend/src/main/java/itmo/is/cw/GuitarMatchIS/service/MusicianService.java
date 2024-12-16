@@ -76,6 +76,11 @@ public class MusicianService {
             .toList();
    }
 
+   public Boolean isSubscribed(Long musicianId, HttpServletRequest request) {
+      User user = findUserByRequest(request);
+      return userMusicianRepository.existsByUserAndMusician(user, musicianRepository.findById(musicianId).orElseThrow(() -> new MusicianNotFoundException("Musician with id %s not found".formatted(musicianId))));
+   }
+
    @Transactional
    public MusicianInfoDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
       if (musicianRepository.existsByName(createMusicianDTO.getName()))

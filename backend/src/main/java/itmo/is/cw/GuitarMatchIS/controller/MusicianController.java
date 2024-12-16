@@ -54,6 +54,16 @@ public class MusicianController {
       return musicianService.getMusician(from, size, sortBy, ascending);
    }
 
+   @Operation(summary = "Проверить, подписан ли пользователь на музыканта", description = "Возвращает true, если пользователь подписан на музыканта, и false в противном случае")
+   @ApiResponses(value = {
+         @ApiResponse(responseCode = "200", description = "Проверка выполнена успешно"),
+         @ApiResponse(responseCode = "404", description = "Музыкант не найден")
+   })
+   @GetMapping("/{musicianId}/subscription")
+   public Boolean isSubscribed(@PathVariable Long musicianId, HttpServletRequest request) {
+      return musicianService.isSubscribed(musicianId, request);
+   }
+
    @Operation(summary = "Поиск музыкантов по имени", description = "Возвращает список музыкантов, чьи имена содержат указанную строку")
    @ApiResponses(value = {
          @ApiResponse(responseCode = "200", description = "Поиск выполнен успешно"),
