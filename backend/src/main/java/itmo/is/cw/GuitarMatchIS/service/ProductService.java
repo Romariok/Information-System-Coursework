@@ -30,7 +30,7 @@ public class ProductService {
    private final ProductArticleRepository productArticleRepository;
    private final ProductGenreRepository productGenreRepository;
 
-   public List<ProductDTO> getProductsByBrandName(String brandName, int from, int size) {
+   public List<ProductGenreDTO> getProductsByBrandName(String brandName, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
       if (!brandRepository.existsByName(brandName)) {
@@ -39,26 +39,29 @@ public class ProductService {
 
       Brand brand = brandRepository.findByName(brandName);
 
-      return productRepository.findAllByBrand(brand, page).getContent().stream().map(this::convertToDTO)
-            .sorted(new Comparator<ProductDTO>() {
-               @Override
-               public int compare(ProductDTO o1, ProductDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            }).toList();
+      return productRepository.findAllByBrand(brand, page).getContent().stream()
+            .map(product -> ProductGenreDTO.builder()
+                  .product(convertToDTO(product))
+                  .genres(productGenreRepository.findByProduct(product).stream()
+                        .map(ProductGenre::getGenre)
+                        .toList())
+                  .build())
+            .sorted(Comparator.comparing(productGenreDTO -> productGenreDTO.getProduct().getId()))
+            .toList();
    }
 
-   public List<ProductDTO> getProductsByTypeOfProduct(TypeOfProduct typeOfProduct, int from, int size) {
+   public List<ProductGenreDTO> getProductsByTypeOfProduct(TypeOfProduct typeOfProduct, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
       return productRepository.findAllByTypeOfProduct(typeOfProduct, page).getContent().stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<ProductDTO>() {
-               @Override
-               public int compare(ProductDTO o1, ProductDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            }).toList();
+            .map(product -> ProductGenreDTO.builder()
+                  .product(convertToDTO(product))
+                  .genres(productGenreRepository.findByProduct(product).stream()
+                        .map(ProductGenre::getGenre)
+                        .toList())
+                  .build())
+            .sorted(Comparator.comparing(productGenreDTO -> productGenreDTO.getProduct().getId()))
+            .toList();
    }
 
    public ProductGenreDTO getGenresByProductName(String productName) {
@@ -76,22 +79,28 @@ public class ProductService {
             .build();
    }
 
-   public ProductDTO getProductsById(long id){
+   public ProductGenreDTO getProductsById(long id){
       Product p = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(id)));
-      return convertToDTO(p);
+      return ProductGenreDTO.builder()
+            .product(convertToDTO(p))
+            .genres(productGenreRepository.findByProduct(p).stream()
+                  .map(ProductGenre::getGenre)
+                  .toList())
+            .build();
    }
 
-   public List<ProductDTO> getProductsByNameContains(String name, int from, int size) {
+   public List<ProductGenreDTO> getProductsByNameContains(String name, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
       return productRepository.findAllByNameContains(name, page).getContent().stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<ProductDTO>() {
-               @Override
-               public int compare(ProductDTO o1, ProductDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            }).toList();
+            .map(product -> ProductGenreDTO.builder()
+                  .product(convertToDTO(product))
+                  .genres(productGenreRepository.findByProduct(product).stream()
+                        .map(ProductGenre::getGenre)
+                        .toList())
+                  .build())
+            .sorted(Comparator.comparing(productGenreDTO -> productGenreDTO.getProduct().getId()))
+            .toList();
    }
 
    public ProductArticleDTO getProductArticles(String productName, int from, int size) {

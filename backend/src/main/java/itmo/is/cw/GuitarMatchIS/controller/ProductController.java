@@ -40,7 +40,7 @@ public class ProductController {
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
         })
         @GetMapping()
-        public List<ProductDTO> getProductsByBrandName(
+        public List<ProductGenreDTO> getProductsByBrandName(
                         @Parameter(description = "Название бренда") @RequestParam String brandName,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
@@ -53,7 +53,7 @@ public class ProductController {
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
         })
         @GetMapping("/id/{id}")
-        public ProductDTO getProductsById(
+        public ProductGenreDTO getProductsById(
                         @Parameter(description = "id") @PathVariable long id) {
                 return productService.getProductsById(id);
         }
@@ -88,7 +88,7 @@ public class ProductController {
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
         })
         @GetMapping("/type/{typeOfProduct}")
-        public List<ProductDTO> getProductsByTypeOfProduct(
+        public List<ProductGenreDTO> getProductsByTypeOfProduct(
                         @Parameter(description = "Тип товара") @PathVariable TypeOfProduct typeOfProduct,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
@@ -101,7 +101,7 @@ public class ProductController {
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
         })
         @GetMapping("/{name}")
-        public List<ProductDTO> getProductsByNameContains(
+        public List<ProductGenreDTO> getProductsByNameContains(
                         @Parameter(description = "Строка для поиска") @PathVariable String name,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
