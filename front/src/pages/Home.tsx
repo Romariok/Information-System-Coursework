@@ -1,12 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import {
   getTopProducts,
   getTopArticles,
   getTopMusicians,
+  likeProduct,
+  unlikeProduct,
 } from "../services/api";
 import { Article, Musician, Product } from "../services/types";
+import api from "../services/api";
 
 const formatProductType = (type: string) => {
   const typeMap: { [key: string]: string } = {
@@ -24,20 +28,71 @@ const formatProductType = (type: string) => {
 };
 
 export default function Home() {
-  const { data: topProducts, isLoading: isLoadingProducts } = useQuery<Product[]>({
+  const [likedProducts, setLikedProducts] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  const { data: topProducts, isLoading: isLoadingProducts } = useQuery<
+    Product[]
+  >({
     queryKey: ["topProducts"],
     queryFn: getTopProducts,
   });
 
-  const { data: topArticles, isLoading: isLoadingArticles } = useQuery<Article[]>({
+  const { data: topArticles, isLoading: isLoadingArticles } = useQuery<
+    Article[]
+  >({
     queryKey: ["topArticles"],
     queryFn: getTopArticles,
   });
 
-  const { data: topMusicians, isLoading: isLoadingMusicians } = useQuery<Musician[]>({
+  const { data: topMusicians, isLoading: isLoadingMusicians } = useQuery<
+    Musician[]
+  >({
     queryKey: ["topMusicians"],
     queryFn: getTopMusicians,
   });
+
+  const { data: userProducts } = useQuery<Product[]>({
+    queryKey: ["userProducts"],
+    queryFn: async () => {
+      const response = await api.get("/user/products");
+      return response.data;
+    },
+  });
+
+  useEffect(() => {
+    if (userProducts) {
+      const likedMap = userProducts.reduce(
+        (acc: { [key: number]: boolean }, product: Product) => {
+          acc[product.id] = true;
+          return acc;
+        },
+        {}
+      );
+      setLikedProducts(likedMap);
+    }
+  }, [userProducts]);
+
+  const likeMutation = useMutation<boolean, Error, number>({
+    mutationFn: async (productId: number) => {
+      if (likedProducts[productId]) {
+        return await unlikeProduct(productId.toString());
+      } else {
+        return await likeProduct(productId.toString());
+      }
+    },
+    onSuccess: (_, productId) => {
+      setLikedProducts((prev) => ({
+        ...prev,
+        [productId]: !prev[productId],
+      }));
+    },
+  });
+
+  const handleLikeClick = (productId: number) => {
+    likeMutation.mutate(productId);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,10 +130,35 @@ export default function Home() {
                         className="w-full h-full object-cover rounded-md"
                       />
                     </div>
-                    <h3 className="text-lg font-semibold">{product.name}</h3>
-                    <p className="text-gray-600 mb-2">
-                      Rating: {product.rate}/5
-                    </p>
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-semibold">{product.name}</h3>
+                      <button
+                        onClick={() => handleLikeClick(product.id)}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
+                          likedProducts[product.id]
+                            ? "text-red-500 hover:text-red-600"
+                            : "text-gray-400 hover:text-gray-500"
+                        }`}
+                        disabled={likeMutation.isPending}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill={
+                            likedProducts[product.id] ? "currentColor" : "none"
+                          }
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                     <div className="space-y-1 text-sm text-gray-700 mb-3">
                       <p>
                         <span className="font-medium">Brand:</span>{" "}
