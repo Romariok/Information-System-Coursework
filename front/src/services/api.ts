@@ -213,4 +213,31 @@ export const checkMusicianSubscribed = async (
   return response.data;
 };
 
+export const getArticles = async (
+  from: number,
+  size: number
+): Promise<{ items: Article[]; total: number }> => {
+  const response = await api.get("/article", {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+    total: response.data.length,
+  };
+};
+
+export const searchArticlesByHeader = async (
+  header: string,
+  from: number,
+  size: number
+): Promise<{ items: Article[]; total: number }> => {
+  const response = await api.get(`/article/header/${header}`, {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+    total: response.data.length,
+  };
+};
+
 export default api;
