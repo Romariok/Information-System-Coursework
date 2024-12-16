@@ -95,10 +95,10 @@ export const getProductMusicians = async (
 };
 
 export const getProductFeedbacks = async (
-  id: string, 
-  from: number, 
+  id: string,
+  from: number,
   size: number
-): Promise<{ items: Feedback[], total: number }> => {
+): Promise<{ items: Feedback[]; total: number }> => {
   const response = await api.get(`/feedback/product/${id}`, {
     params: { from, size },
   });
@@ -120,6 +120,31 @@ export const getProductShops = async (
     items: response.data.items,
     total: response.data.total,
   };
+};
+
+export const checkProductLiked = async (
+  productId: string
+): Promise<boolean> => {
+  const response = await api.get(`/user/products`);
+  return response.data.some(
+    (product: Product) => product.id === Number(productId)
+  );
+};
+
+export const likeProduct = async (productId: string): Promise<boolean> => {
+  const response = await api.post(`/user/product`, {
+    productId: Number(productId),
+  });
+  return response.data;
+};
+
+export const unlikeProduct = async (productId: string): Promise<boolean> => {
+  const response = await api.delete(`/user/product`, {
+    data: {
+      productId: Number(productId),
+    },
+  });
+  return response.data;
 };
 
 export default api;

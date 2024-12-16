@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link, Navigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import {
@@ -7,10 +7,19 @@ import {
   getProductMusicians,
   getProductFeedbacks,
   getProductShops,
+  checkProductLiked,
+  likeProduct,
+  unlikeProduct,
 } from "../services/api";
-import { Product, Article, Musician, Feedback, ShopProduct } from "../services/types";
+import {
+  Product,
+  Article,
+  Musician,
+  Feedback,
+  ShopProduct,
+} from "../services/types";
 import Pagination from "../components/Pagination";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const formatProductType = (type: string) => {
   const typeMap: { [key: string]: string } = {
@@ -33,6 +42,7 @@ export default function ProductDetails() {
   const [musiciansPage, setMusiciansPage] = useState(1);
   const [feedbackPage, setFeedbackPage] = useState(1);
   const [shopsPage, setShopsPage] = useState(1);
+  const [isLiked, setIsLiked] = useState(false);
   const pageSize = 5;
 
   const {
@@ -46,13 +56,18 @@ export default function ProductDetails() {
 
   const { data: articlesData } = useQuery<{ items: Article[]; total: number }>({
     queryKey: ["productArticles", id, articlesPage],
-    queryFn: () => getProductArticles(id!, (articlesPage - 1) * pageSize, pageSize),
+    queryFn: () =>
+      getProductArticles(id!, (articlesPage - 1) * pageSize, pageSize),
     enabled: !!product,
   });
 
-  const { data: musiciansData } = useQuery<{ items: Musician[]; total: number }>({
+  const { data: musiciansData } = useQuery<{
+    items: Musician[];
+    total: number;
+  }>({
     queryKey: ["productMusicians", id, musiciansPage],
-    queryFn: () => getProductMusicians(id!, (musiciansPage - 1) * pageSize, pageSize),
+    queryFn: () =>
+      getProductMusicians(id!, (musiciansPage - 1) * pageSize, pageSize),
     enabled: !!product,
   });
 
@@ -65,11 +80,37 @@ export default function ProductDetails() {
     }
   );
 
-  const { data: shopsData } = useQuery<{ items: ShopProduct[]; total: number }>({
-    queryKey: ["productShops", id, shopsPage],
-    queryFn: () => getProductShops(id!, (shopsPage - 1) * pageSize, pageSize),
-    enabled: !!product,
+  const { data: shopsData } = useQuery<{ items: ShopProduct[]; total: number }>(
+    {
+      queryKey: ["productShops", id, shopsPage],
+      queryFn: () => getProductShops(id!, (shopsPage - 1) * pageSize, pageSize),
+      enabled: !!product,
+    }
+  );
+
+  const { data: liked } = useQuery<boolean>({
+    queryKey: ["productLiked", id],
+    queryFn: () => checkProductLiked(id!),
+    enabled: !!id,
   });
+
+  useEffect(() => {
+    if (liked !== undefined) {
+      setIsLiked(liked);
+    }
+  }, [liked]);
+
+  const likeMutation = useMutation<boolean, Error, string>({
+    mutationFn: (productId: string) =>
+      isLiked ? unlikeProduct(productId) : likeProduct(productId),
+    onSuccess: () => setIsLiked(!isLiked),
+  });
+
+  const handleLikeClick = () => {
+    if (id) {
+      likeMutation.mutate(id);
+    }
+  };
 
   const totalArticlesPages = Math.ceil((articlesData?.total || 0) / pageSize);
   const totalMusiciansPages = Math.ceil((musiciansData?.total || 0) / pageSize);
@@ -142,12 +183,39 @@ export default function ProductDetails() {
                 )}
                 <p>
                   <span className="font-medium">Genres:</span>{" "}
-                  {product.genre.join(", ")}
+                  {product.genre?.join(", ")}
                 </p>
                 <p>
                   <span className="font-medium">Description:</span>{" "}
                   {product.description}
                 </p>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={handleLikeClick}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                    isLiked
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  disabled={likeMutation.isPending}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill={isLiked ? "currentColor" : "none"}
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                  {isLiked ? "Liked" : "Like"}
+                </button>
               </div>
             </div>
           </div>
@@ -238,7 +306,7 @@ export default function ProductDetails() {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">User Reviews</h2>
           <div className="space-y-4">
-            {feedbackData?.items.map((feedback) => (
+            {feedbackData?.items?.map((feedback) => (
               <div
                 key={feedback.id}
                 className="bg-white p-6 rounded-lg shadow-md"
