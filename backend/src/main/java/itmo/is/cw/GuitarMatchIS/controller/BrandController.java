@@ -32,4 +32,11 @@ public class BrandController {
        @Parameter(description = "Количество элементов") @RequestParam int size) {
       return brandService.getBrands(from, size);
    }
+
+   @Operation(summary = "Получить бренд по ID",
+             description = "Возвращает бренд по его ID")
+   @GetMapping("/id/{id}")
+   public BrandDTO getBrandById(@PathVariable Long id) {
+      return brandService.getBrandById(id);
+   }
 }

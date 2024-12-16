@@ -10,6 +10,7 @@ import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.models.Brand;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.BrandNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,5 +38,19 @@ public class BrandService {
                }
             })
             .toList();
+   }
+
+   public BrandDTO getBrandById(Long id) {
+      return convertToDTO(brandRepository.findById(id).orElseThrow(() -> new BrandNotFoundException(String.format("Brand with id %s not found", id))));
+   }
+
+   private BrandDTO convertToDTO(Brand brand) {
+      return new BrandDTO(
+            brand.getId(),
+            brand.getName(), 
+            brand.getCountry(),
+            brand.getWebsite(),
+            brand.getEmail()
+      );
    }
 }

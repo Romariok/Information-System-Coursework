@@ -27,6 +27,7 @@ import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleAlreadyExistsException;
+import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,6 +58,10 @@ public class ArticleService {
                }
             })
             .toList();
+   }
+
+   public ArticleDTO getArticleById(Long id) {
+      return convertToDTO(articleRepository.findById(id).orElseThrow(() -> new ArticleNotFoundException(String.format("Article with id %s not found", id))));
    }
 
    public List<ArticleDTO> getArticlesByHeaderContaining(String header, int from, int size) {
@@ -97,7 +102,8 @@ public class ArticleService {
       User moderator = findUserByRequest(request);
       if (!moderator.getIsAdmin())
          throw new ForbiddenException("User have no rights to moderate article");
-
+      if (!articleRepository.existsById(moderateArticleDTO.getArticleId()))
+         throw new ArticleNotFoundException(String.format("Article with id %s not found", moderateArticleDTO.getArticleId()));
       simpMessagingTemplate.convertAndSend("/articles", "Article was moderated");
       return articleRepository.moderateArticle(moderateArticleDTO.getArticleId(), moderateArticleDTO.isAccepted(),
             moderator.getId());
