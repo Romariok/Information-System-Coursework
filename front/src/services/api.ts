@@ -143,4 +143,9 @@ export const unlikeProduct = async (productId: string): Promise<boolean> => {
   return response.data;
 };
 
+export const getArticleDetails = async (id: string): Promise<Article> => {
+  const response = await api.get(`/article/id/${id}`);
+  return response.data;
+};
+
 export default api;
