@@ -187,6 +187,17 @@ public class MusicianService {
             .build();
    }
 
+   public MusicianInfoDTO getMusicianInfo(Long musicianId) {
+      Musician musician = musicianRepository.findById(musicianId)
+            .orElseThrow(() -> new MusicianNotFoundException(
+                  "Musician with id %s not found".formatted(musicianId)));
+
+      return convertToDTO(musician, 
+            musicianGenreRepository.findByMusician(musician), 
+            musicianTypeOfMusicianRepository.findByMusician(musician), 
+            musicianProductRepository.findByMusician(musician));
+   }
+
    @Transactional
    public Boolean addProductToMusician(AddProductMusicianDTO addProductMusicianDTO, HttpServletRequest request) {
       if (!musicianRepository.existsByName(addProductMusicianDTO.getMusicianName()))

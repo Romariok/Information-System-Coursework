@@ -29,6 +29,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class MusicianController {
    private final MusicianService musicianService;
 
+
+   @Operation(summary = "Получить информацию о музыканте", description = "Возвращает информацию о музыканте по его ID")
+   @ApiResponses(value = {
+         @ApiResponse(responseCode = "200", description = "Информация о музыканте успешно получена"),
+         @ApiResponse(responseCode = "404", description = "Музыкант не найден")
+   })
+   @GetMapping("/id/{id}")
+   public MusicianInfoDTO getMusicianInfo(@PathVariable Long id) {
+      return musicianService.getMusicianInfo(id);
+   }
+
    @Operation(summary = "Получить список музыкантов", description = "Возвращает список музыкантов с пагинацией")
    @ApiResponses(value = {
          @ApiResponse(responseCode = "200", description = "Список музыкантов успешно получен"),
