@@ -188,4 +188,23 @@ export const addProductFeedback = async (
   return response.data;
 };
 
+export const subscribeToMusician = async (musicianId: number): Promise<boolean> => {
+  const response = await api.post(`/api/musician/subscription`, {
+    musicianId,
+  });
+  return response.data;
+};
+
+export const unsubscribeFromMusician = async (musicianId: number): Promise<boolean> => {
+  const response = await api.delete(`/api/musician/subscription`, {
+    data: { musicianId },
+  });
+  return response.data;
+};
+
+export const checkMusicianSubscribed = async (musicianId: number): Promise<boolean> => {
+  const response = await api.get(`/api/musician/${musicianId}/subscribed`);
+  return response.data;
+};
+
 export default api;

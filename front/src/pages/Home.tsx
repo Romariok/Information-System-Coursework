@@ -11,6 +11,7 @@ import {
 } from "../services/api";
 import { Article, Musician, Product } from "../services/types";
 import api from "../services/api";
+import StarRating from "../components/StarRating";
 
 const formatProductType = (type: string) => {
   const typeMap: { [key: string]: string } = {
@@ -117,18 +118,20 @@ export default function Home() {
                     className="bg-white p-6 rounded-lg shadow-md"
                   >
                     <div className="aspect-w-16 aspect-h-9 mb-4">
-                      <img
-                        src={
-                          [
-                            "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
-                            "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
-                            "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
-                            "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
-                          ][product.id % 4]
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover rounded-md"
-                      />
+                      <Link to={`/product/${product.id}`}>
+                        <img
+                          src={
+                            [
+                              "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
+                              "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
+                              "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
+                              "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
+                            ][product.id % 4]
+                          }
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded-md hover:opacity-75 transition-opacity"
+                        />
+                      </Link>
                     </div>
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-lg font-semibold">{product.name}</h3>
@@ -160,9 +163,24 @@ export default function Home() {
                       </button>
                     </div>
                     <div className="space-y-1 text-sm text-gray-700 mb-3">
+                      <div className="flex items-center mb-2">
+                        <StarRating
+                          rating={product.rate}
+                          onRatingChange={() => {}}
+                          size="sm"
+                        />
+                        <span className="ml-2 text-gray-600">
+                          ({product.rate}/5)
+                        </span>
+                      </div>
                       <p>
                         <span className="font-medium">Brand:</span>{" "}
-                        {product.brand.name}
+                        <Link
+                          to={`/brand/${product.brand.id}`}
+                          className="text-indigo-600 hover:text-indigo-800"
+                        >
+                          {product.brand.name}
+                        </Link>
                       </p>
                       <p>
                         <span className="font-medium">Type:</span>{" "}
@@ -248,18 +266,20 @@ export default function Home() {
                     className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
                   >
                     <div className="w-32 h-32 mb-4">
-                      <img
-                        src={
-                          [
-                            "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
-                            "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
-                            "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
-                            "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
-                          ][musician.id % 4]
-                        }
-                        alt={musician.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
+                      <Link to={`/musician/${musician.id}`}>
+                        <img
+                          src={
+                            [
+                              "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                              "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                              "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                              "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                            ][musician.id % 4]
+                          }
+                          alt={musician.name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </Link>
                     </div>
                     <h3 className="text-lg font-semibold text-center">
                       {musician.name}

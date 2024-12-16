@@ -9,13 +9,13 @@ import {
   addArticleFeedback,
 } from "../services/api";
 import { Article, Feedback } from "../services/types";
+import StarRating from "../components/StarRating";
+import CollapsibleReviewForm from "../components/CollapsibleReviewForm";
 
 export default function ArticleDetails() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [feedbackPage, setFeedbackPage] = useState(1);
-  const [rating, setRating] = useState(5);
-  const [reviewText, setReviewText] = useState("");
   const pageSize = 10;
 
   const {
@@ -43,18 +43,8 @@ export default function ArticleDetails() {
       addArticleFeedback(id!, data.text, data.stars),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["articleFeedbacks", id] });
-      setReviewText(""); // Reset form
-      setRating(5);
     },
   });
-
-  const handleSubmitFeedback = (e: React.FormEvent) => {
-    e.preventDefault();
-    feedbackMutation.mutate({
-      text: reviewText,
-      stars: rating,
-    });
-  };
 
   if (error) {
     return <Navigate to="*" />;
@@ -100,41 +90,12 @@ export default function ArticleDetails() {
           <h2 className="text-2xl font-bold mb-6">Reviews</h2>
 
           {/* Add feedback form */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Add Your Review</h3>
-            <form onSubmit={handleSubmitFeedback}>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Rating</label>
-                <select
-                  className="w-full border rounded-md px-3 py-2"
-                  value={rating}
-                  onChange={(e) => setRating(Number(e.target.value))}
-                >
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <option key={num} value={num}>
-                      {num} stars
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Your Review</label>
-                <textarea
-                  className="w-full border rounded-md px-3 py-2"
-                  rows={4}
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-                disabled={feedbackMutation.isPending}
-              >
-                Submit Review
-              </button>
-            </form>
-          </div>
+          <CollapsibleReviewForm
+            onSubmit={({ text, stars }) => {
+              feedbackMutation.mutate({ text, stars });
+            }}
+            isSubmitting={feedbackMutation.isPending}
+          />
 
           {/* Feedback list */}
           <div className="space-y-4">
@@ -145,9 +106,11 @@ export default function ArticleDetails() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold">{feedback.author}</span>
-                  <span className="text-yellow-500">
-                    {feedback.stars}/5 stars
-                  </span>
+                  <StarRating
+                    rating={feedback.stars}
+                    onRatingChange={() => {}}
+                    size="sm"
+                  />
                 </div>
                 <p className="text-gray-600">{feedback.text}</p>
                 <div className="text-sm text-gray-500 mt-2">
