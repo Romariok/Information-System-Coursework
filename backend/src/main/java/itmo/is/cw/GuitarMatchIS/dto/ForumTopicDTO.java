@@ -17,6 +17,6 @@ public class ForumTopicDTO {
    private String description;
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
    private LocalDateTime createdAt;
-   private Long authorId;
+   private UserInfoDTO author;
    private boolean isClosed;
 }

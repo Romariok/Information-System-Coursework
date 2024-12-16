@@ -12,6 +12,7 @@ import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.*;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductArticleRepository;
@@ -122,7 +123,8 @@ public class ProductService {
                         .id(article.getId())
                         .header(article.getHeader())
                         .text(article.getText())
-                        .author(article.getAuthor().getUsername())
+                        .author(UserInfoDTO.builder().id(article.getAuthor().getId())
+                              .username(article.getAuthor().getUsername()).build())
                         .createdAt(article.getCreatedAt())
                         .accepted(article.getAccepted())
                         .build())

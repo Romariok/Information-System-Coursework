@@ -13,7 +13,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 public class FeedbackDTO {
    private Long id;
-   private Long authorId;
+   private UserInfoDTO author;
    private ProductDTO product;
    private ArticleDTO article;
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

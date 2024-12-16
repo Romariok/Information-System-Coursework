@@ -14,7 +14,7 @@ import lombok.Getter;
 public class ForumPostDTO {
    private Long id;
    private Long forumTopicId;
-   private Long authorId;
+   private UserInfoDTO author;
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
    private LocalDateTime createdAt;
    private String content;

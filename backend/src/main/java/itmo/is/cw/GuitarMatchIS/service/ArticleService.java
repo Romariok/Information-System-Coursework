@@ -19,6 +19,7 @@ import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.StatusArticlesDTO;
 import itmo.is.cw.GuitarMatchIS.repository.ArticleRepository;
@@ -174,7 +175,7 @@ public class ArticleService {
             .id(article.getId())
             .header(article.getHeader())
             .text(article.getText())
-            .author(article.getAuthor().getUsername())
+            .author(UserInfoDTO.builder().id(article.getAuthor().getId()).username(article.getAuthor().getUsername()).build())
             .createdAt(article.getCreatedAt())
             .accepted(article.getAccepted())
             .build();
