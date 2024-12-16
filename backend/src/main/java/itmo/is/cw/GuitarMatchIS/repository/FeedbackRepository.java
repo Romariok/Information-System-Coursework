@@ -1,5 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +16,8 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
    Page<Feedback> findByProductId(Long productId, Pageable pageable);
 
    Page<Feedback> findByArticleId(Long articleId, Pageable pageable);
+
+   List<Feedback> findByArticleId(Long articleId);
 
    @Procedure(procedureName = "add_product_feedback")
    void addProductFeedback(
