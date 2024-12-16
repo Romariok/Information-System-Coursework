@@ -6,19 +6,35 @@ import {
   getTopArticles,
   getTopMusicians,
 } from "../services/api";
+import { Article, Musician, Product } from "../services/types";
+
+const formatProductType = (type: string) => {
+  const typeMap: { [key: string]: string } = {
+    PEDALS_AND_EFFECTS: "Pedals & Effects",
+    ELECTRIC_GUITAR: "Electric Guitar",
+    STUDIO_RECORDING_GEAR: "Studio Recording Gear",
+    KEYS_AND_MIDI: "Keys & MIDI",
+    AMPLIFIER: "Amplifier",
+    DRUMMS_AND_PERCUSSION: "Drums & Percussion",
+    BASS_GUITAR: "Bass Guitar",
+    ACOUSTIC_GUITAR: "Acoustic Guitar",
+    SOFTWARE_AND_ACCESSORIES: "Software & Accessories",
+  };
+  return typeMap[type] || type;
+};
 
 export default function Home() {
-  const { data: topProducts, isLoading: isLoadingProducts } = useQuery({
+  const { data: topProducts, isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["topProducts"],
     queryFn: getTopProducts,
   });
 
-  const { data: topArticles, isLoading: isLoadingArticles } = useQuery({
+  const { data: topArticles, isLoading: isLoadingArticles } = useQuery<Article[]>({
     queryKey: ["topArticles"],
     queryFn: getTopArticles,
   });
 
-  const { data: topMusicians, isLoading: isLoadingMusicians } = useQuery({
+  const { data: topMusicians, isLoading: isLoadingMusicians } = useQuery<Musician[]>({
     queryKey: ["topMusicians"],
     queryFn: getTopMusicians,
   });
@@ -70,7 +86,7 @@ export default function Home() {
                       </p>
                       <p>
                         <span className="font-medium">Type:</span>{" "}
-                        {product.typeOfProduct.replace("_", " ")}
+                        {formatProductType(product.typeOfProduct)}
                       </p>
                       <p>
                         <span className="font-medium">Price:</span> $
@@ -119,6 +135,10 @@ export default function Home() {
                     <p className="text-gray-600 mt-2 line-clamp-2">
                       {article.content}
                     </p>
+                    <div className="mt-2 text-sm text-gray-500">
+                      By <span className="font-medium">{article.author}</span> •{" "}
+                      {new Date(article.createdAt).toLocaleDateString()}
+                    </div>
                     <Link
                       to={`/article/${article.id}`}
                       className="text-indigo-600 hover:text-indigo-800 mt-2 inline-block"
@@ -145,9 +165,28 @@ export default function Home() {
                 topMusicians?.map((musician: any) => (
                   <div
                     key={musician.id}
-                    className="bg-white p-6 rounded-lg shadow-md"
+                    className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
                   >
-                    <h3 className="text-lg font-semibold">{musician.name}</h3>
+                    <div className="w-32 h-32 mb-4">
+                      <img
+                        src={
+                          [
+                            "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                            "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                            "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                            "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                          ][musician.id % 4]
+                        }
+                        alt={musician.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    </div>
+                    <h3 className="text-lg font-semibold text-center">
+                      {musician.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-2">
+                      {musician.subscribers} subscribers
+                    </p>
                     <Link
                       to={`/musician/${musician.id}`}
                       className="text-indigo-600 hover:text-indigo-800 mt-2 inline-block"
