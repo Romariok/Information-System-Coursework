@@ -12,6 +12,7 @@ import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
@@ -41,6 +42,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 @Service
@@ -56,21 +58,19 @@ public class MusicianService {
    private final MusicianProductRepository musicianProductRepository;
    private final ProductRepository productRepository;
 
-   public List<MusicianDTO> getMusician(int from, int size) {
+   public List<MusicianInfoDTO> getMusician(int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<Musician> musicians = musicianRepository.findAll(page).getContent();
-
       return musicians
             .stream()
-            .map(musician1 -> MusicianDTO.builder()
-                  .id(musician1.getId())
-                  .name(musician1.getName())
-                  .subscribers(musician1.getSubscribers())
-                  .build())
-            .sorted(new Comparator<MusicianDTO>() {
+            .map(musician1 -> convertToDTO(musician1, 
+                  musicianGenreRepository.findByMusician(musician1), 
+                  musicianTypeOfMusicianRepository.findByMusician(musician1), 
+                  musicianProductRepository.findByMusician(musician1)))
+            .sorted(new Comparator<MusicianInfoDTO>() {
                @Override
-               public int compare(MusicianDTO o1, MusicianDTO o2) {
+               public int compare(MusicianInfoDTO o1, MusicianInfoDTO o2) {
                   return o1.getId().compareTo(o2.getId());
                }
             })
@@ -78,7 +78,7 @@ public class MusicianService {
    }
 
    @Transactional
-   public MusicianDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
+   public MusicianInfoDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
       if (musicianRepository.existsByName(createMusicianDTO.getName()))
          throw new MusicianAlreadyExistsException("Musician %s already exists".formatted(createMusicianDTO.getName()));
 
@@ -90,7 +90,7 @@ public class MusicianService {
       musician = musicianRepository.save(musician);
       simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
 
-      return new MusicianDTO(musician.getId(), musician.getName(), musician.getSubscribers());
+      return convertToDTO(musician, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
    }
 
    public Boolean subscribeToMusician(SubscribeDTO subscribeDTO, HttpServletRequest request) {
@@ -124,20 +124,19 @@ public class MusicianService {
       return true;
    }
 
-   public List<MusicianDTO> searchMusicians(String name, int from, int size) {
+   public List<MusicianInfoDTO> searchMusicians(String name, int from, int size) {
       Pageable page = Pagification.createPageTemplate(from, size);
       List<Musician> musicians = musicianRepository.findAllByNameContains(name, page).getContent();
 
       return musicians
             .stream()
-            .map(musician1 -> MusicianDTO.builder()
-                  .id(musician1.getId())
-                  .name(musician1.getName())
-                  .subscribers(musician1.getSubscribers())
-                  .build())
-            .sorted(new Comparator<MusicianDTO>() {
+            .map(musician1 -> convertToDTO(musician1, 
+                  musicianGenreRepository.findByMusician(musician1), 
+                  musicianTypeOfMusicianRepository.findByMusician(musician1), 
+                  musicianProductRepository.findByMusician(musician1)))
+            .sorted(new Comparator<MusicianInfoDTO>() {
                @Override
-               public int compare(MusicianDTO o1, MusicianDTO o2) {
+               public int compare(MusicianInfoDTO o1, MusicianInfoDTO o2) {
                   return o1.getId().compareTo(o2.getId());
                }
             })
@@ -262,6 +261,17 @@ public class MusicianService {
             .bodyMaterial(product.getBodyMaterial())
             .pickupConfiguration(product.getPickupConfiguration())
             .typeComboAmplifier(product.getTypeComboAmplifier())
+            .build();
+   }
+
+   private MusicianInfoDTO convertToDTO(Musician musician, List<MusicianGenre> musicianGenres, List<MusicianTypeOfMusician> musicianTypes, List<MusicianProduct> musicianProducts) {
+      return MusicianInfoDTO.builder()
+            .id(musician.getId())
+            .name(musician.getName())
+            .subscribers(musician.getSubscribers())
+            .genres(musicianGenres.stream().map(MusicianGenre::getGenre).toList())
+            .typesOfMusicians(musicianTypes.stream().map(MusicianTypeOfMusician::getTypeOfMusician).toList())
+            .products(musicianProducts.stream().map(MusicianProduct::getProduct).map(this::convertToDTO).toList())
             .build();
    }
 }

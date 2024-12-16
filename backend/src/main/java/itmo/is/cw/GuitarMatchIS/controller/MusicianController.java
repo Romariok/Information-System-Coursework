@@ -8,6 +8,7 @@ import itmo.is.cw.GuitarMatchIS.dto.AddProductMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianGenreDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianTypeOfMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
@@ -34,7 +35,7 @@ public class MusicianController {
          @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
    })
    @GetMapping
-   public List<MusicianDTO> getMusicians(
+   public List<MusicianInfoDTO> getMusicians(
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
       return musicianService.getMusician(from, size);
@@ -46,7 +47,7 @@ public class MusicianController {
          @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
    })
    @GetMapping("/name/{name}")
-   public List<MusicianDTO> searchMusicians(
+   public List<MusicianInfoDTO> searchMusicians(
          @Parameter(description = "Имя для поиска") @PathVariable String name,
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
@@ -59,7 +60,7 @@ public class MusicianController {
          @ApiResponse(responseCode = "404", description = "Музыкант не найден")
    })
    @GetMapping("/{musicianId}/genres")
-   public MusicianGenreDTO getMusiciansByGenre(
+   public MusicianGenreDTO getGenresByMusician(
          @Parameter(description = "ID музыканта") @PathVariable Long musicianId) {
       return musicianService.getMusiciansByGenre(musicianId);
    }
@@ -82,7 +83,7 @@ public class MusicianController {
          @ApiResponse(responseCode = "409", description = "Музыкант уже существует")
    })
    @PostMapping
-   public MusicianDTO createMusician(
+   public MusicianInfoDTO createMusician(
          @Parameter(description = "Данные музыканта") @RequestBody @Valid CreateMusicianDTO createMusicianDTO,
          HttpServletRequest request) {
       return musicianService.createMusician(createMusicianDTO, request);
