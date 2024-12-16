@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StarRating from "../components/StarRating";
 import { Product } from "../services/types";
 import api from "../services/api";
+import { likeProduct, unlikeProduct } from "../services/api";
 
 // Reusing the existing format function from ProductDetails
 const formatProductType = (type: string) => {
@@ -59,9 +60,21 @@ enum PickupConfiguration {
   P90 = "P90",
 }
 
+type SortOption = {
+  field: keyof Product | "brand.name";
+  direction: "asc" | "desc";
+};
+
 export default function Catalog() {
   const [page, setPage] = useState(1);
-  const pageSize = 9;
+  const pageSize = 18;
+  const [likedProducts, setLikedProducts] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [sort, setSort] = useState<SortOption>({
+    field: "name",
+    direction: "asc",
+  });
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -82,6 +95,47 @@ export default function Catalog() {
     typeComboAmplifier: "",
   });
 
+  const { data: userProducts } = useQuery<Product[]>({
+    queryKey: ["userProducts"],
+    queryFn: async () => {
+      const response = await api.get("/user/products");
+      return response.data;
+    },
+  });
+
+  useEffect(() => {
+    if (userProducts) {
+      const likedMap = userProducts.reduce(
+        (acc: { [key: number]: boolean }, product: Product) => {
+          acc[product.id] = true;
+          return acc;
+        },
+        {}
+      );
+      setLikedProducts(likedMap);
+    }
+  }, [userProducts]);
+
+  const likeMutation = useMutation<boolean, Error, number>({
+    mutationFn: async (productId: number) => {
+      if (likedProducts[productId]) {
+        return await unlikeProduct(productId.toString());
+      } else {
+        return await likeProduct(productId.toString());
+      }
+    },
+    onSuccess: (_, productId) => {
+      setLikedProducts((prev) => ({
+        ...prev,
+        [productId]: !prev[productId],
+      }));
+    },
+  });
+
+  const handleLikeClick = (productId: number) => {
+    likeMutation.mutate(productId);
+  };
+
   const handlePriceChange = (key: "minPrice" | "maxPrice", value: string) => {
     const numValue = Number(value);
     if (numValue < 0) return;
@@ -93,7 +147,7 @@ export default function Catalog() {
   };
 
   const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["products", filters, page],
+    queryKey: ["products", filters, page, sort],
     queryFn: async () => {
       const response = await api.get("/product/filter", {
         params: {
@@ -102,7 +156,22 @@ export default function Catalog() {
           size: pageSize,
         },
       });
-      return response.data;
+      const sortedProducts = [...response.data].sort((a, b) => {
+        const field = sort.field;
+        if (field === "brand.name") {
+          const compareResult = a.brand.name.localeCompare(b.brand.name);
+          return sort.direction === "asc" ? compareResult : -compareResult;
+        }
+        if (typeof a[field] === "string") {
+          const compareResult = (a[field] as string).localeCompare(
+            b[field] as string
+          );
+          return sort.direction === "asc" ? compareResult : -compareResult;
+        }
+        const compareResult = (a[field] as number) - (b[field] as number);
+        return sort.direction === "asc" ? compareResult : -compareResult;
+      });
+      return sortedProducts;
     },
   });
 
@@ -111,7 +180,7 @@ export default function Catalog() {
       ...prev,
       [key]: value,
     }));
-    setPage(1); // Reset page when filters change
+    setPage(1);
   };
 
   return (
@@ -124,6 +193,35 @@ export default function Catalog() {
           <div className="col-span-1 bg-white p-4 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">Filters</h2>
 
+            {/* Sort Options */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Sort By
+              </label>
+              <select
+                value={`${sort.field}-${sort.direction}`}
+                onChange={(e) => {
+                  const [field, direction] = e.target.value.split("-");
+                  setSort({
+                    field: field as keyof Product | "brand.name",
+                    direction: direction as "asc" | "desc",
+                  });
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="rate-desc">Rating (High to Low)</option>
+                <option value="rate-asc">Rating (Low to High)</option>
+                <option value="avgPrice-asc">Price (Low to High)</option>
+                <option value="avgPrice-desc">Price (High to Low)</option>
+                <option value="brand.name-asc">Brand (A-Z)</option>
+                <option value="brand.name-desc">Brand (Z-A)</option>
+              </select>
+            </div>
+
+            {/* Original filters remain the same */}
+            {/* Reference to original filters section */}
             <div className="space-y-4">
               {/* Search by name */}
               <div>
@@ -341,20 +439,46 @@ export default function Catalog() {
                     key={product.id}
                     className="bg-white p-4 rounded-lg shadow-md"
                   >
-                    <Link to={`/product/${product.id}`}>
-                      <img
-                        src={
-                          [
-                            "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
-                            "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
-                            "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
-                            "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
-                          ][product.id % 4]
-                        }
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-md mb-4"
-                      />
-                    </Link>
+                    <div className="flex justify-between items-start mb-2">
+                      <Link to={`/product/${product.id}`}>
+                        <img
+                          src={
+                            [
+                              "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
+                              "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
+                              "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
+                              "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
+                            ][product.id % 4]
+                          }
+                          alt={product.name}
+                          className="w-full h-48 object-cover rounded-md mb-4"
+                        />
+                      </Link>
+                      <button
+                        onClick={() => handleLikeClick(product.id)}
+                        className={`p-2 rounded-full transition-colors ${
+                          likedProducts[product.id]
+                            ? "text-red-600 hover:text-red-700"
+                            : "text-gray-400 hover:text-gray-500"
+                        }`}
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill={
+                            likedProducts[product.id] ? "currentColor" : "none"
+                          }
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
 
                     <h3 className="text-lg font-semibold mb-2">
                       {product.name}
