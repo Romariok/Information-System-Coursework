@@ -47,7 +47,7 @@ public class ProductController {
                 return productService.getProductsByBrandName(brandName.replaceAll("_", " "), from, size);
         }
 
-        @Operation(summary = "Получить товары по id", description = "Возвращает товар по id")
+        @Operation(summary = "Получить товар по id", description = "Возвращает товар по id")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Товар найден"),
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
