@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link, Navigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import {
@@ -10,6 +10,7 @@ import {
   checkProductLiked,
   likeProduct,
   unlikeProduct,
+  addProductFeedback,
 } from "../services/api";
 import {
   Product,
@@ -43,6 +44,8 @@ export default function ProductDetails() {
   const [feedbackPage, setFeedbackPage] = useState(1);
   const [shopsPage, setShopsPage] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
   const pageSize = 5;
 
   const {
@@ -110,6 +113,26 @@ export default function ProductDetails() {
     if (id) {
       likeMutation.mutate(id);
     }
+  };
+
+  const feedbackMutation = useMutation({
+    mutationFn: (data: { text: string; stars: number }) =>
+      addProductFeedback(id!, data.text, data.stars),
+    onSuccess: () => {
+      useQueryClient().invalidateQueries({
+        queryKey: ["productFeedbacks", id],
+      });
+      setReviewText("");
+      setRating(5);
+    },
+  });
+
+  const handleSubmitFeedback = (e: React.FormEvent) => {
+    e.preventDefault();
+    feedbackMutation.mutate({
+      text: reviewText,
+      stars: rating,
+    });
   };
 
   const totalArticlesPages = Math.ceil((articlesData?.total || 0) / pageSize);
@@ -305,6 +328,43 @@ export default function ProductDetails() {
         {/* Feedbacks Section */}
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">User Reviews</h2>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-lg font-semibold mb-4">Add Your Review</h3>
+            <form onSubmit={handleSubmitFeedback}>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Rating</label>
+                <select
+                  className="w-full border rounded-md px-3 py-2"
+                  value={rating}
+                  onChange={(e) => setRating(Number(e.target.value))}
+                >
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <option key={num} value={num}>
+                      {num} stars
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Your Review</label>
+                <textarea
+                  className="w-full border rounded-md px-3 py-2"
+                  rows={4}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                disabled={feedbackMutation.isPending}
+              >
+                Submit Review
+              </button>
+            </form>
+          </div>
+
           <div className="space-y-4">
             {feedbackData?.items?.map((feedback) => (
               <div

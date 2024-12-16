@@ -148,4 +148,44 @@ export const getArticleDetails = async (id: string): Promise<Article> => {
   return response.data;
 };
 
+export const getArticleFeedbacks = async (
+  id: string,
+  from: number,
+  size: number
+): Promise<{ items: Feedback[]; total: number }> => {
+  const response = await api.get(`/feedback/article/${id}`, {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+    total: response.data.length,
+  };
+};
+
+export const addArticleFeedback = async (
+  articleId: string,
+  text: string,
+  stars: number
+): Promise<boolean> => {
+  const response = await api.post(`/feedback/article`, {
+    articleId: Number(articleId),
+    text,
+    stars,
+  });
+  return response.data;
+};
+
+export const addProductFeedback = async (
+  productId: string,
+  text: string,
+  stars: number
+): Promise<boolean> => {
+  const response = await api.post(`/feedback/product`, {
+    productId: Number(productId),
+    text,
+    stars,
+  });
+  return response.data;
+};
+
 export default api;
