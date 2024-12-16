@@ -9,6 +9,7 @@ import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/Error";
 import ArticleDetails from "./pages/ArticleDetails";
 import Catalog from "./pages/Catalog";
+import Articles from "./pages/Articles";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Catalog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articles"
+              element={
+                <ProtectedRoute>
+                  <Articles />
                 </ProtectedRoute>
               }
             />
