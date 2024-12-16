@@ -60,6 +60,10 @@ public class ShopService {
             .build();
    }
 
+   public ShopDTO getShopById(Long id) {
+      return convertToDTO(shopRepository.findById(id).orElseThrow(() -> new ShopNotFoundException(String.format("Shop with id %s not found", id))));
+   }
+
    private ProductOfShopDTO convertToDTO(ShopProduct shopProduct) {
       return ProductOfShopDTO.builder()
             .product(shopProduct.getProduct())
@@ -68,4 +72,14 @@ public class ShopService {
             .build();
    }
 
+    private ShopDTO convertToDTO(Shop shop) {
+        return new ShopDTO(
+            shop.getId(),
+            shop.getName(),
+            shop.getDescription(),
+            shop.getWebsite(),
+            shop.getEmail(),
+            shop.getAddress()
+        );
+    }
 }

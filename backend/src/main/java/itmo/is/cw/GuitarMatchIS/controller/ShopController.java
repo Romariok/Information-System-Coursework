@@ -21,6 +21,14 @@ import lombok.RequiredArgsConstructor;
 public class ShopController {
    private final ShopService shopService;
 
+
+   @Operation(summary = "Получить магазин по ID",
+             description = "Возвращает магазин по его ID")
+   @GetMapping("/id/{id}")
+   public ShopDTO getShopById(@PathVariable Long id) {
+      return shopService.getShopById(id);
+   }
+
    @Operation(summary = "Получить список магазинов", 
              description = "Возвращает список музыкальных магазинов с пагинацией")
    @ApiResponses(value = {

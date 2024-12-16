@@ -32,6 +32,8 @@ public class ArticleController {
       return articleService.getAcceptedArticles(from, size);
    }
 
+
+
    @Operation(summary = "Получить список неодобренных статей",
              description = "Возвращает список статей, ожидающих модерации")
    @GetMapping("/unaccepted")
@@ -40,6 +42,13 @@ public class ArticleController {
       @Parameter(description = "Количество элементов") @RequestParam int size,
       HttpServletRequest request) {
       return articleService.getStatusArticles(from, size, request);
+   }
+
+   @Operation(summary = "Получить статью по ID",
+             description = "Возвращает статью по её ID")
+   @GetMapping("/id/{id}")
+   public ArticleDTO getArticleById(@PathVariable Long id) {
+      return articleService.getArticleById(id);
    }
 
    @Operation(summary = "Поиск статей по заголовку",
