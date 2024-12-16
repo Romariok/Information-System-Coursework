@@ -6,8 +6,8 @@ import Pagination from "../components/Pagination";
 import { getArticles, searchArticlesByHeader } from "../services/api";
 
 type SortOption = {
-  field: "date" | "rating";
-  direction: "asc" | "desc";
+  field: "date";
+  direction: boolean;
 };
 
 export default function Articles() {
@@ -15,7 +15,7 @@ export default function Articles() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>({
     field: "date",
-    direction: "desc",
+    direction: false,
   });
   const pageSize = 12;
 
@@ -30,7 +30,7 @@ export default function Articles() {
       if (searchQuery.trim()) {
         return await searchArticlesByHeader(searchQuery, from, pageSize);
       }
-      return await getArticles(from, pageSize);
+      return await getArticles(from, pageSize, sort.direction);
     },
   });
 
@@ -41,11 +41,10 @@ export default function Articles() {
     setPage(1); // Reset to first page when searching
   };
 
-  const handleSortChange = (field: SortOption["field"]) => {
+  const handleSortChange = () => {
     setSort((prev) => ({
-      field,
-      direction:
-        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      field: "date",
+      direction: !prev.direction,
     }));
   };
 
@@ -78,30 +77,13 @@ export default function Articles() {
             </div>
           </form>
 
-          {/* Sort Controls */}
+          {/* Updated Sort Controls */}
           <div className="flex gap-4 mb-6">
             <button
-              onClick={() => handleSortChange("date")}
-              className={`px-4 py-2 rounded-md ${
-                sort.field === "date"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
+              onClick={handleSortChange}
+              className="px-4 py-2 rounded-md bg-indigo-600 text-white"
             >
-              Date{" "}
-              {sort.field === "date" && (sort.direction === "asc" ? "↑" : "↓")}
-            </button>
-            <button
-              onClick={() => handleSortChange("rating")}
-              className={`px-4 py-2 rounded-md ${
-                sort.field === "rating"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              Rating{" "}
-              {sort.field === "rating" &&
-                (sort.direction === "asc" ? "↑" : "↓")}
+              Date {sort.direction ? "↑" : "↓"}
             </button>
           </div>
         </div>
