@@ -32,6 +32,8 @@ export const getTopProducts = async () => {
       size: 6,
       minPrice: 0,
       maxPrice: 100000,
+      ascending: false,
+      sortBy: "RATE",
     },
   });
   return response.data;
@@ -186,7 +188,7 @@ export const addProductFeedback = async (
 export const subscribeToMusician = async (
   musicianId: number
 ): Promise<boolean> => {
-  const response = await api.post(`/api/musician/subscription`, {
+  const response = await api.post(`/musician/subscription`, {
     musicianId,
   });
   return response.data;
@@ -195,7 +197,7 @@ export const subscribeToMusician = async (
 export const unsubscribeFromMusician = async (
   musicianId: number
 ): Promise<boolean> => {
-  const response = await api.delete(`/api/musician/subscription`, {
+  const response = await api.delete(`/musician/subscription`, {
     data: { musicianId },
   });
   return response.data;
@@ -204,7 +206,7 @@ export const unsubscribeFromMusician = async (
 export const checkMusicianSubscribed = async (
   musicianId: number
 ): Promise<boolean> => {
-  const response = await api.get(`/api/musician/${musicianId}/subscribed`);
+  const response = await api.get(`/musician/${musicianId}/subscribed`);
   return response.data;
 };
 
@@ -233,5 +235,94 @@ export const searchArticlesByHeader = async (
   };
 };
 
+export const getMusicians = async (
+  from: number,
+  size: number,
+  sort: { field: string; direction: string }
+): Promise<{ items: Musician[] }> => {
+  const response = await api.get("/musician", {
+    params: { from, size, sortBy: sort.field, sortDir: sort.direction },
+  });
+  return {
+    items: response.data,
+  };
+};
+
+export const searchMusiciansByName = async (
+  name: string,
+  from: number,
+  size: number
+): Promise<{ items: Musician[] }> => {
+  const response = await api.get(`/musician/name/${name}`, {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+  };
+};
+
+export interface ForumTopic {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: string;
+  closed: boolean;
+  postsCount: number;
+}
+
+export interface ForumPost {
+  id: number;
+  content: string;
+  author: string;
+  createdAt: string;
+}
+
+export const getForumTopics = async (
+  from: number,
+  size: number
+): Promise<{ items: ForumTopic[] }> => {
+  const response = await api.get("/forum/topic", {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+  };
+};
+
+export const createForumTopic = async (
+  title: string,
+  content: string
+): Promise<ForumTopic> => {
+  const response = await api.post("/forum/topic", {
+    title,
+    content,
+  });
+  return response.data;
+};
+
+export const getTopicPosts = async (
+  topicId: number,
+  from: number,
+  size: number
+): Promise<{ items: ForumPost[] }> => {
+  const response = await api.get(`/forum/topic/${topicId}/posts`, {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+  };
+};
+
+export const createForumPost = async (
+  topicId: number,
+  content: string
+): Promise<ForumPost> => {
+  const response = await api.post("/forum/post", {
+    topicId,
+    content,
+  });
+  return response.data;
+};
 
 export default api;

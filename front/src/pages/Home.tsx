@@ -11,7 +11,7 @@ import {
   subscribeToMusician,
   unsubscribeFromMusician,
 } from "../services/api";
-import { Article, Musician, Product } from "../services/types";
+import { Article, Musician, ProductSimple } from "../services/types";
 import api from "../services/api";
 import StarRating from "../components/StarRating";
 
@@ -40,7 +40,7 @@ export default function Home() {
   }>({});
 
   const { data: topProducts, isLoading: isLoadingProducts } = useQuery<
-    Product[]
+    ProductSimple[]
   >({
     queryKey: ["topProducts"],
     queryFn: getTopProducts,
@@ -60,7 +60,7 @@ export default function Home() {
     queryFn: getTopMusicians,
   });
 
-  const { data: userProducts } = useQuery<Product[]>({
+  const { data: userProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
       const response = await api.get("/user/products");
@@ -71,7 +71,7 @@ export default function Home() {
   useEffect(() => {
     if (userProducts) {
       const likedMap = userProducts.reduce(
-        (acc: { [key: number]: boolean }, product: Product) => {
+        (acc: { [key: number]: boolean }, product: ProductSimple) => {
           acc[product.id] = true;
           return acc;
         },
@@ -195,12 +195,14 @@ export default function Home() {
                           onRatingChange={() => {}}
                           size="sm"
                         />
-                        <span className="ml-2 text-gray-600">({product.rate}/5)</span>
+                        <span className="ml-2 text-gray-600">
+                          ({product.rate}/5)
+                        </span>
                       </div>
                       <p>
                         <span className="font-medium">Brand:</span>{" "}
-                        <Link 
-                          to={`/brand/${product.brand.id}`} 
+                        <Link
+                          to={`/brand/${product.brand.id}`}
                           className="text-indigo-600 hover:text-indigo-800"
                         >
                           {product.brand.name}
@@ -258,8 +260,11 @@ export default function Home() {
                       {article.content}
                     </p>
                     <div className="mt-2 text-sm text-gray-500">
-                      By <span className="font-medium">{article.author}</span> •{" "}
-                      {new Date(article.createdAt).toLocaleDateString()}
+                      By{" "}
+                      <span className="font-medium">
+                        {article.author.username}
+                      </span>{" "}
+                      • {new Date(article.createdAt).toLocaleDateString()}
                     </div>
                     <Link
                       to={`/article/${article.id}`}
@@ -316,7 +321,9 @@ export default function Home() {
                         }`}
                         disabled={subscribeMutation.isPending}
                       >
-                        {subscribedMusicians[musician.id] ? "Subscribed" : "Subscribe"}
+                        {subscribedMusicians[musician.id]
+                          ? "Subscribed"
+                          : "Subscribe"}
                       </button>
                     </div>
                     <p className="text-gray-600 text-sm mb-2">

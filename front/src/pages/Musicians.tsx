@@ -3,42 +3,42 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Pagination from "../components/Pagination";
-import { getArticles, searchArticlesByHeader } from "../services/api";
+import { getMusicians, searchMusiciansByName } from "../services/api";
 
 type SortOption = {
-  field: "date" | "rating";
+  field: "name" | "subscribers";
   direction: "asc" | "desc";
 };
 
-export default function Articles() {
+export default function Musicians() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>({
-    field: "date",
+    field: "subscribers",
     direction: "desc",
   });
   const pageSize = 12;
 
   const {
-    data: articlesData,
+    data: musiciansData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["articles", page, searchQuery, sort],
+    queryKey: ["musicians", page, searchQuery, sort],
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       if (searchQuery.trim()) {
-        return await searchArticlesByHeader(searchQuery, from, pageSize);
+        return await searchMusiciansByName(searchQuery, from, pageSize);
       }
-      return await getArticles(from, pageSize);
+      return await getMusicians(from, pageSize, sort);
     },
   });
 
-  const hasMore = articlesData?.items.length === pageSize;
+  const hasMore = musiciansData?.items.length === pageSize;
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setPage(1); // Reset to first page when searching
+    setPage(1);
   };
 
   const handleSortChange = (field: SortOption["field"]) => {
@@ -49,7 +49,7 @@ export default function Articles() {
     }));
   };
 
-  if (error) return <div>Error loading articles</div>;
+  if (error) return <div>Error loading musicians</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +57,7 @@ export default function Articles() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Articles</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Musicians</h1>
 
           {/* Search Form */}
           <form onSubmit={handleSearch} className="mb-6">
@@ -66,7 +66,7 @@ export default function Articles() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search articles by header..."
+                placeholder="Search musicians by name..."
                 className="flex-1 p-2 border border-gray-300 rounded-md"
               />
               <button
@@ -81,56 +81,66 @@ export default function Articles() {
           {/* Sort Controls */}
           <div className="flex gap-4 mb-6">
             <button
-              onClick={() => handleSortChange("date")}
+              onClick={() => handleSortChange("name")}
               className={`px-4 py-2 rounded-md ${
-                sort.field === "date"
+                sort.field === "name"
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
-              Date{" "}
-              {sort.field === "date" && (sort.direction === "asc" ? "↑" : "↓")}
+              Name{" "}
+              {sort.field === "name" && (sort.direction === "asc" ? "↑" : "↓")}
             </button>
             <button
-              onClick={() => handleSortChange("rating")}
+              onClick={() => handleSortChange("subscribers")}
               className={`px-4 py-2 rounded-md ${
-                sort.field === "rating"
+                sort.field === "subscribers"
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
-              Rating{" "}
-              {sort.field === "rating" &&
+              Subscribers{" "}
+              {sort.field === "subscribers" &&
                 (sort.direction === "asc" ? "↑" : "↓")}
             </button>
           </div>
         </div>
 
-        {/* Articles Grid */}
+        {/* Musicians Grid */}
         {isLoading ? (
-          <div className="text-center py-8">Loading articles...</div>
+          <div className="text-center py-8">Loading musicians...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articlesData?.items.map((article) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {musiciansData?.items.map((musician) => (
               <div
-                key={article.id}
-                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                key={musician.id}
+                className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
               >
-                <h2 className="text-xl font-semibold mb-2">{article.header}</h2>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {article.text}
-                </p>
-                <div className="text-sm text-gray-500 mb-4">
-                  By{" "}
-                  <span className="font-medium">{article.author.username}</span>
-                  <br />
-                  {new Date(article.createdAt).toLocaleDateString()}
+                <div className="w-32 h-32 mb-4">
+                  <img
+                    src={
+                      [
+                        "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                        "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                        "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                        "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                      ][musician.id % 4]
+                    }
+                    alt={musician.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
+                <h3 className="text-lg font-semibold text-center">
+                  {musician.name}
+                </h3>
+                <p className="text-gray-600 mt-2">
+                  {musician.subscribers} subscribers
+                </p>
                 <Link
-                  to={`/article/${article.id}`}
-                  className="text-indigo-600 hover:text-indigo-800"
+                  to={`/musician/${musician.id}`}
+                  className="text-indigo-600 hover:text-indigo-800 mt-4"
                 >
-                  Read More →
+                  View Profile
                 </Link>
               </div>
             ))}
@@ -138,7 +148,7 @@ export default function Articles() {
         )}
 
         {/* Pagination */}
-        {(articlesData?.items.length ?? 0) > 0 && (
+        {(musiciansData?.items.length ?? 0) > 0 && (
           <div className="mt-8">
             <Pagination
               currentPage={page}

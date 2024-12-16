@@ -27,16 +27,12 @@ export default function ArticleDetails() {
     queryFn: () => getArticleDetails(id!),
   });
 
-  const { data: feedbackData } = useQuery<{ items: Feedback[]; total: number }>(
-    {
-      queryKey: ["articleFeedbacks", id, feedbackPage],
-      queryFn: () =>
-        getArticleFeedbacks(id!, (feedbackPage - 1) * pageSize, pageSize),
-      enabled: !!article,
-    }
-  );
-
-  const totalFeedbackPages = Math.ceil((feedbackData?.total || 0) / pageSize);
+  const { data: feedbackData } = useQuery<{ items: Feedback[] }>({
+    queryKey: ["articleFeedbacks", id, feedbackPage],
+    queryFn: () =>
+      getArticleFeedbacks(id!, (feedbackPage - 1) * pageSize, pageSize),
+    enabled: !!article,
+  });
 
   const feedbackMutation = useMutation({
     mutationFn: (data: { text: string; stars: number }) =>
@@ -69,7 +65,7 @@ export default function ArticleDetails() {
           </h1>
 
           <div className="flex items-center text-gray-600 mb-6">
-            <span className="font-medium">By {article.author}</span>
+            <span className="font-medium">By {article.author.username}</span>
             <span className="mx-2">•</span>
             <time dateTime={article.createdAt}>
               {new Date(article.createdAt).toLocaleDateString()}
@@ -120,10 +116,10 @@ export default function ArticleDetails() {
             ))}
           </div>
 
-          {totalFeedbackPages > 1 && (
+          {feedbackData?.items.length !== 0 && (
             <Pagination
               currentPage={feedbackPage}
-              totalPages={totalFeedbackPages}
+              hasMore={feedbackData?.items.length === pageSize}
               onPageChange={setFeedbackPage}
             />
           )}
