@@ -19,3 +19,5 @@
 - `/shop/id/${id}` - получить магазин по id (get)
 - `/brand/id/${id}` - получить бренд по id (get)
 - `/musician/id/${id}` - получить музыканта по id (get)
+- `/api/musician/${musicianId}/subscribed` - boolean подписан ли юзер на музыканта (get)
+- И/ИЛИ `/api/user/musician` - получить все подписки пользователя
