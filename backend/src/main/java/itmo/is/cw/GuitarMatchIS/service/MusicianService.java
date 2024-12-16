@@ -4,7 +4,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import itmo.is.cw.GuitarMatchIS.Pagification;
 import itmo.is.cw.GuitarMatchIS.dto.AddProductMusicianDTO;
@@ -20,6 +22,7 @@ import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
 import itmo.is.cw.GuitarMatchIS.models.Musician;
 import itmo.is.cw.GuitarMatchIS.models.MusicianGenre;
 import itmo.is.cw.GuitarMatchIS.models.MusicianProduct;
+import itmo.is.cw.GuitarMatchIS.models.MusicianSort;
 import itmo.is.cw.GuitarMatchIS.models.MusicianTypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.User;
@@ -58,8 +61,10 @@ public class MusicianService {
    private final MusicianProductRepository musicianProductRepository;
    private final ProductRepository productRepository;
 
-   public List<MusicianInfoDTO> getMusician(int from, int size) {
-      Pageable page = Pagification.createPageTemplate(from, size);
+   public List<MusicianInfoDTO> getMusician(int from, int size, MusicianSort sortBy, boolean ascending) {
+      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC, 
+                       sortBy.getFieldName());
+      Pageable page = PageRequest.of(from / size, size, sort);
 
       List<Musician> musicians = musicianRepository.findAll(page).getContent();
       return musicians
@@ -68,12 +73,6 @@ public class MusicianService {
                   musicianGenreRepository.findByMusician(musician1), 
                   musicianTypeOfMusicianRepository.findByMusician(musician1), 
                   musicianProductRepository.findByMusician(musician1)))
-            .sorted(new Comparator<MusicianInfoDTO>() {
-               @Override
-               public int compare(MusicianInfoDTO o1, MusicianInfoDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
             .toList();
    }
 
