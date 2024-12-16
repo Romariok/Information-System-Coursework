@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import NotFound from "./pages/Error";
 import ArticleDetails from "./pages/ArticleDetails";
+import Catalog from "./pages/Catalog";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ArticleDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/catalog"
+              element={
+                <ProtectedRoute>
+                  <Catalog />
                 </ProtectedRoute>
               }
             />
