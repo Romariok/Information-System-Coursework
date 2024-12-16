@@ -23,13 +23,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ArticleController {
    private final ArticleService articleService;
 
-   @Operation(summary = "Получить список статей", 
-             description = "Возвращает список статей с пагинацией")
+   @Operation(summary = "Получить список одобренных статей", 
+             description = "Возвращает список одобренных статей с пагинацией")
    @GetMapping
-   public List<ArticleDTO> getArticles(
+   public List<ArticleDTO> getAcceptedArticles(
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size) {
-      return articleService.getArticles(from, size);
+      return articleService.getAcceptedArticles(from, size);
    }
 
    @Operation(summary = "Получить список неодобренных статей",
@@ -37,8 +37,9 @@ public class ArticleController {
    @GetMapping("/unaccepted")
    public List<StatusArticlesDTO> getStatusArticles(
       @Parameter(description = "Начальная позиция") @RequestParam int from,
-      @Parameter(description = "Количество элементов") @RequestParam int size) {
-      return articleService.getStatusArticles(from, size);
+      @Parameter(description = "Количество элементов") @RequestParam int size,
+      HttpServletRequest request) {
+      return articleService.getStatusArticles(from, size, request);
    }
 
    @Operation(summary = "Поиск статей по заголовку",
