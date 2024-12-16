@@ -43,7 +43,7 @@ export default function ArticleDetails() {
   });
 
   if (error) {
-    return <Navigate to="*" />;
+    return <Navigate to="/error" />;
   }
 
   if (isLoading) {
@@ -95,7 +95,7 @@ export default function ArticleDetails() {
 
           {/* Feedback list */}
           <div className="space-y-4">
-            {feedbackData?.items.map((feedback) => (
+            {feedbackData?.items?.map((feedback) => (
               <div
                 key={feedback.id}
                 className="bg-white p-6 rounded-lg shadow-md"
@@ -116,10 +116,10 @@ export default function ArticleDetails() {
             ))}
           </div>
 
-          {feedbackData?.items.length !== 0 && (
+          {feedbackData?.items?.length !== 0 && (
             <Pagination
               currentPage={feedbackPage}
-              hasMore={feedbackData?.items.length === pageSize}
+              hasMore={feedbackData?.items?.length === pageSize}
               onPageChange={setFeedbackPage}
             />
           )}
