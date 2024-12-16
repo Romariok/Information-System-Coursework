@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.Genre;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.Role;
@@ -119,6 +120,13 @@ public class UserService {
 
                 userProductRepository.deleteByUserAndProduct(user, product);
                 return true;
+        }
+
+        public UserInfoDTO getUserInfoById(Long id) {
+                User user = userRepository.findById(id)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                String.format("User with id %s not found", id)));
+                return UserInfoDTO.builder().id(user.getId()).username(user.getUsername()).build();
         }
 
         private User findUserByRequest(HttpServletRequest request) {
