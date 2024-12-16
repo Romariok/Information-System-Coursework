@@ -2,50 +2,130 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Pagination from "../components/Pagination";
 import StarRating from "../components/StarRating";
-import { getFilteredProducts, ProductFilters } from "../services/api";
 import { Product } from "../services/types";
+import api from "../services/api";
 
-const sortOptions = [
-  { value: "name", label: "Name" },
-  { value: "price", label: "Price" },
-  { value: "rate", label: "Rating" },
-];
+// Reusing the existing format function from ProductDetails
+const formatProductType = (type: string) => {
+  const typeMap: { [key: string]: string } = {
+    PEDALS_AND_EFFECTS: "Pedals & Effects",
+    ELECTRIC_GUITAR: "Electric Guitar",
+    STUDIO_RECORDING_GEAR: "Studio Recording Gear",
+    KEYS_AND_MIDI: "Keys & MIDI",
+    AMPLIFIER: "Amplifier",
+    DRUMMS_AND_PERCUSSION: "Drums & Percussion",
+    BASS_GUITAR: "Bass Guitar",
+    ACOUSTIC_GUITAR: "Acoustic Guitar",
+    SOFTWARE_AND_ACCESSORIES: "Software & Accessories",
+  };
+  return typeMap[type] || type;
+};
 
-const typeOptions = [
-  "PEDALS_AND_EFFECTS",
-  "ELECTRIC_GUITAR",
-  "STUDIO_RECORDING_GEAR",
-  "KEYS_AND_MIDI",
-  "AMPLIFIER",
-  "DRUMMS_AND_PERCUSSION",
-  "BASS_GUITAR",
-  "ACOUSTIC_GUITAR",
-  "SOFTWARE_AND_ACCESSORIES",
-];
+// Add these enums at the top of the file
+enum GuitarForm {
+  STRATOCASTER = "STRATOCASTER",
+  TELECASTER = "TELECASTER",
+  LES_PAUL = "LES_PAUL",
+  SG = "SG",
+  FLYING_V = "FLYING_V",
+  EXPLORER = "EXPLORER",
+}
+
+enum Color {
+  BLACK = "BLACK",
+  WHITE = "WHITE",
+  RED = "RED",
+  BLUE = "BLUE",
+  GREEN = "GREEN",
+  YELLOW = "YELLOW",
+  BROWN = "BROWN",
+  NATURAL = "NATURAL",
+}
+
+enum TipMaterial {
+  PLASTIC = "PLASTIC",
+  METAL = "METAL",
+  WOOD = "WOOD",
+  STONE = "STONE",
+}
+
+enum BodyMaterial {
+  MAHOGANY = "MAHOGANY",
+  MAPLE = "MAPLE",
+  ASH = "ASH",
+  ALDER = "ALDER",
+  BASSWOOD = "BASSWOOD",
+}
+
+enum PickupConfiguration {
+  SSS = "SSS",
+  HSS = "HSS",
+  HH = "HH",
+  SS = "SS",
+  P90 = "P90",
+}
+
+enum TypeComboAmplifier {
+  TUBE = "TUBE",
+  SOLID_STATE = "SOLID_STATE",
+  HYBRID = "HYBRID",
+  MODELING = "MODELING",
+}
 
 export default function Catalog() {
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState<ProductFilters>({
-    minPrice: 0,
-    maxPrice: 100000,
+  const pageSize = 9;
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    name: "",
     minRate: 0,
     maxRate: 5,
+    brandId: "",
+    guitarForm: "",
+    typeOfProduct: "",
+    lads: "",
+    minPrice: 0,
+    maxPrice: 100000,
+    color: "",
+    strings: "",
+    tipMaterial: "",
+    bodyMaterial: "",
+    pickupConfiguration: "",
+    typeComboAmplifier: "",
   });
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const pageSize = 12;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["products", filters, page, sortBy, sortOrder],
-    queryFn: () =>
-      getFilteredProducts(filters, page, pageSize, sortBy, sortOrder),
+  const handlePriceChange = (key: "minPrice" | "maxPrice", value: string) => {
+    const numValue = Number(value);
+    if (numValue < 0) return;
+
+    if (key === "minPrice" && numValue > filters.maxPrice) return;
+    if (key === "maxPrice" && numValue < filters.minPrice) return;
+
+    handleFilterChange(key, numValue);
+  };
+
+  const { data: products, isLoading } = useQuery<Product[]>({
+    queryKey: ["products", filters, page],
+    queryFn: async () => {
+      const response = await api.get("/product/filter", {
+        params: {
+          ...filters,
+          from: (page - 1) * pageSize,
+          size: pageSize,
+        },
+      });
+      return response.data;
+    },
   });
 
-  const handleFilterChange = (name: keyof ProductFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
-    setPage(1);
+  const handleFilterChange = (key: string, value: string | number) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+    setPage(1); // Reset page when filters change
   };
 
   return (
@@ -55,113 +135,225 @@ export default function Catalog() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-4 gap-6">
           {/* Filters Sidebar */}
-          <div className="col-span-1 bg-white p-6 rounded-lg shadow-md space-y-6">
+          <div className="col-span-1 bg-white p-4 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">Filters</h2>
 
-            {/* Price Range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Range
-              </label>
-              <div className="flex gap-2">
+            <div className="space-y-4">
+              {/* Search by name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Search
+                </label>
                 <input
-                  type="number"
-                  value={filters.minPrice}
-                  onChange={(e) =>
-                    handleFilterChange("minPrice", Number(e.target.value))
-                  }
-                  className="w-full border rounded-md px-3 py-2"
-                  placeholder="Min"
-                />
-                <input
-                  type="number"
-                  value={filters.maxPrice}
-                  onChange={(e) =>
-                    handleFilterChange("maxPrice", Number(e.target.value))
-                  }
-                  className="w-full border rounded-md px-3 py-2"
-                  placeholder="Max"
+                  type="text"
+                  value={filters.name}
+                  onChange={(e) => handleFilterChange("name", e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
-            </div>
 
-            {/* Product Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Type
-              </label>
-              <select
-                value={filters.typeOfProduct || ""}
-                onChange={(e) =>
-                  handleFilterChange("typeOfProduct", e.target.value)
-                }
-                className="w-full border rounded-md px-3 py-2"
+              {/* Price Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Price Range
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    value={filters.minPrice}
+                    onChange={(e) =>
+                      handlePriceChange("minPrice", e.target.value)
+                    }
+                    placeholder="Min"
+                    min="0"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="number"
+                    value={filters.maxPrice}
+                    onChange={(e) =>
+                      handlePriceChange("maxPrice", e.target.value)
+                    }
+                    placeholder="Max"
+                    min="0"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Rating Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Rating
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    value={filters.minRate}
+                    onChange={(e) =>
+                      handleFilterChange("minRate", e.target.value)
+                    }
+                    min="0"
+                    max="5"
+                    step="0.5"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="number"
+                    value={filters.maxRate}
+                    onChange={(e) =>
+                      handleFilterChange("maxRate", e.target.value)
+                    }
+                    min="0"
+                    max="5"
+                    step="0.5"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Guitar Form */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Guitar Form
+                </label>
+                <select
+                  value={filters.guitarForm}
+                  onChange={(e) =>
+                    handleFilterChange("guitarForm", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="">All Forms</option>
+                  {Object.entries(GuitarForm).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Color */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Color
+                </label>
+                <select
+                  value={filters.color}
+                  onChange={(e) => handleFilterChange("color", e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="">All Colors</option>
+                  {Object.entries(Color).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Number of Strings */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Number of Strings
+                </label>
+                <select
+                  value={filters.strings}
+                  onChange={(e) =>
+                    handleFilterChange("strings", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="">Any</option>
+                  {[4, 5, 6, 7, 8, 12].map((num) => (
+                    <option key={num} value={num}>
+                      {num} strings
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Body Material */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Body Material
+                </label>
+                <select
+                  value={filters.bodyMaterial}
+                  onChange={(e) =>
+                    handleFilterChange("bodyMaterial", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="">All Materials</option>
+                  {Object.entries(BodyMaterial).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Pickup Configuration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Pickup Configuration
+                </label>
+                <select
+                  value={filters.pickupConfiguration}
+                  onChange={(e) =>
+                    handleFilterChange("pickupConfiguration", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                >
+                  <option value="">All Configurations</option>
+                  {Object.entries(PickupConfiguration).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Reset Filters */}
+              <button
+                onClick={() => {
+                  setFilters({
+                    name: "",
+                    minRate: 0,
+                    maxRate: 5,
+                    brandId: "",
+                    guitarForm: "",
+                    typeOfProduct: "",
+                    lads: "",
+                    minPrice: 0,
+                    maxPrice: 100000,
+                    color: "",
+                    strings: "",
+                    tipMaterial: "",
+                    bodyMaterial: "",
+                    pickupConfiguration: "",
+                    typeComboAmplifier: "",
+                  });
+                  setPage(1);
+                }}
+                className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
               >
-                <option value="">All Types</option>
-                {typeOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {type.replace(/_/g, " ")}
-                  </option>
-                ))}
-              </select>
+                Reset Filters
+              </button>
             </div>
-
-            {/* Rating Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Minimum Rating
-              </label>
-              <StarRating
-                rating={filters.minRate || 0}
-                onRatingChange={(rating) =>
-                  handleFilterChange("minRate", rating)
-                }
-                size="sm"
-              />
-            </div>
-
-            {/* Add more filters based on your needs */}
           </div>
 
           {/* Products Grid */}
           <div className="col-span-3">
-            {/* Sorting Controls */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex gap-4 items-center">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="border rounded-md px-3 py-2"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() =>
-                    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-                  }
-                  className="p-2 hover:bg-gray-100 rounded-md"
-                >
-                  {sortOrder === "asc" ? "↑" : "↓"}
-                </button>
-              </div>
-              <div className="text-gray-600">
-                {data?.total || 0} products found
-              </div>
-            </div>
-
-            {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {isLoading ? (
-                <div className="col-span-3 text-center py-8">Loading...</div>
-              ) : (
-                data?.items.map((product: Product) => (
+            {isLoading ? (
+              <div className="text-center py-8">Loading products...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {products?.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white p-6 rounded-lg shadow-md"
+                    className="bg-white p-4 rounded-lg shadow-md"
                   >
                     <Link to={`/product/${product.id}`}>
                       <img
@@ -177,27 +369,51 @@ export default function Catalog() {
                         className="w-full h-48 object-cover rounded-md mb-4"
                       />
                     </Link>
+
                     <h3 className="text-lg font-semibold mb-2">
                       {product.name}
                     </h3>
-                    <StarRating
-                      rating={product.rate}
-                      onRatingChange={() => {}}
-                      size="sm"
-                    />
-                    <p className="text-gray-600 mt-2">${product.avgPrice}</p>
-                  </div>
-                ))
-              )}
-            </div>
 
-            {/* Pagination */}
-            {data && data.total > pageSize && (
-              <Pagination
-                currentPage={page}
-                totalPages={Math.ceil(data.total / pageSize)}
-                onPageChange={setPage}
-              />
+                    <div className="flex items-center mb-2">
+                      <StarRating
+                        rating={product.rate}
+                        onRatingChange={() => {}}
+                        size="sm"
+                      />
+                      <span className="ml-2 text-gray-600">
+                        ({product.rate}/5)
+                      </span>
+                    </div>
+
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>
+                        <span className="font-medium">Brand:</span>{" "}
+                        <Link
+                          to={`/brand/${product.brand.id}`}
+                          className="text-indigo-600 hover:text-indigo-800"
+                        >
+                          {product.brand.name}
+                        </Link>
+                      </p>
+                      <p>
+                        <span className="font-medium">Type:</span>{" "}
+                        {formatProductType(product.typeOfProduct)}
+                      </p>
+                      <p>
+                        <span className="font-medium">Price:</span> $
+                        {product.avgPrice.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="mt-4 inline-block text-indigo-600 hover:text-indigo-800"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
