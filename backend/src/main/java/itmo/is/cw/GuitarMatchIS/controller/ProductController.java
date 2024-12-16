@@ -52,9 +52,9 @@ public class ProductController {
                         @ApiResponse(responseCode = "200", description = "Товар найден"),
                         @ApiResponse(responseCode = "400", description = "Некорректные параметры запроса")
         })
-        @GetMapping("/id")
+        @GetMapping("/id/{id}")
         public ProductDTO getProductsById(
-                        @Parameter(description = "id") @RequestParam long id) {
+                        @Parameter(description = "id") @PathVariable long id) {
                 return productService.getProductsById(id);
         }
 
