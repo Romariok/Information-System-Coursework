@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 import itmo.is.cw.GuitarMatchIS.dto.AddProductMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
-import itmo.is.cw.GuitarMatchIS.dto.MusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianGenreDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
