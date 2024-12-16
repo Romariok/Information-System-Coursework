@@ -29,7 +29,7 @@ export const getTopProducts = async () => {
       minRate: 4,
       maxRate: 5,
       from: 0,
-      size: 5,
+      size: 6,
       minPrice: 0,
       maxPrice: 100000,
     },
@@ -41,7 +41,7 @@ export const getTopArticles = async () => {
   const response = await api.get("/article", {
     params: {
       from: 0,
-      size: 5,
+      size: 6,
     },
   });
   return response.data;
@@ -51,18 +51,14 @@ export const getTopMusicians = async () => {
   const response = await api.get("/musician", {
     params: {
       from: 0,
-      size: 5,
+      size: 6,
     },
   });
   return response.data;
 };
 
 export const getProductDetails = async (id: string): Promise<Product> => {
-  const response = await api.get(`/product/id`, {
-    params: {
-      id: id,
-    },
-  });
+  const response = await api.get(`/product/id/${id}`);
   return response.data;
 };
 
