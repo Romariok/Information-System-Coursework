@@ -243,10 +243,10 @@ export const searchArticlesByHeader = async (
 export const getMusicians = async (
   from: number,
   size: number,
-  sort: { field: string; direction: string }
+  sort: { field: string; direction: boolean }
 ): Promise<{ items: Musician[] }> => {
   const response = await api.get("/musician", {
-    params: { from, size, sortBy: sort.field, sortDir: sort.direction },
+    params: { from, size, sortBy: sort.field, ascending: sort.direction },
   });
   return {
     items: response.data,

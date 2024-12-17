@@ -1,23 +1,34 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Pagination from "../components/Pagination";
-import { getMusicians, searchMusiciansByName } from "../services/api";
+import {
+  getMusicians,
+  searchMusiciansByName,
+  subscribeToMusician,
+  unsubscribeFromMusician,
+  checkMusicianSubscribed,
+} from "../services/api";
 
 type SortOption = {
-  field: "name" | "subscribers";
-  direction: "asc" | "desc";
+  field: "NAME" | "SUBSCRIBERS";
+  direction: boolean;
 };
 
 export default function Musicians() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState<SortOption>({
-    field: "subscribers",
-    direction: "desc",
+    field: "SUBSCRIBERS",
+    direction: false,
   });
   const pageSize = 12;
+
+  // Add subscription state
+  const [subscriptions, setSubscriptions] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   const {
     data: musiciansData,
@@ -34,6 +45,58 @@ export default function Musicians() {
     },
   });
 
+  // Add subscription check for each musician
+  useQuery({
+    queryKey: ["subscriptions", musiciansData?.items],
+    queryFn: async () => {
+      if (!musiciansData?.items) return;
+      const checks = await Promise.all(
+        musiciansData.items.map((musician) =>
+          checkMusicianSubscribed(musician.id)
+        )
+      );
+      const newSubscriptions = musiciansData.items.reduce(
+        (acc, musician, index) => {
+          acc[musician.id] = checks[index];
+          return acc;
+        },
+        {} as { [key: number]: boolean }
+      );
+      setSubscriptions(newSubscriptions);
+    },
+    enabled: !!musiciansData?.items,
+  });
+
+  // Add subscription mutation
+  const subscriptionMutation = useMutation({
+    mutationFn: async ({
+      musicianId,
+      subscribed,
+    }: {
+      musicianId: number;
+      subscribed: boolean;
+    }) => {
+      if (subscribed) {
+        return await unsubscribeFromMusician(musicianId);
+      } else {
+        return await subscribeToMusician(musicianId);
+      }
+    },
+    onSuccess: (_, { musicianId }) => {
+      setSubscriptions((prev) => ({
+        ...prev,
+        [musicianId]: !prev[musicianId],
+      }));
+    },
+  });
+
+  const handleSubscribe = (musicianId: number) => {
+    subscriptionMutation.mutate({
+      musicianId,
+      subscribed: subscriptions[musicianId],
+    });
+  };
+
   const hasMore = musiciansData?.items.length === pageSize;
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -44,8 +107,7 @@ export default function Musicians() {
   const handleSortChange = (field: SortOption["field"]) => {
     setSort((prev) => ({
       field,
-      direction:
-        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      direction: prev.field === field ? !prev.direction : true,
     }));
   };
 
@@ -81,27 +143,25 @@ export default function Musicians() {
           {/* Sort Controls */}
           <div className="flex gap-4 mb-6">
             <button
-              onClick={() => handleSortChange("name")}
+              onClick={() => handleSortChange("NAME")}
               className={`px-4 py-2 rounded-md ${
-                sort.field === "name"
+                sort.field === "NAME"
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
-              Name{" "}
-              {sort.field === "name" && (sort.direction === "asc" ? "↑" : "↓")}
+              Name {sort.field === "NAME" && (sort.direction ? "↑" : "↓")}
             </button>
             <button
-              onClick={() => handleSortChange("subscribers")}
+              onClick={() => handleSortChange("SUBSCRIBERS")}
               className={`px-4 py-2 rounded-md ${
-                sort.field === "subscribers"
+                sort.field === "SUBSCRIBERS"
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-700"
               }`}
             >
               Subscribers{" "}
-              {sort.field === "subscribers" &&
-                (sort.direction === "asc" ? "↑" : "↓")}
+              {sort.field === "SUBSCRIBERS" && (sort.direction ? "↑" : "↓")}
             </button>
           </div>
         </div>
@@ -136,12 +196,25 @@ export default function Musicians() {
                 <p className="text-gray-600 mt-2">
                   {musician.subscribers} subscribers
                 </p>
-                <Link
-                  to={`/musician/${musician.id}`}
-                  className="text-indigo-600 hover:text-indigo-800 mt-4"
-                >
-                  View Profile
-                </Link>
+                <div className="flex gap-4 mt-4">
+                  <Link
+                    to={`/musician/${musician.id}`}
+                    className="text-indigo-600 hover:text-indigo-800"
+                  >
+                    View Profile
+                  </Link>
+                  <button
+                    onClick={() => handleSubscribe(musician.id)}
+                    className={`px-4 py-1 rounded-full text-sm font-medium ${
+                      subscriptions[musician.id]
+                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                    disabled={subscriptionMutation.isPending}
+                  >
+                    {subscriptions[musician.id] ? "Unsubscribe" : "Subscribe"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
