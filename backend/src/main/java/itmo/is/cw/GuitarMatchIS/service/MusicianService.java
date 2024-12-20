@@ -26,6 +26,8 @@ import itmo.is.cw.GuitarMatchIS.models.MusicianSort;
 import itmo.is.cw.GuitarMatchIS.models.MusicianTypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.User;
+import itmo.is.cw.GuitarMatchIS.models.Genre;
+import itmo.is.cw.GuitarMatchIS.models.TypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.repository.MusicianGenreRepository;
 import itmo.is.cw.GuitarMatchIS.repository.MusicianProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.MusicianRepository;
@@ -83,6 +85,7 @@ public class MusicianService {
 
    @Transactional
    public MusicianInfoDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
+      findUserByRequest(request);
       if (musicianRepository.existsByName(createMusicianDTO.getName()))
          throw new MusicianAlreadyExistsException("Musician %s already exists".formatted(createMusicianDTO.getName()));
 
@@ -92,9 +95,18 @@ public class MusicianService {
             .build();
 
       musician = musicianRepository.save(musician);
+
+      for (Genre genre : createMusicianDTO.getGenres()) {
+         musicianGenreRepository.saveByMusicianIdAndGenre(musician.getId(), genre.toString());
+      }
+
+      for (TypeOfMusician typeOfMusician : createMusicianDTO.getTypesOfMusician()) {
+         musicianTypeOfMusicianRepository.saveByMusicianIdAndTypeOfMusician(musician.getId(), typeOfMusician.toString());
+      }
+
       simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
 
-      return convertToDTO(musician, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+      return convertToDTOLists(musician, createMusicianDTO.getGenres(), createMusicianDTO.getTypesOfMusician(), new ArrayList<>());
    }
 
    public Boolean subscribeToMusician(SubscribeDTO subscribeDTO, HttpServletRequest request) {
@@ -286,6 +298,17 @@ public class MusicianService {
             .subscribers(musician.getSubscribers())
             .genres(musicianGenres.stream().map(MusicianGenre::getGenre).toList())
             .typesOfMusicians(musicianTypes.stream().map(MusicianTypeOfMusician::getTypeOfMusician).toList())
+            .products(musicianProducts.stream().map(MusicianProduct::getProduct).map(this::convertToDTO).toList())
+            .build();
+   }
+
+   private MusicianInfoDTO convertToDTOLists(Musician musician, List<Genre> genres, List<TypeOfMusician> typesOfMusician, List<MusicianProduct> musicianProducts) {
+      return MusicianInfoDTO.builder()
+            .id(musician.getId())
+            .name(musician.getName())
+            .subscribers(musician.getSubscribers())
+            .genres(genres)
+            .typesOfMusicians(typesOfMusician)
             .products(musicianProducts.stream().map(MusicianProduct::getProduct).map(this::convertToDTO).toList())
             .build();
    }
