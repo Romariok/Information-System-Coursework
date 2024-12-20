@@ -131,7 +131,7 @@ export type ForumTopic = {
   description: string;
   createdAt: string;
   author: Author;
-  isClosed: boolean;
+  closed: boolean;
 };
 
 export type ForumPost = {
