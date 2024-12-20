@@ -144,8 +144,8 @@ public class ProductController {
         @GetMapping("/filter")
         public List<ProductDTO> getProductsByFilter(
                         @Parameter(description = "Название товара") @RequestParam(required = false) String name,
-                        @Parameter(description = "Минимальный рейтинг") @RequestParam Float minRate,
-                        @Parameter(description = "Максимальный рейтинг") @RequestParam Float maxRate,
+                        @Parameter(description = "Минимальный рейтинг") @RequestParam(required = false) Float minRate,
+                        @Parameter(description = "Максимальный рейтинг") @RequestParam(required = false) Float maxRate,
                         @Parameter(description = "ID бренда") @RequestParam(required = false) Long brandId,
                         @Parameter(description = "Форма гитары") @RequestParam(required = false) GuitarForm guitarForm,
                         @Parameter(description = "Тип товара") @RequestParam(required = false) TypeOfProduct typeOfProduct,
