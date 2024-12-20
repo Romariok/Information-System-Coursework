@@ -135,4 +135,12 @@ public class ForumTopicService {
       User user = findUserByRequest(request);
       return user.getIsAdmin() || user.getId().equals(topic.getAuthor().getId());
    }
+
+   public ForumTopicDTO getForumTopicById(Long topicId) {
+      ForumTopic topic = forumTopicRepository.findById(topicId)
+            .orElseThrow(() -> new ForumTopicNotFoundException(
+                  String.format("Forum topic with id %s not found", topicId)));
+
+      return convertToDTO(topic);
+   }
 }

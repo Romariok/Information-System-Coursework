@@ -38,10 +38,6 @@ public class ForumPostService {
 
             ForumTopic topic = forumTopicRepository.findById(topicId)
                         .orElseThrow(() -> new ForumTopicNotFoundException("Topic with id " + topicId + " not found"));
-
-            if (topic.getIsClosed()) {
-                  throw new ForumTopicNotFoundException("This topic is closed");
-            }
             List<ForumPost> posts = forumPostRepository.findAllByTopic(topic, pageable).getContent();
 
             return posts

@@ -106,4 +106,16 @@ public class ForumTopicController {
          HttpServletRequest request) {
       return forumTopicService.isTopicOwner(topicId, request);
    }
+
+   @Operation(summary = "Получить тему по ID", description = "Возвращает информацию о теме форума по её ID")
+   @ApiResponses(value = {
+         @ApiResponse(responseCode = "200", description = "Тема успешно получена"),
+         @ApiResponse(responseCode = "404", description = "Тема не найдена")
+   })
+   @GetMapping("/{topicId}")
+   public ForumTopicDTO getForumTopicById(
+         @Parameter(description = "ID темы") @PathVariable Long topicId) {
+      return forumTopicService.getForumTopicById(topicId);
+   }
+   
 }

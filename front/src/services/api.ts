@@ -304,12 +304,14 @@ export const getTopicPosts = async (
   topicId: number,
   from: number,
   size: number
-): Promise<{ items: ForumPost[] }> => {
+): Promise<{ items: ForumPost[]; topic: ForumTopic }> => {
   const response = await api.get(`/forum/topic/${topicId}/posts`, {
     params: { from, size },
   });
+  const top = await getForumTopicById(topicId);
   return {
     items: response.data,
+    topic: top,
   };
 };
 
@@ -367,6 +369,13 @@ export const getMusicianInfo = async (id: string) => {
 
 export const isTopicOwner = async (topicId: number): Promise<boolean> => {
   const response = await api.get(`/forum/topic/${topicId}/is-owner`);
+  return response.data;
+};
+
+export const getForumTopicById = async (
+  topicId: number
+): Promise<ForumTopic> => {
+  const response = await api.get(`/forum/topic/${topicId}`);
   return response.data;
 };
 

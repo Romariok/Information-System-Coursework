@@ -67,7 +67,7 @@ export default function ForumTopic() {
   if (error) return <Navigate to="/error" />;
 
   const hasMore = postsData?.items.length === pageSize;
-  const isClosed = postsData?.topic?.isClosed;
+  const isClosed = postsData?.topic?.closed;
 
   return (
     <div className="min-h-screen bg-gray-50">
