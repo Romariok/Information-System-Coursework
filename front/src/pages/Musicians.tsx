@@ -11,11 +11,36 @@ import {
   checkMusicianSubscribed,
   createMusician,
 } from "../services/api";
+import { Genre, TypeOfMusician } from "../services/types";
 
 type SortOption = {
   field: "NAME" | "SUBSCRIBERS";
   direction: boolean;
 };
+
+// Add these arrays for the enum values
+const GENRE_VALUES: Genre[] = [
+  "BLUES",
+  "ROCK",
+  "POP",
+  "JAZZ",
+  "RAP",
+  "METAL",
+  "CLASSICAL",
+  "REGGAE",
+  "ELECTRONIC",
+  "HIP_HOP",
+];
+
+const TYPE_OF_MUSICIAN_VALUES: TypeOfMusician[] = [
+  "MUSICAL_PRODUCER",
+  "GUITARIST",
+  "DRUMMER",
+  "BASSIST",
+  "SINGER",
+  "RAPPER",
+  "KEYBOARDIST",
+];
 
 export default function Musicians() {
   const [page, setPage] = useState(1);
@@ -33,6 +58,8 @@ export default function Musicians() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newMusicianName, setNewMusicianName] = useState("");
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<TypeOfMusician[]>([]);
   const queryClient = useQueryClient();
 
   const {
@@ -117,18 +144,28 @@ export default function Musicians() {
   };
 
   const createMusicianMutation = useMutation({
-    mutationFn: (name: string) => createMusician(name),
+    mutationFn: (data: {
+      name: string;
+      genres: Genre[];
+      typesOfMusician: TypeOfMusician[];
+    }) => createMusician(data.name, data.genres, data.typesOfMusician),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["musicians"] });
       setIsCreateModalOpen(false);
       setNewMusicianName("");
+      setSelectedGenres([]);
+      setSelectedTypes([]);
     },
   });
 
   const handleCreateMusician = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMusicianName.trim()) {
-      createMusicianMutation.mutate(newMusicianName);
+      createMusicianMutation.mutate({
+        name: newMusicianName,
+        genres: selectedGenres,
+        typesOfMusician: selectedTypes,
+      });
     }
   };
 
@@ -279,10 +316,68 @@ export default function Musicians() {
                   required
                 />
               </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Genres</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {GENRE_VALUES.map((genre) => (
+                    <label key={genre} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedGenres.includes(genre)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedGenres([...selectedGenres, genre]);
+                          } else {
+                            setSelectedGenres(
+                              selectedGenres.filter((g) => g !== genre)
+                            );
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span>{genre.toLowerCase().replace("_", " ")}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">
+                  Types of Musician
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TYPE_OF_MUSICIAN_VALUES.map((type) => (
+                    <label key={type} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedTypes.includes(type)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedTypes([...selectedTypes, type]);
+                          } else {
+                            setSelectedTypes(
+                              selectedTypes.filter((t) => t !== type)
+                            );
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <span>{type.toLowerCase().replace("_", " ")}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setNewMusicianName("");
+                    setSelectedGenres([]);
+                    setSelectedTypes([]);
+                  }}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800"
                 >
                   Cancel

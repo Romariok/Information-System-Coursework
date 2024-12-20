@@ -381,9 +381,15 @@ export const getForumTopicById = async (
   return response.data;
 };
 
-export const createMusician = async (name: string): Promise<string> => {
+export const createMusician = async (
+  name: string,
+  genres: Genre[],
+  typesOfMusician: TypeOfMusician[]
+): Promise<string> => {
   const response = await api.post("/musician", {
     name,
+    genres,
+    typesOfMusician,
   });
   return response.data;
 };
