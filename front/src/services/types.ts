@@ -103,3 +103,24 @@ export const formatProductType = (type: string) => {
   };
   return typeMap[type] || type;
 };
+
+export type Genre = 
+  | "BLUES"
+  | "ROCK"
+  | "POP"
+  | "JAZZ"
+  | "RAP"
+  | "METAL"
+  | "CLASSICAL"
+  | "REGGAE"
+  | "ELECTRONIC"
+  | "HIP_HOP";
+
+export type TypeOfMusician = 
+  | "MUSICAL_PRODUCER"
+  | "GUITARIST"
+  | "DRUMMER"
+  | "BASSIST"
+  | "SINGER"
+  | "RAPPER"
+  | "KEYBOARDIST";
