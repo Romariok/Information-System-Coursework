@@ -51,23 +51,9 @@ export default function MusicianProfile() {
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center space-x-6">
-            <div className="w-32 h-32">
-              <img
-                src={
-                  [
-                    "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
-                    "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
-                    "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
-                    "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
-                  ][Number(id) % 4]
-                }
-                alt={musician?.name}
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="flex items-start justify-between space-x-8">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {musician?.name}
               </h1>
               <p className="text-gray-600 mb-4">
@@ -85,8 +71,22 @@ export default function MusicianProfile() {
                 {isSubscribed ? "Unsubscribe" : "Subscribe"}
               </button>
             </div>
+            <div className="w-64 h-64">
+              <img
+                src={
+                  [
+                    "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                    "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                    "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                    "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                  ][Number(id) % 4]
+                }
+                alt={musician?.name}
+                className="w-full h-full object-cover rounded-full shadow-lg"
+              />
+            </div>
           </div>
-          <div className="mt-6 space-y-4">
+          <div className="mt-2 space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">Genres</h3>
               <div className="flex flex-wrap gap-2">
