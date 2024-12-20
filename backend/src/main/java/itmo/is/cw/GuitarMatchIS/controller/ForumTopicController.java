@@ -92,4 +92,18 @@ public class ForumTopicController {
          @Parameter(description = "Количество элементов") @RequestParam int size) {
       return forumPostService.getForumPostsByTopic(topicId, from, size);
    }
+
+   @Operation(summary = "Проверка владельца темы", 
+             description = "Проверяет, является ли текущий пользователь владельцем темы")
+   @ApiResponses(value = {
+         @ApiResponse(responseCode = "200", description = "Проверка выполнена успешно"),
+         @ApiResponse(responseCode = "401", description = "Не авторизован"),
+         @ApiResponse(responseCode = "404", description = "Тема не найдена")
+   })
+   @GetMapping("/{topicId}/is-owner")
+   public Boolean isTopicOwner(
+         @Parameter(description = "ID темы") @PathVariable Long topicId,
+         HttpServletRequest request) {
+      return forumTopicService.isTopicOwner(topicId, request);
+   }
 }

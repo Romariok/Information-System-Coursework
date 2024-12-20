@@ -370,4 +370,9 @@ export const deleteForumTopic = async (topicId: number): Promise<boolean> => {
   return response.data;
 };
 
+export const isTopicOwner = async (topicId: number): Promise<boolean> => {
+  const response = await api.get(`/forum/topic/${topicId}/is-owner`);
+  return response.data;
+};
+
 export default api;
