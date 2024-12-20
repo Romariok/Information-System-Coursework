@@ -8,21 +8,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.BrandDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
 import itmo.is.cw.GuitarMatchIS.models.Genre;
+import itmo.is.cw.GuitarMatchIS.models.Musician;
+import itmo.is.cw.GuitarMatchIS.models.MusicianGenre;
+import itmo.is.cw.GuitarMatchIS.models.MusicianProduct;
+import itmo.is.cw.GuitarMatchIS.models.MusicianTypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.models.Product;
 import itmo.is.cw.GuitarMatchIS.models.Role;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.models.UserGenre;
+import itmo.is.cw.GuitarMatchIS.models.UserMusician;
 import itmo.is.cw.GuitarMatchIS.models.UserProduct;
 import itmo.is.cw.GuitarMatchIS.models.UserTypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserGenreRepository;
+import itmo.is.cw.GuitarMatchIS.repository.UserMusicianRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.UserTypeOfMusicianRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianGenreRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianTypeOfMusicianRepository;
+import itmo.is.cw.GuitarMatchIS.repository.MusicianProductRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductMusicianAlreadyExists;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
@@ -38,6 +48,10 @@ public class UserService {
         private final UserProductRepository userProductRepository;
         private final ProductRepository productRepository;
         private final JwtUtils jwtUtils;
+        private final UserMusicianRepository userMusicianRepository;
+        private final MusicianGenreRepository musicianGenreRepository;
+        private final MusicianTypeOfMusicianRepository musicianTypeOfMusicianRepository;
+        private final MusicianProductRepository musicianProductRepository;
 
         public Role getRoleByUsername(String username) {
                 User user = userRepository.findByUsername(username)
@@ -80,6 +94,20 @@ public class UserService {
                 List<UserProduct> userProducts = userProductRepository.findByUser(user);
 
                 return userProducts.stream().map(UserProduct::getProduct).map(this::convertToDTO).toList();
+        }
+
+        public List<MusicianInfoDTO> getSubscribedMusicians(HttpServletRequest request) {
+                User user = findUserByRequest(request);
+                List<Musician> musicians = userMusicianRepository.findByUser(user).stream()
+                                .map(UserMusician::getMusician).toList();
+
+                return musicians
+                                .stream()
+                                .map(musician1 -> convertToDTO(musician1,
+                                                musicianGenreRepository.findByMusician(musician1),
+                                                musicianTypeOfMusicianRepository.findByMusician(musician1),
+                                                musicianProductRepository.findByMusician(musician1)))
+                                .toList();
         }
 
         @Transactional
@@ -159,6 +187,20 @@ public class UserService {
                                 .bodyMaterial(product.getBodyMaterial())
                                 .pickupConfiguration(product.getPickupConfiguration())
                                 .typeComboAmplifier(product.getTypeComboAmplifier())
+                                .build();
+        }
+
+        private MusicianInfoDTO convertToDTO(Musician musician, List<MusicianGenre> musicianGenres,
+                        List<MusicianTypeOfMusician> musicianTypes, List<MusicianProduct> musicianProducts) {
+                return MusicianInfoDTO.builder()
+                                .id(musician.getId())
+                                .name(musician.getName())
+                                .subscribers(musician.getSubscribers())
+                                .genres(musicianGenres.stream().map(MusicianGenre::getGenre).toList())
+                                .typesOfMusicians(musicianTypes.stream().map(MusicianTypeOfMusician::getTypeOfMusician)
+                                                .toList())
+                                .products(musicianProducts.stream().map(MusicianProduct::getProduct)
+                                                .map(this::convertToDTO).toList())
                                 .build();
         }
 
