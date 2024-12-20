@@ -66,23 +66,19 @@ export default function Forum() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    {topic.closed ? (
-                      <div>
-                        <span className="text-xl font-semibold text-gray-600">
-                          {topic.title}
-                        </span>
+                    <Link
+                      to={`/forum/topic/${topic.id}`}
+                      className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
+                    >
+                      {topic.title}
+                      {topic.closed ? (
                         <span className="ml-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
                           Closed
                         </span>
-                      </div>
-                    ) : (
-                      <Link
-                        to={`/forum/topic/${topic.id}`}
-                        className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
-                      >
-                        {topic.title}
-                      </Link>
-                    )}
+                      ) : (
+                        <></>
+                      )}
+                    </Link>
                     <p className="text-gray-600 mt-2">{topic.description}</p>
                   </div>
                 </div>
