@@ -48,19 +48,20 @@ public class ArticleService {
    private final SimpMessagingTemplate simpMessagingTemplate;
 
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
-      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC, 
-                         sortBy.getFieldName());
+      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
+            sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
 
       List<Article> articles = articleRepository.findByAccepted(true, page).getContent();
 
       return articles.stream()
-                     .map(this::convertToDTO)
-                     .toList();
+            .map(this::convertToDTO)
+            .toList();
    }
 
    public ArticleDTO getArticleById(Long id) {
-      return convertToDTO(articleRepository.findById(id).orElseThrow(() -> new ArticleNotFoundException(String.format("Article with id %s not found", id))));
+      return convertToDTO(articleRepository.findById(id)
+            .orElseThrow(() -> new ArticleNotFoundException(String.format("Article with id %s not found", id))));
    }
 
    public List<ArticleDTO> getArticlesByHeaderContaining(String header, int from, int size) {
@@ -101,11 +102,21 @@ public class ArticleService {
       User moderator = findUserByRequest(request);
       if (!moderator.getIsAdmin())
          throw new ForbiddenException("User have no rights to moderate article");
-      if (!articleRepository.existsById(moderateArticleDTO.getArticleId()))
-         throw new ArticleNotFoundException(String.format("Article with id %s not found", moderateArticleDTO.getArticleId()));
-      simpMessagingTemplate.convertAndSend("/articles", "Article was moderated");
-      return articleRepository.moderateArticle(moderateArticleDTO.getArticleId(), moderateArticleDTO.isAccepted(),
-            moderator.getId());
+
+      Long articleId = moderateArticleDTO.getArticleId();
+      if (!articleRepository.existsById(articleId))
+         throw new ArticleNotFoundException(String.format("Article with id %s not found", articleId));
+
+      if (!moderateArticleDTO.isAccepted()) {
+         // Delete the article if rejected
+         articleRepository.deleteById(articleId);
+         simpMessagingTemplate.convertAndSend("/articles", "Article was rejected and deleted");
+         return true;
+      }
+
+      // Accept the article if not rejected
+      simpMessagingTemplate.convertAndSend("/articles", "Article was approved");
+      return articleRepository.moderateArticle(articleId, true, moderator.getId());
    }
 
    @Transactional
@@ -173,7 +184,8 @@ public class ArticleService {
             .id(article.getId())
             .header(article.getHeader())
             .text(article.getText())
-            .author(UserInfoDTO.builder().id(article.getAuthor().getId()).username(article.getAuthor().getUsername()).build())
+            .author(UserInfoDTO.builder().id(article.getAuthor().getId()).username(article.getAuthor().getUsername())
+                  .build())
             .createdAt(article.getCreatedAt())
             .accepted(article.getAccepted())
             .build();
