@@ -32,6 +32,12 @@ export default function Navbar() {
                 Musicians
               </Link>
               <Link
+                to="/brand"
+                className="hover:bg-indigo-700 px-3 py-2 rounded-md"
+              >
+                Brands
+              </Link>
+              <Link
                 to="/forum"
                 className="hover:bg-indigo-700 px-3 py-2 rounded-md"
               >

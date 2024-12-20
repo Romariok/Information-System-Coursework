@@ -12,6 +12,8 @@ import Catalog from "./pages/Catalog";
 import Articles from "./pages/Articles";
 import Musicians from "./pages/Musicians";
 import Forum from "./pages/Forum";
+import Brands from "./pages/Brands";
+import BrandDetails from "./pages/BrandDetails";
 
 const queryClient = new QueryClient();
 
@@ -32,10 +34,26 @@ function App() {
               }
             />
             <Route
+              path="/brand"
+              element={
+                <ProtectedRoute>
+                  <Brands></Brands>
+                </ProtectedRoute>
+              }
+            ></Route>
+            <Route
               path="/product/:id"
               element={
                 <ProtectedRoute>
                   <ProductDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/brand/:id"
+              element={
+                <ProtectedRoute>
+                  <BrandDetails />
                 </ProtectedRoute>
               }
             />

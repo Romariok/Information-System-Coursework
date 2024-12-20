@@ -221,10 +221,6 @@ export default function ProductDetails() {
                   {formatProductType(product.product.typeOfProduct)}
                 </p>
                 <p>
-                  <span className="font-medium">Price:</span> $
-                  {product.product.avgPrice.toFixed(2)}
-                </p>
-                <p>
                   <span className="font-medium">Body Material:</span>{" "}
                   {product.product.bodyMaterial.toLowerCase()}
                 </p>
@@ -417,7 +413,6 @@ export default function ProductDetails() {
             {shopsData?.items?.map((shop) => (
               <div key={shop.id} className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold">{shop.name}</h3>
-                <p className="text-gray-600">{shop.address}</p>
                 <div className="mt-2">
                   <span className="font-medium">Price:</span> $
                   {shop.price.toFixed(2)}

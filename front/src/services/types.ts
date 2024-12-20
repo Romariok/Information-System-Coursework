@@ -88,3 +88,18 @@ export type Shop = {
   address: string;
   website: string;
 };
+
+export const formatProductType = (type: string) => {
+  const typeMap: { [key: string]: string } = {
+    PEDALS_AND_EFFECTS: "Pedals & Effects",
+    ELECTRIC_GUITAR: "Electric Guitar",
+    STUDIO_RECORDING_GEAR: "Studio Recording Gear",
+    KEYS_AND_MIDI: "Keys & MIDI",
+    AMPLIFIER: "Amplifier",
+    DRUMMS_AND_PERCUSSION: "Drums & Percussion",
+    BASS_GUITAR: "Bass Guitar",
+    ACOUSTIC_GUITAR: "Acoustic Guitar",
+    SOFTWARE_AND_ACCESSORIES: "Software & Accessories",
+  };
+  return typeMap[type] || type;
+};
