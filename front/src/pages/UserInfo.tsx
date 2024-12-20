@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
-import api from "../services/api";
+import api, { getUserGenres, getUserMusicians } from "../services/api";
 import {
   ProductSimple,
   Musician,
@@ -35,8 +35,8 @@ export default function UserInfo() {
   const { data: subscribedMusicians } = useQuery<Musician[]>({
     queryKey: ["userMusicians"],
     queryFn: async () => {
-      const response = await api.get("/user/musicians");
-      return response.data;
+      const response = await getUserMusicians();
+      return response;
     },
   });
 
@@ -171,7 +171,7 @@ export default function UserInfo() {
                   <p className="text-gray-600">
                     Role:{" "}
                     <span className="font-medium capitalize">
-                      {user?.role?.replace('ROLE_', '').toLowerCase()}
+                      {user?.role?.replace("ROLE_", "").toLowerCase()}
                     </span>
                   </p>
                 </div>

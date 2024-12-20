@@ -347,7 +347,7 @@ export const getProductsByBrand = async (
 };
 
 export const getUserMusicians = async (): Promise<Musician[]> => {
-  const response = await api.get("/user/musicians");
+  const response = await api.get("/user/subscribed");
   return response.data;
 };
 
