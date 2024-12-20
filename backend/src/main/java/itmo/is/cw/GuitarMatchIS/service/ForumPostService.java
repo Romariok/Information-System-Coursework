@@ -27,66 +27,71 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ForumPostService {
-   private final ForumPostRepository forumPostRepository;
-   private final ForumTopicRepository forumTopicRepository;
-   private final JwtUtils jwtUtils;
-   private final UserRepository userRepository;
-   private final SimpMessagingTemplate simpMessagingTemplate;
+      private final ForumPostRepository forumPostRepository;
+      private final ForumTopicRepository forumTopicRepository;
+      private final JwtUtils jwtUtils;
+      private final UserRepository userRepository;
+      private final SimpMessagingTemplate simpMessagingTemplate;
 
-   public List<ForumPostDTO> getForumPostsByTopic(Long topicId, int from, int size) {
-      Pageable pageable = Pagification.createPageTemplate(from, size);
+      public List<ForumPostDTO> getForumPostsByTopic(Long topicId, int from, int size) {
+            Pageable pageable = Pagification.createPageTemplate(from, size);
 
-      ForumTopic topic = forumTopicRepository.findById(topicId)
-            .orElseThrow(() -> new ForumTopicNotFoundException("Topic with id " + topicId + " not found"));
+            ForumTopic topic = forumTopicRepository.findById(topicId)
+                        .orElseThrow(() -> new ForumTopicNotFoundException("Topic with id " + topicId + " not found"));
 
-      List<ForumPost> posts = forumPostRepository.findAllByTopic(topic, pageable).getContent();
+            if (topic.getIsClosed()) {
+                  throw new ForumTopicNotFoundException("This topic is closed");
+            }
+            List<ForumPost> posts = forumPostRepository.findAllByTopic(topic, pageable).getContent();
 
-      return posts
-            .stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<ForumPostDTO>() {
-               @Override
-               public int compare(ForumPostDTO o1, ForumPostDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
-            .toList();
-   }
+            return posts
+                        .stream()
+                        .map(this::convertToDTO)
+                        .sorted(new Comparator<ForumPostDTO>() {
+                              @Override
+                              public int compare(ForumPostDTO o1, ForumPostDTO o2) {
+                                    return o1.getId().compareTo(o2.getId());
+                              }
+                        })
+                        .toList();
+      }
 
-   public ForumPostDTO createForumPost(CreateForumPostDTO forumPostDTO, HttpServletRequest request) {
-      ForumTopic topic = forumTopicRepository.findById(forumPostDTO.getForumTopicId())
-            .orElseThrow(() -> new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId())));
+      public ForumPostDTO createForumPost(CreateForumPostDTO forumPostDTO, HttpServletRequest request) {
+            ForumTopic topic = forumTopicRepository.findById(forumPostDTO.getForumTopicId())
+                        .orElseThrow(() -> new ForumTopicNotFoundException(
+                                    String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId())));
 
-      User author = findUserByRequest(request);
+            User author = findUserByRequest(request);
+            if (topic.getIsClosed()) {
+                  throw new ForumTopicNotFoundException("This topic is closed");
+            }
+            ForumPost post = ForumPost.builder()
+                        .topic(topic)
+                        .author(author)
+                        .createdAt(LocalDateTime.now())
+                        .content(forumPostDTO.getContent())
+                        .build();
+            forumPostRepository.save(post);
+            simpMessagingTemplate.convertAndSend("/forum/posts", "Forum post created");
 
-      ForumPost post = ForumPost.builder()
-            .topic(topic)
-            .author(author)
-            .createdAt(LocalDateTime.now())
-            .content(forumPostDTO.getContent())
-            .build();
-      forumPostRepository.save(post);
-      simpMessagingTemplate.convertAndSend("/forum/posts", "Forum post created");
+            return convertToDTO(post);
+      }
 
-      return convertToDTO(post);
-   }
+      private ForumPostDTO convertToDTO(ForumPost post) {
+            return ForumPostDTO.builder()
+                        .id(post.getId())
+                        .forumTopicId(post.getTopic().getId())
+                        .author(UserInfoDTO.builder().id(post.getAuthor().getId())
+                                    .username(post.getAuthor().getUsername()).build())
+                        .createdAt(post.getCreatedAt())
+                        .content(post.getContent())
+                        .build();
+      }
 
-   private ForumPostDTO convertToDTO(ForumPost post) {
-      return ForumPostDTO.builder()
-            .id(post.getId())
-            .forumTopicId(post.getTopic().getId())
-            .author(UserInfoDTO.builder().id(post.getAuthor().getId())
-                  .username(post.getAuthor().getUsername()).build())
-            .createdAt(post.getCreatedAt())
-            .content(post.getContent())
-            .build();
-   }
-
-   private User findUserByRequest(HttpServletRequest request) {
-      String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException(
-                  String.format("Username %s not found", username)));
-   }
+      private User findUserByRequest(HttpServletRequest request) {
+            String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
+            return userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException(
+                                    String.format("Username %s not found", username)));
+      }
 }
