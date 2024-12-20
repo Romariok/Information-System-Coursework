@@ -616,29 +616,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Процедура подписки на музыканта
-CREATE OR REPLACE PROCEDURE subscribe_to_musician(
-    p_user_id BIGINT,
-    p_musician_id BIGINT
-) AS $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM user_musician_subscription 
-               WHERE user_id = p_user_id AND musician_id = p_musician_id) THEN
-        RAISE EXCEPTION 'Подписка уже существует';
-    END IF;
-    
-    INSERT INTO user_musician_subscription (user_id, musician_id)
-    VALUES (p_user_id, p_musician_id);
-    
-    UPDATE musician
-    SET subscribers = subscribers + 1
-    WHERE id = p_musician_id;
-    
-    UPDATE app_user
-    SET subscriptions = subscriptions + 1
-    WHERE id = p_user_id;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Функция для модерации статей
 CREATE OR REPLACE FUNCTION moderate_article(
