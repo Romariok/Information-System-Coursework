@@ -427,7 +427,10 @@ export default function Catalog() {
                   className="bg-white p-4 rounded-lg shadow-md"
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <Link to={`/product/${product.id}`}>
+                    <Link 
+                      to={`/product/${product.id}`}
+                      className="w-full"
+                    >
                       <img
                         src={
                           [
@@ -438,7 +441,7 @@ export default function Catalog() {
                           ][product.id % 4]
                         }
                         alt={product.name}
-                        className="w-full h-48 object-cover rounded-md mb-4"
+                        className="w-full h-48 object-contain rounded-md mb-4 hover:opacity-75 transition-opacity"
                       />
                     </Link>
                     <button
