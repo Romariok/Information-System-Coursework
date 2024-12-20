@@ -1,5 +1,13 @@
 import axios from "axios";
-import { Product, Article, Musician, Feedback, ShopProduct } from "./types";
+import {
+  Product,
+  Article,
+  Musician,
+  Feedback,
+  ShopProduct,
+  Genre,
+  TypeOfMusician,
+} from "./types";
 
 const api = axios.create({
   baseURL: "http://localhost:5252/api",
@@ -350,6 +358,20 @@ export const getProductsByBrand = async (
 
 export const getUserMusicians = async (): Promise<Musician[]> => {
   const response = await api.get("/user/musicians");
+  return response.data;
+};
+
+export const getUserGenres = async (): Promise<Genre[]> => {
+  const response = await api.get("/user/genres");
+  return response.data;
+};
+export const getUserTypes = async (): Promise<TypeOfMusician[]> => {
+  const response = await api.get("/user/types");
+  return response.data;
+};
+
+export const getMusicianInfo = async (id: string) => {
+  const response = await api.get(`/musician/id/${id}`);
   return response.data;
 };
 
