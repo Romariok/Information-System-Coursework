@@ -11,6 +11,9 @@ import {
   likeProduct,
   unlikeProduct,
   addProductFeedback,
+  checkMusicianSubscribed,
+  subscribeToMusician,
+  unsubscribeFromMusician,
 } from "../services/api";
 import {
   Product,
@@ -47,6 +50,7 @@ export default function ProductDetails() {
   const [shopsPage, setShopsPage] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const pageSize = 5;
+  const [subscriptions, setSubscriptions] = useState<{ [key: number]: boolean }>({});
 
   const {
     data: product,
@@ -121,6 +125,47 @@ export default function ProductDetails() {
       });
     },
   });
+
+  useQuery({
+    queryKey: ["subscriptions", musiciansData?.items],
+    queryFn: async () => {
+      if (!musiciansData?.items) return;
+      const checks = await Promise.all(
+        musiciansData.items.map(musician => 
+          checkMusicianSubscribed(musician.id)
+        )
+      );
+      const newSubscriptions = musiciansData.items.reduce((acc, musician, index) => {
+        acc[musician.id] = checks[index];
+        return acc;
+      }, {} as { [key: number]: boolean });
+      setSubscriptions(newSubscriptions);
+    },
+    enabled: !!musiciansData?.items,
+  });
+
+  const subscriptionMutation = useMutation({
+    mutationFn: async ({ musicianId, subscribed }: { musicianId: number; subscribed: boolean }) => {
+      if (subscribed) {
+        return await unsubscribeFromMusician(musicianId);
+      } else {
+        return await subscribeToMusician(musicianId);
+      }
+    },
+    onSuccess: (_, { musicianId }) => {
+      setSubscriptions(prev => ({
+        ...prev,
+        [musicianId]: !prev[musicianId]
+      }));
+    },
+  });
+
+  const handleSubscribe = (musicianId: number) => {
+    subscriptionMutation.mutate({ 
+      musicianId, 
+      subscribed: subscriptions[musicianId] 
+    });
+  };
 
   if (productError) {
     return <Navigate to="*" />;
@@ -242,14 +287,12 @@ export default function ProductDetails() {
               >
                 <div className="w-32 h-32 mb-4">
                   <img
-                    src={
-                      [
-                        "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
-                        "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
-                        "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
-                        "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
-                      ][musician.id % 4]
-                    }
+                    src={[
+                      "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                      "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                      "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                      "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                    ][musician.id % 4]}
                     alt={musician.name}
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -257,12 +300,25 @@ export default function ProductDetails() {
                 <h3 className="text-lg font-semibold text-center">
                   {musician.name}
                 </h3>
-                <Link
-                  to={`/musician/${musician.id}`}
-                  className="text-indigo-600 hover:text-indigo-800 mt-2"
-                >
-                  View Profile
-                </Link>
+                <div className="flex flex-col items-center gap-2 mt-2">
+                  <Link
+                    to={`/musician/${musician.id}`}
+                    className="text-indigo-600 hover:text-indigo-800"
+                  >
+                    View Profile
+                  </Link>
+                  <button
+                    onClick={() => handleSubscribe(musician.id)}
+                    className={`px-4 py-1 rounded-full text-sm font-medium ${
+                      subscriptions[musician.id]
+                        ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                    disabled={subscriptionMutation.isPending}
+                  >
+                    {subscriptions[musician.id] ? "Unsubscribe" : "Subscribe"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -367,14 +423,15 @@ export default function ProductDetails() {
                   {shop.price.toFixed(2)}
                 </div>
                 <div className="mt-2">
-                  <a
-                    href={shop.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 hover:text-indigo-800"
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      shop.available
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                   >
-                    Visit Website
-                  </a>
+                    {shop.available ? "In Stock" : "Out of Stock"}
+                  </span>
                 </div>
               </div>
             ))}
