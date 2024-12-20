@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Pagination from "../components/Pagination";
@@ -9,6 +9,7 @@ import {
   subscribeToMusician,
   unsubscribeFromMusician,
   checkMusicianSubscribed,
+  createMusician,
 } from "../services/api";
 
 type SortOption = {
@@ -29,6 +30,10 @@ export default function Musicians() {
   const [subscriptions, setSubscriptions] = useState<{
     [key: number]: boolean;
   }>({});
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newMusicianName, setNewMusicianName] = useState("");
+  const queryClient = useQueryClient();
 
   const {
     data: musiciansData,
@@ -111,6 +116,22 @@ export default function Musicians() {
     }));
   };
 
+  const createMusicianMutation = useMutation({
+    mutationFn: (name: string) => createMusician(name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["musicians"] });
+      setIsCreateModalOpen(false);
+      setNewMusicianName("");
+    },
+  });
+
+  const handleCreateMusician = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMusicianName.trim()) {
+      createMusicianMutation.mutate(newMusicianName);
+    }
+  };
+
   if (error) return <div>Error loading musicians</div>;
 
   return (
@@ -119,7 +140,15 @@ export default function Musicians() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Musicians</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Musicians</h1>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            >
+              Add Musician
+            </button>
+          </div>
 
           {/* Search Form */}
           <form onSubmit={handleSearch} className="mb-6">
@@ -234,6 +263,42 @@ export default function Musicians() {
           </div>
         )}
       </main>
+
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-4">Create New Musician</h2>
+            <form onSubmit={handleCreateMusician}>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Name</label>
+                <input
+                  type="text"
+                  value={newMusicianName}
+                  onChange={(e) => setNewMusicianName(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  disabled={createMusicianMutation.isPending}
+                >
+                  {createMusicianMutation.isPending ? "Creating..." : "Create"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

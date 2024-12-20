@@ -381,4 +381,32 @@ export const getForumTopicById = async (
   return response.data;
 };
 
+export const createMusician = async (name: string): Promise<string> => {
+  const response = await api.post("/musician", {
+    name,
+  });
+  return response.data;
+};
+
+export const addProductToMusician = async (
+  musicianName: string,
+  productId: number
+): Promise<boolean> => {
+  const response = await api.post("/musician/product", {
+    musicianName,
+    productId,
+  });
+  return response.data;
+};
+
+export const searchProducts = async (
+  name: string,
+  from: number = 0,
+  size: number = 5
+): Promise<ProductSimple[]> => {
+  const response = await api.get(`/product/${name}`, {
+    params: { from, size },
+  });
+  return response.data.map((product: Product) => product.product);
+};
 export default api;
