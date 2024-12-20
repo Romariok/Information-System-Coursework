@@ -176,7 +176,10 @@ export default function Musicians() {
                 key={musician.id}
                 className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"
               >
-                <div className="w-32 h-32 mb-4">
+                <Link
+                  to={`/musician/${musician.id}`}
+                  className="w-32 h-32 mb-4 hover:opacity-75 transition-opacity"
+                >
                   <img
                     src={
                       [
@@ -189,7 +192,7 @@ export default function Musicians() {
                     alt={musician.name}
                     className="w-full h-full object-cover rounded-full"
                   />
-                </div>
+                </Link>
                 <h3 className="text-lg font-semibold text-center">
                   {musician.name}
                 </h3>
