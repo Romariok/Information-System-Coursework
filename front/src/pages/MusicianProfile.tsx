@@ -7,9 +7,12 @@ import {
   checkMusicianSubscribed,
   subscribeToMusician,
   unsubscribeFromMusician,
+  addProductToMusician,
+  searchProducts,
 } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Genre, TypeOfMusician, ProductSimple } from "../services/types.ts";
+import { useState } from "react";
 export default function MusicianProfile() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -36,6 +39,48 @@ export default function MusicianProfile() {
       queryClient.invalidateQueries({ queryKey: ["musician", id] });
     },
   });
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [newProductId, setNewProductId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ProductSimple[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<ProductSimple | null>(
+    null
+  );
+  const [isSearching, setIsSearching] = useState(false);
+  const addProductMutation = useMutation({
+    mutationFn: () =>
+      addProductToMusician(musician?.name || "", Number(newProductId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["musician", id] });
+      setIsAddProductModalOpen(false);
+      setNewProductId("");
+    },
+  });
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.trim().length >= 2) {
+      setIsSearching(true);
+      try {
+        const results = await searchProducts(query);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching products:", error);
+      }
+      setIsSearching(false);
+    } else {
+      setSearchResults([]);
+    }
+  };
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedProduct) {
+      addProductMutation.mutate();
+      setIsAddProductModalOpen(false);
+      setSearchQuery("");
+      setSearchResults([]);
+      setSelectedProduct(null);
+    }
+  };
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -59,17 +104,25 @@ export default function MusicianProfile() {
               <p className="text-gray-600 mb-4">
                 {musician?.subscribers} subscribers
               </p>
-              <button
-                onClick={() => subscriptionMutation.mutate()}
-                className={`px-4 py-2 rounded-full text-sm font-medium ${
-                  isSubscribed
-                    ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700"
-                }`}
-                disabled={subscriptionMutation.isPending}
-              >
-                {isSubscribed ? "Unsubscribe" : "Subscribe"}
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => subscriptionMutation.mutate()}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${
+                    isSubscribed
+                      ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
+                  disabled={subscriptionMutation.isPending}
+                >
+                  {isSubscribed ? "Unsubscribe" : "Subscribe"}
+                </button>
+                <button
+                  onClick={() => setIsAddProductModalOpen(true)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-medium hover:bg-green-700"
+                >
+                  Add Product
+                </button>
+              </div>
             </div>
             <div className="w-64 h-64">
               <img
@@ -146,6 +199,100 @@ export default function MusicianProfile() {
             ))}
           </div>
         </div>
+        {isAddProductModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+              <h2 className="text-2xl font-bold mb-4">
+                Add Product to {musician?.name}
+              </h2>
+              <form onSubmit={handleAddProduct}>
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">
+                    Search Product
+                  </label>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                    placeholder="Type to search products..."
+                  />
+
+                  {/* Search Results */}
+                  {searchQuery.trim().length >= 2 && !selectedProduct && (
+                    <div className="mt-2 max-h-60 overflow-y-auto border rounded-md">
+                      {isSearching ? (
+                        <div className="p-2 text-gray-500">Searching...</div>
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map((product) => (
+                          <div
+                            key={product.id}
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setNewProductId(product.id.toString());
+                              setSearchQuery(product.name);
+                              setSearchResults([]);
+                            }}
+                            className={`p-2 flex items-center gap-3 hover:bg-gray-100 cursor-pointer ${
+                              selectedProduct?.id === product.id
+                                ? "bg-indigo-50"
+                                : ""
+                            }`}
+                          >
+                            <img
+                              src={
+                                [
+                                  "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
+                                  "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
+                                  "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
+                                  "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
+                                ][product.id % 4]
+                              }
+                              alt={product.name}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-gray-500">
+                                {product.typeOfProduct}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-2 text-gray-500">
+                          No products found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddProductModalOpen(false);
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setSelectedProduct(null);
+                    }}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                    disabled={addProductMutation.isPending || !selectedProduct}
+                  >
+                    {addProductMutation.isPending ? "Adding..." : "Add Product"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
