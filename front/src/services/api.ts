@@ -409,4 +409,41 @@ export const searchProducts = async (
   });
   return response.data.map((product: Product) => product.product);
 };
+
+export const getUnacceptedArticles = async (
+  from: number,
+  size: number
+): Promise<{ items: { article: Article; product: ProductSimple }[] }> => {
+  const response = await api.get("/article/unaccepted", {
+    params: { from, size },
+  });
+  return {
+    items: response.data,
+  };
+};
+
+export const moderateArticle = async (
+  articleId: number,
+  accepted: boolean
+): Promise<boolean> => {
+  const response = await api.post("/article/moderate", {
+    articleId,
+    accepted,
+  });
+  return response.data;
+};
+
+export const createArticle = async (
+  productName: string,
+  header: string,
+  text: string
+): Promise<Article> => {
+  const response = await api.post("/article", {
+    productName,
+    header,
+    text,
+  });
+  return response.data;
+};
+
 export default api;

@@ -17,6 +17,7 @@ import BrandDetails from "./pages/BrandDetails";
 import UserInfo from "./pages/UserInfo";
 import MusicianProfile from "./pages/MusicianProfile";
 import ForumTopic from "./pages/ForumTopic";
+import AdminArticles from "./pages/AdminArticles";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +118,7 @@ function App() {
               }
             />
             <Route path="/profile" element={<UserInfo />} />
+            <Route path="/admin" element={<AdminArticles />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
