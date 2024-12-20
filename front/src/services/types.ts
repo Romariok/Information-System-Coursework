@@ -48,6 +48,7 @@ export type ProductSimple = {
 export type Article = {
   id: number;
   header: string;
+  htmlContent?: string;
   text: string;
   author: Author;
   createdAt: string;
