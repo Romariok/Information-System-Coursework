@@ -9,6 +9,7 @@ import {
   TypeOfMusician,
   ForumTopic,
   ForumPost,
+  ProductSimple,
 } from "./types";
 
 const api = axios.create({
@@ -135,8 +136,9 @@ export const checkProductLiked = async (
   productId: string
 ): Promise<boolean> => {
   const response = await api.get(`/user/products`);
+  console.error(response.data);
   return response.data.some(
-    (product: Product) => product.product.id === Number(productId)
+    (product: ProductSimple) => product.id === Number(productId)
   );
 };
 

@@ -276,10 +276,6 @@ export default function ProductDetails() {
                   </p>
                 )}
                 <p>
-                  <span className="font-medium">Average Price:</span> $
-                  {product.product.avgPrice.toFixed(2)}
-                </p>
-                <p>
                   <span className="font-medium">Genres:</span>{" "}
                   {product.genres.join(", ")}
                 </p>
