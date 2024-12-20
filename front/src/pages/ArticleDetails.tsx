@@ -73,11 +73,15 @@ export default function ArticleDetails() {
           </div>
 
           <div className="prose prose-lg max-w-none">
-            {article.text.split("\n").map((paragraph, index) => (
-              <p key={index} className="mb-4">
-                {paragraph}
-              </p>
-            ))}
+            {article.htmlContent ? (
+              <div dangerouslySetInnerHTML={{ __html: article.htmlContent }} />
+            ) : (
+              article.text.split("\n").map((paragraph, index) => (
+                <p key={index} className="mb-4">
+                  {paragraph}
+                </p>
+              ))
+            )}
           </div>
         </article>
 
@@ -101,7 +105,9 @@ export default function ArticleDetails() {
                 className="bg-white p-6 rounded-lg shadow-md"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold">{feedback.author.username}</span>
+                  <span className="font-semibold">
+                    {feedback.author.username}
+                  </span>
                   <StarRating
                     rating={feedback.stars}
                     onRatingChange={() => {}}

@@ -1,5 +1,10 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -180,11 +185,16 @@ public class ArticleService {
    }
 
    private ArticleDTO convertToDTO(Article article) {
+      String htmlContent = convertMarkdownToHtml(article.getText());
+
       return ArticleDTO.builder()
             .id(article.getId())
             .header(article.getHeader())
             .text(article.getText())
-            .author(UserInfoDTO.builder().id(article.getAuthor().getId()).username(article.getAuthor().getUsername())
+            .htmlContent(htmlContent)
+            .author(UserInfoDTO.builder()
+                  .id(article.getAuthor().getId())
+                  .username(article.getAuthor().getUsername())
                   .build())
             .createdAt(article.getCreatedAt())
             .accepted(article.getAccepted())
@@ -222,5 +232,38 @@ public class ArticleService {
             .pickupConfiguration(product.getPickupConfiguration())
             .typeComboAmplifier(product.getTypeComboAmplifier())
             .build();
+   }
+
+   private String convertMarkdownToHtml(String markdownText) {
+      try {
+         // Get parser path
+         String parserPath = System.getProperty("user.dir") + "/parser";
+         // Build the command - passing text directly
+         ProcessBuilder processBuilder = new ProcessBuilder(
+               parserPath, "-c", markdownText);
+         processBuilder.redirectErrorStream(true);
+         // Execute the command
+         Process process = processBuilder.start();
+         // Read the output
+         StringBuilder output = new StringBuilder();
+         try (BufferedReader reader = new BufferedReader(
+               new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+               output.append(line).append("\n");
+            }
+         }
+         // Wait for process to complete
+         int exitCode = process.waitFor();
+
+         if (exitCode != 0) {
+            System.err.println("Parser failed with output: " + output.toString());
+            return markdownText; // Fallback to original text
+         }
+         return output.toString();
+      } catch (Exception e) {
+         e.printStackTrace();
+         return markdownText; // Fallback to original text
+      }
    }
 }
