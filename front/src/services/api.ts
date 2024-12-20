@@ -115,6 +115,7 @@ export const getProductShops = async (
   const response = await api.get(`/product/${id}/shops`, {
     params: { from, size },
   });
+
   return {
     items: response.data.shops,
   };

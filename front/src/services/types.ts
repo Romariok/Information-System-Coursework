@@ -78,8 +78,7 @@ export type Feedback = {
 export type ShopProduct = {
   id: number;
   name: string;
-  address: string;
-  website: string;
+  available: boolean;
   price: number;
 };
 
