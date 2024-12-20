@@ -7,6 +7,7 @@ import {
   getTopicPosts,
   createForumPost,
   closeForumTopic,
+  isTopicOwner,
 } from "../services/api";
 
 export default function ForumTopic() {
@@ -58,6 +59,11 @@ export default function ForumTopic() {
     }
   };
 
+  const { data: isOwner } = useQuery({
+    queryKey: ["topicOwner", id],
+    queryFn: () => isTopicOwner(Number(id)),
+  });
+
   if (error) return <Navigate to="/error" />;
 
   const hasMore = postsData?.items.length === pageSize;
@@ -70,13 +76,15 @@ export default function ForumTopic() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Forum Topic</h1>
-          <button
-            onClick={handleCloseTopic}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            disabled={isClosed}
-          >
-            {isClosed ? "Topic Closed" : "Close Topic"}
-          </button>
+          {isOwner && (
+            <button
+              onClick={handleCloseTopic}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              disabled={isClosed}
+            >
+              {isClosed ? "Topic Closed" : "Close Topic"}
+            </button>
+          )}
         </div>
 
         {/* Posts List */}

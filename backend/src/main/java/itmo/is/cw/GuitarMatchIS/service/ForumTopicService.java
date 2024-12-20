@@ -126,4 +126,13 @@ public class ForumTopicService {
             .orElseThrow(() -> new UsernameNotFoundException(
                   String.format("Username %s not found", username)));
    }
+
+   public Boolean isTopicOwner(Long topicId, HttpServletRequest request) {
+      ForumTopic topic = forumTopicRepository.findById(topicId)
+            .orElseThrow(() -> new ForumTopicNotFoundException(
+                  String.format("Forum topic with id %s not found", topicId)));
+
+      User user = findUserByRequest(request);
+      return user.getIsAdmin() || user.getId().equals(topic.getAuthor().getId());
+   }
 }
