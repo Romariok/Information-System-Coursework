@@ -1,5 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +20,6 @@ public interface UserMusicianRepository extends JpaRepository<UserMusician, User
    boolean existsByUserAndMusician(User user, Musician musician);
 
    void deleteByUserAndMusician(User user, Musician musician);
+
+   List<UserMusician> findByUser(User user);
 }

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import itmo.is.cw.GuitarMatchIS.dto.AddUserProductDTO;
+import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserGenreDTO;
 import itmo.is.cw.GuitarMatchIS.dto.UserInfoDTO;
@@ -134,5 +135,16 @@ public class UserController {
    public Boolean setTypesOfMusiciansToUser(HttpServletRequest request,
        @Parameter(description = "Список типов музыканта") @RequestBody UserTypeOfMusicianDTO typesOfMusicians) {
       return userService.setTypesOfMusiciansToUser(request, typesOfMusicians.getTypesOfMusicians());
+   }
+
+   @Operation(summary = "Получить подписки пользователя",
+             description = "Возвращает список музыкантов, на которые подписан пользователь")
+   @ApiResponses(value = {
+       @ApiResponse(responseCode = "200", description = "Список музыкантов успешно получен"),
+       @ApiResponse(responseCode = "401", description = "Не авторизован")
+   })
+   @GetMapping("/subscribed")
+   public List<MusicianInfoDTO> getSubscribedMusicians(HttpServletRequest request) {
+      return userService.getSubscribedMusicians(request);
    }
 }
