@@ -133,9 +133,9 @@ export default function BrandDetails() {
             {products?.map((product) => (
               <div
                 key={product.id}
-                className="bg-white p-4 rounded-lg shadow-md"
+                className="bg-white p-6 rounded-lg shadow-md"
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="aspect-w-16 aspect-h-9 mb-4">
                   <Link to={`/product/${product.id}`}>
                     <img
                       src={
@@ -147,63 +147,66 @@ export default function BrandDetails() {
                         ][product.id % 4]
                       }
                       alt={product.name}
-                      className="w-full h-48 object-cover rounded-md mb-4"
+                      className="w-full h-full object-cover rounded-md hover:opacity-75 transition-opacity"
                     />
                   </Link>
+                </div>
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold">{product.name}</h3>
                   <button
                     onClick={() => handleLikeClick(product.id)}
-                    className={`p-2 rounded-full transition-colors ${
+                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
                       likedProducts[product.id]
-                        ? "text-red-600 hover:text-red-700"
+                        ? "text-red-500 hover:text-red-600"
                         : "text-gray-400 hover:text-gray-500"
                     }`}
+                    disabled={likeMutation.isPending}
                   >
                     <svg
-                      className="w-6 h-6"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
                       fill={likedProducts[product.id] ? "currentColor" : "none"}
-                      stroke="currentColor"
                       viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth="2"
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       />
                     </svg>
                   </button>
                 </div>
-
-                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-
-                <div className="flex items-center mb-2">
-                  <StarRating
-                    rating={product.rate}
-                    onRatingChange={() => {}}
-                    size="sm"
-                  />
-                  <span className="ml-2 text-gray-600">({product.rate}/5)</span>
-                </div>
-
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p>
-                    <span className="font-medium">Brand:</span>{" "}
-                    <Link
-                      to={`/brand/${product.brand.id}`}
-                      className="text-indigo-600 hover:text-indigo-800"
-                    >
-                      {product.brand.name}
-                    </Link>
-                  </p>
+                <div className="space-y-1 text-sm text-gray-700 mb-3">
+                  <div className="flex items-center mb-2">
+                    <StarRating
+                      rating={product.rate}
+                      onRatingChange={() => {}}
+                      size="sm"
+                    />
+                    <span className="ml-2 text-gray-600">
+                      ({product.rate}/5)
+                    </span>
+                  </div>
                   <p>
                     <span className="font-medium">Type:</span>{" "}
                     {formatProductType(product.typeOfProduct)}
                   </p>
+                  <p>
+                    <span className="font-medium">Body Material:</span>{" "}
+                    {product.bodyMaterial.toLowerCase()}
+                  </p>
+                  {product.strings && (
+                    <p>
+                      <span className="font-medium">Strings:</span>{" "}
+                      {product.strings}
+                    </p>
+                  )}
                 </div>
-
                 <Link
                   to={`/product/${product.id}`}
-                  className="mt-4 inline-block text-indigo-600 hover:text-indigo-800"
+                  className="text-indigo-600 hover:text-indigo-800 mt-2 inline-block"
                 >
                   View Details
                 </Link>

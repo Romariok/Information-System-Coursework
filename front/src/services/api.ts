@@ -348,4 +348,9 @@ export const getProductsByBrand = async (
   return response;
 };
 
+export const getUserMusicians = async (): Promise<Musician[]> => {
+  const response = await api.get("/user/musicians");
+  return response.data;
+};
+
 export default api;
