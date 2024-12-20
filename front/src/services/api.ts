@@ -331,4 +331,21 @@ export const createForumPost = async (
   return response.data;
 };
 
+export const getProductsByBrand = async (
+  brandId: number,
+  from: number,
+  size: number
+) => {
+  const response = await api.get("/product/filter", {
+    params: {
+      brandId: brandId,
+      from: from,
+      size: size,
+      ascending: false,
+      sortBy: "NAME",
+    },
+  });
+  return response;
+};
+
 export default api;

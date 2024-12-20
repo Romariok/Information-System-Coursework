@@ -3,25 +3,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StarRating from "../components/StarRating";
-import { ProductSimple } from "../services/types";
+import { formatProductType, ProductSimple } from "../services/types";
 import api from "../services/api";
 import { likeProduct, unlikeProduct } from "../services/api";
-
-// Reusing the existing format function from ProductDetails
-const formatProductType = (type: string) => {
-  const typeMap: { [key: string]: string } = {
-    PEDALS_AND_EFFECTS: "Pedals & Effects",
-    ELECTRIC_GUITAR: "Electric Guitar",
-    STUDIO_RECORDING_GEAR: "Studio Recording Gear",
-    KEYS_AND_MIDI: "Keys & MIDI",
-    AMPLIFIER: "Amplifier",
-    DRUMMS_AND_PERCUSSION: "Drums & Percussion",
-    BASS_GUITAR: "Bass Guitar",
-    ACOUSTIC_GUITAR: "Acoustic Guitar",
-    SOFTWARE_AND_ACCESSORIES: "Software & Accessories",
-  };
-  return typeMap[type] || type;
-};
 
 // Add these enums at the top of the file
 enum GuitarForm {
