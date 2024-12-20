@@ -14,6 +14,7 @@ import Musicians from "./pages/Musicians";
 import Forum from "./pages/Forum";
 import Brands from "./pages/Brands";
 import BrandDetails from "./pages/BrandDetails";
+import UserInfo from "./pages/UserInfo";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/profile" element={<UserInfo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -50,7 +50,9 @@ export default function ProductDetails() {
   const [shopsPage, setShopsPage] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const pageSize = 5;
-  const [subscriptions, setSubscriptions] = useState<{ [key: number]: boolean }>({});
+  const [subscriptions, setSubscriptions] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   const {
     data: product,
@@ -131,21 +133,30 @@ export default function ProductDetails() {
     queryFn: async () => {
       if (!musiciansData?.items) return;
       const checks = await Promise.all(
-        musiciansData.items.map(musician => 
+        musiciansData.items.map((musician) =>
           checkMusicianSubscribed(musician.id)
         )
       );
-      const newSubscriptions = musiciansData.items.reduce((acc, musician, index) => {
-        acc[musician.id] = checks[index];
-        return acc;
-      }, {} as { [key: number]: boolean });
+      const newSubscriptions = musiciansData.items.reduce(
+        (acc, musician, index) => {
+          acc[musician.id] = checks[index];
+          return acc;
+        },
+        {} as { [key: number]: boolean }
+      );
       setSubscriptions(newSubscriptions);
     },
     enabled: !!musiciansData?.items,
   });
 
   const subscriptionMutation = useMutation({
-    mutationFn: async ({ musicianId, subscribed }: { musicianId: number; subscribed: boolean }) => {
+    mutationFn: async ({
+      musicianId,
+      subscribed,
+    }: {
+      musicianId: number;
+      subscribed: boolean;
+    }) => {
       if (subscribed) {
         return await unsubscribeFromMusician(musicianId);
       } else {
@@ -153,17 +164,17 @@ export default function ProductDetails() {
       }
     },
     onSuccess: (_, { musicianId }) => {
-      setSubscriptions(prev => ({
+      setSubscriptions((prev) => ({
         ...prev,
-        [musicianId]: !prev[musicianId]
+        [musicianId]: !prev[musicianId],
       }));
     },
   });
 
   const handleSubscribe = (musicianId: number) => {
-    subscriptionMutation.mutate({ 
-      musicianId, 
-      subscribed: subscriptions[musicianId] 
+    subscriptionMutation.mutate({
+      musicianId,
+      subscribed: subscriptions[musicianId],
     });
   };
 
@@ -221,6 +232,10 @@ export default function ProductDetails() {
                   {formatProductType(product.product.typeOfProduct)}
                 </p>
                 <p>
+                  <span className="font-medium">Guitar Form:</span>{" "}
+                  {product.product.guitarForm?.toLowerCase().replace(/_/g, " ")}
+                </p>
+                <p>
                   <span className="font-medium">Body Material:</span>{" "}
                   {product.product.bodyMaterial.toLowerCase()}
                 </p>
@@ -230,6 +245,40 @@ export default function ProductDetails() {
                     {product.product.strings}
                   </p>
                 )}
+                {product.product.lads && (
+                  <p>
+                    <span className="font-medium">Number of Frets:</span>{" "}
+                    {product.product.lads}
+                  </p>
+                )}
+                {product.product.pickupConfiguration && (
+                  <p>
+                    <span className="font-medium">Pickup Configuration:</span>{" "}
+                    {product.product.pickupConfiguration.replace(/_/g, " ")}
+                  </p>
+                )}
+                {product.product.tipMaterial && (
+                  <p>
+                    <span className="font-medium">Tip Material:</span>{" "}
+                    {product.product.tipMaterial.toLowerCase()}
+                  </p>
+                )}
+                <p>
+                  <span className="font-medium">Color:</span>{" "}
+                  {product.product.color.toLowerCase()}
+                </p>
+                {product.product.typeComboAmplifier && (
+                  <p>
+                    <span className="font-medium">Amplifier Type:</span>{" "}
+                    {product.product.typeComboAmplifier
+                      .toLowerCase()
+                      .replace(/_/g, " ")}
+                  </p>
+                )}
+                <p>
+                  <span className="font-medium">Average Price:</span> $
+                  {product.product.avgPrice.toFixed(2)}
+                </p>
                 <p>
                   <span className="font-medium">Genres:</span>{" "}
                   {product.genres.join(", ")}
@@ -283,12 +332,14 @@ export default function ProductDetails() {
               >
                 <div className="w-32 h-32 mb-4">
                   <img
-                    src={[
-                      "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
-                      "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
-                      "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
-                      "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
-                    ][musician.id % 4]}
+                    src={
+                      [
+                        "https://tntmusic.ru/media/content/article@2x/2020-12-25_08-09-59__950100bc-4688-11eb-be12-87ef0634b7d4.jpg",
+                        "https://i1.sndcdn.com/artworks-QSYcavKwyzW8LwyR-jAEK0g-t500x500.jpg",
+                        "https://the-flow.ru/uploads/images/origin/04/15/95/60/74/8161911.jpg",
+                        "https://avatars.mds.yandex.net/get-mpic/5304425/img_id6170984171594674671.jpeg/orig",
+                      ][musician.id % 4]
+                    }
                     alt={musician.name}
                     className="w-full h-full object-cover rounded-full"
                   />
