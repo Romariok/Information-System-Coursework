@@ -66,22 +66,29 @@ export default function Forum() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <Link
-                      to={`/forum/topic/${topic.id}`}
-                      className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
-                    >
-                      {topic.title}
-                    </Link>
+                    {topic.closed ? (
+                      <div>
+                        <span className="text-xl font-semibold text-gray-600">
+                          {topic.title}
+                        </span>
+                        <span className="ml-2 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                          Closed
+                        </span>
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/forum/topic/${topic.id}`}
+                        className="text-xl font-semibold text-indigo-600 hover:text-indigo-800"
+                      >
+                        {topic.title}
+                      </Link>
+                    )}
                     <p className="text-gray-600 mt-2">{topic.description}</p>
                   </div>
-                  {topic.isClosed && (
-                    <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                      Closed
-                    </span>
-                  )}
                 </div>
                 <div className="mt-4 text-sm text-gray-500">
-                  By {topic.author.username} • {new Date(topic.createdAt).toLocaleDateString()}
+                  By {topic.author.username} •{" "}
+                  {new Date(topic.createdAt).toLocaleDateString()}
                 </div>
               </div>
             ))}
@@ -120,7 +127,9 @@ export default function Forum() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Description</label>
+                  <label className="block text-gray-700 mb-2">
+                    Description
+                  </label>
                   <textarea
                     value={newTopic.description}
                     onChange={(e) =>

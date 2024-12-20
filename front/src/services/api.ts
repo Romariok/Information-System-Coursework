@@ -365,11 +365,6 @@ export const getMusicianInfo = async (id: string) => {
   return response.data;
 };
 
-export const deleteForumTopic = async (topicId: number): Promise<boolean> => {
-  const response = await api.put(`/forum/topic/${topicId}/close`);
-  return response.data;
-};
-
 export const isTopicOwner = async (topicId: number): Promise<boolean> => {
   const response = await api.get(`/forum/topic/${topicId}/is-owner`);
   return response.data;
