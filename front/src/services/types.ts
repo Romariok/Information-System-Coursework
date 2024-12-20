@@ -124,3 +124,20 @@ export type TypeOfMusician =
   | "SINGER"
   | "RAPPER"
   | "KEYBOARDIST";
+
+export type ForumTopic = {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  author: Author;
+  isClosed: boolean;
+};
+
+export type ForumPost = {
+  id: number;
+  forumTopicId: number;
+  author: Author;
+  createdAt: string;
+  content: string;
+};

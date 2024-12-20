@@ -7,6 +7,8 @@ import {
   ShopProduct,
   Genre,
   TypeOfMusician,
+  ForumTopic,
+  ForumPost,
 } from "./types";
 
 const api = axios.create({
@@ -275,23 +277,6 @@ export const searchMusiciansByName = async (
   };
 };
 
-export interface ForumTopic {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  createdAt: string;
-  closed: boolean;
-  postsCount: number;
-}
-
-export interface ForumPost {
-  id: number;
-  content: string;
-  author: string;
-  createdAt: string;
-}
-
 export const getForumTopics = async (
   from: number,
   size: number
@@ -306,11 +291,11 @@ export const getForumTopics = async (
 
 export const createForumTopic = async (
   title: string,
-  content: string
+  description: string
 ): Promise<ForumTopic> => {
   const response = await api.post("/forum/topic", {
     title,
-    content,
+    description,
   });
   return response.data;
 };
@@ -333,9 +318,14 @@ export const createForumPost = async (
   content: string
 ): Promise<ForumPost> => {
   const response = await api.post("/forum/post", {
-    topicId,
+    forumTopicId: topicId,
     content,
   });
+  return response.data;
+};
+
+export const closeForumTopic = async (topicId: number): Promise<boolean> => {
+  const response = await api.put(`/forum/topic/${topicId}/close`);
   return response.data;
 };
 
@@ -372,6 +362,11 @@ export const getUserTypes = async (): Promise<TypeOfMusician[]> => {
 
 export const getMusicianInfo = async (id: string) => {
   const response = await api.get(`/musician/id/${id}`);
+  return response.data;
+};
+
+export const deleteForumTopic = async (topicId: number): Promise<boolean> => {
+  const response = await api.put(`/forum/topic/${topicId}/close`);
   return response.data;
 };
 

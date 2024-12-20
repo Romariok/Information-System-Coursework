@@ -8,7 +8,7 @@ import { getForumTopics, createForumTopic } from "../services/api";
 export default function Forum() {
   const [page, setPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newTopic, setNewTopic] = useState({ title: "", content: "" });
+  const [newTopic, setNewTopic] = useState({ title: "", description: "" });
   const pageSize = 10;
   const queryClient = useQueryClient();
 
@@ -22,12 +22,12 @@ export default function Forum() {
   });
 
   const createTopicMutation = useMutation({
-    mutationFn: (data: { title: string; content: string }) =>
-      createForumTopic(data.title, data.content),
+    mutationFn: (data: { title: string; description: string }) =>
+      createForumTopic(data.title, data.description),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forumTopics"] });
       setIsCreateModalOpen(false);
-      setNewTopic({ title: "", content: "" });
+      setNewTopic({ title: "", description: "" });
     },
   });
 
@@ -72,18 +72,16 @@ export default function Forum() {
                     >
                       {topic.title}
                     </Link>
-                    <p className="text-gray-600 mt-2">{topic.content}</p>
+                    <p className="text-gray-600 mt-2">{topic.description}</p>
                   </div>
-                  {topic.closed && (
+                  {topic.isClosed && (
                     <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
                       Closed
                     </span>
                   )}
                 </div>
                 <div className="mt-4 text-sm text-gray-500">
-                  By {topic.author} •{" "}
-                  {new Date(topic.createdAt).toLocaleDateString()} •{" "}
-                  {topic.postsCount} posts
+                  By {topic.author.username} • {new Date(topic.createdAt).toLocaleDateString()}
                 </div>
               </div>
             ))}
@@ -122,13 +120,13 @@ export default function Forum() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Content</label>
+                  <label className="block text-gray-700 mb-2">Description</label>
                   <textarea
-                    value={newTopic.content}
+                    value={newTopic.description}
                     onChange={(e) =>
                       setNewTopic((prev) => ({
                         ...prev,
-                        content: e.target.value,
+                        description: e.target.value,
                       }))
                     }
                     className="w-full p-2 border rounded-md h-32"

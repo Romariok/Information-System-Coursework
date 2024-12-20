@@ -16,6 +16,7 @@ import Brands from "./pages/Brands";
 import BrandDetails from "./pages/BrandDetails";
 import UserInfo from "./pages/UserInfo";
 import MusicianProfile from "./pages/MusicianProfile";
+import ForumTopic from "./pages/ForumTopic";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MusicianProfile></MusicianProfile>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forum/topic/:id"
+              element={
+                <ProtectedRoute>
+                  <ForumTopic />
                 </ProtectedRoute>
               }
             />
