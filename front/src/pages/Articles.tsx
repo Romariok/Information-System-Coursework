@@ -33,7 +33,7 @@ export default function Articles() {
   const {
     data: articlesData,
     isLoading,
-    error,
+    error: queryError,
   } = useQuery({
     queryKey: ["articles", page, searchQuery, sort],
     queryFn: async () => {
@@ -52,6 +52,9 @@ export default function Articles() {
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       setIsCreateModalOpen(false);
       setNewArticle({ productName: "", header: "", text: "" });
+    },
+    onError: (mutationError) => {
+      console.error("Error creating article:", mutationError);
     },
   });
 
@@ -74,8 +77,6 @@ export default function Articles() {
     }));
   };
 
-  if (error) return <div>Error loading articles</div>;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -91,6 +92,13 @@ export default function Articles() {
               Create Article
             </button>
           </div>
+
+          {/* Error Display */}
+          {queryError && (
+            <div className="mb-6 p-4 text-red-700 bg-red-100 border border-red-400 rounded-md">
+              Failed to load articles: {(queryError as Error).message}
+            </div>
+          )}
 
           {/* Search Form */}
           <form onSubmit={handleSearch} className="mb-6">
@@ -111,7 +119,7 @@ export default function Articles() {
             </div>
           </form>
 
-          {/* Updated Sort Controls */}
+          {/* Sort Controls */}
           <div className="flex gap-4 mb-6">
             <button
               onClick={handleSortChange}
@@ -129,6 +137,17 @@ export default function Articles() {
               <h2 className="text-2xl font-bold mb-4">Create New Article</h2>
               <form onSubmit={handleCreateArticle} className="space-y-4">
                 <div>
+                  {/* Error Display */}
+                  {queryError && (
+                    <div className="mb-6 p-4 text-red-700 bg-red-100 border border-red-400 rounded-md">
+                      Failed to load articles: product name not found
+                    </div>
+                  )}
+                  {createArticleMutation.isError && (
+                    <div className="mb-6 p-4 text-red-700 bg-red-100 border border-red-400 rounded-md">
+                      Failed to create article: product name not found
+                    </div>
+                  )}
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Product Name
                   </label>
@@ -192,7 +211,9 @@ export default function Articles() {
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                     disabled={createArticleMutation.isPending}
                   >
-                    {createArticleMutation.isPending ? "Creating..." : "Create"}
+                    {createArticleMutation.isPending
+                      ? "Creating..."
+                      : "Create"}
                   </button>
                 </div>
               </form>
