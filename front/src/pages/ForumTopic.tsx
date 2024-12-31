@@ -50,13 +50,7 @@ export default function ForumTopic() {
   };
 
   const handleCloseTopic = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to close this topic? No new messages will be allowed."
-      )
-    ) {
       closeTopicMutation.mutate();
-    }
   };
 
   const { data: isOwner } = useQuery({
