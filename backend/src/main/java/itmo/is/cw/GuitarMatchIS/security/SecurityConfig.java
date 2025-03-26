@@ -2,19 +2,19 @@ package itmo.is.cw.GuitarMatchIS.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtAuthEntryPoint;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtAuthTokenFilter;
@@ -34,36 +34,29 @@ public class SecurityConfig {
 
    @Bean
    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-      http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(new JwtAuthEntryPoint()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-      // .authorizeHttpRequests(auth -> auth.requestMatchers("/index.html",
-      // "/favicon.ico", "/static/**").permitAll()
-      // .requestMatchers("/auth/**", "/user/role/**", "/ws", "/").permitAll()
-      // .requestMatchers(HttpMethod.GET, "/admin/**").hasRole("ADMIN")
-      // .requestMatchers(HttpMethod.PUT, "/admin/**").hasRole("ADMIN")
-      // .anyRequest().authenticated());
+      return http.csrf(AbstractHttpConfigurer::disable)
+      .cors(cors -> cors.configurationSource(request -> {
+          CorsConfiguration corsConfiguration = new CorsConfiguration();
+          corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
+          corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "PATCH","DELETE", "OPTIONS"));
+          corsConfiguration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "from", "size"));
+          corsConfiguration.setAllowCredentials(true);
+          return corsConfiguration;
+      }))
+      .authorizeHttpRequests(
+              request -> request
+                      .requestMatchers("/index.html", "/favicon.ico", "/static/**").permitAll()
+                      .requestMatchers("/auth/**", "api/user/role/**", "/ws", "/api/").permitAll()
+                      .requestMatchers(HttpMethod.GET, "api/admin/**").hasRole("ADMIN")
+                      .requestMatchers(HttpMethod.POST, "api/moderate/**").hasRole("ADMIN")
+                      .anyRequest().authenticated()
+      ).userDetailsService(userDetailsService)
+      .sessionManagement(session -> session
+              .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class)
+      .exceptionHandling(exHandler -> exHandler.authenticationEntryPoint(new JwtAuthEntryPoint()))
+      .build();
 
-      http.authenticationProvider(authenticationProvider());
-      http
-            .userDetailsService(userDetailsService)
-            .addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
-      return http.build();
-   }
-
-   @Bean
-   public CorsConfigurationSource corsConfigurationSource() {
-      CorsConfiguration configuration = new CorsConfiguration();
-      configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-      configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-      configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "from", "size"));
-      configuration.setAllowCredentials(true);
-
-      UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-      source.registerCorsConfiguration("/**", configuration);
-      return source;
    }
 
    @Bean
