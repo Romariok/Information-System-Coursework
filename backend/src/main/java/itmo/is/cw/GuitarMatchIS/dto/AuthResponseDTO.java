@@ -13,7 +13,8 @@ public class AuthResponseDTO {
     private String token;
     private final String tokenType = "Bearer ";
 
-    public AuthResponseDTO(String username, Boolean isAdmin, Integer subscriptions, LocalDateTime createdAt, String token) {
+    public AuthResponseDTO(String username, Boolean isAdmin, Integer subscriptions, LocalDateTime createdAt,
+            String token) {
         this.username = username;
         this.isAdmin = isAdmin;
         this.subscriptions = subscriptions;

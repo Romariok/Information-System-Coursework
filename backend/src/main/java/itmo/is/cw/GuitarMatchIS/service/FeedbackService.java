@@ -3,6 +3,7 @@ package itmo.is.cw.GuitarMatchIS.service;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,121 +29,125 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 @RequiredArgsConstructor
 public class FeedbackService {
-   private final FeedbackRepository feedbackRepository;
-   private final JwtUtils jwtUtils;
-   private final UserRepository userRepository;
-   private final ProductRepository productRepository;
-   private final ArticleRepository articleRepository;
-   private final SimpMessagingTemplate simpMessagingTemplate;
+      private final FeedbackRepository feedbackRepository;
+      private final JwtUtils jwtUtils;
+      private final UserRepository userRepository;
+      private final ProductRepository productRepository;
+      private final ArticleRepository articleRepository;
+      private final SimpMessagingTemplate simpMessagingTemplate;
 
-   public List<FeedbackDTO> getFeedbackByProductId(Long productId, int from, int size) {
-      Pageable pageable = Pagification.createPageTemplate(from, size);
+      @Value("${app.messaging.feedback-topic:/feedbacks}")
+      private String feedbackTopic;
 
-      List<Feedback> feedbacks = feedbackRepository.findByProductId(productId, pageable).getContent();
+      public List<FeedbackDTO> getFeedbackByProductId(Long productId, int from, int size) {
+            Pageable pageable = Pagification.createPageTemplate(from, size);
 
-      return feedbacks
-            .stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<FeedbackDTO>() {
-               @Override
-               public int compare(FeedbackDTO o1, FeedbackDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
-            .toList();
+            List<Feedback> feedbacks = feedbackRepository.findByProductId(productId, pageable).getContent();
 
-   }
+            return feedbacks
+                        .stream()
+                        .map(this::convertToDTO)
+                        .sorted(new Comparator<FeedbackDTO>() {
+                              @Override
+                              public int compare(FeedbackDTO o1, FeedbackDTO o2) {
+                                    return o1.getId().compareTo(o2.getId());
+                              }
+                        })
+                        .toList();
 
-   public List<FeedbackDTO> getFeedbackByArticleId(Long articleId, int from, int size) {
-      Pageable pageable = Pagification.createPageTemplate(from, size);
+      }
 
-      List<Feedback> feedbacks = feedbackRepository.findByArticleId(articleId, pageable).getContent();
+      public List<FeedbackDTO> getFeedbackByArticleId(Long articleId, int from, int size) {
+            Pageable pageable = Pagification.createPageTemplate(from, size);
 
-      return feedbacks
-            .stream()
-            .map(this::convertToDTO)
-            .sorted(new Comparator<FeedbackDTO>() {
-               @Override
-               public int compare(FeedbackDTO o1, FeedbackDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
-            .toList();
-   }
+            List<Feedback> feedbacks = feedbackRepository.findByArticleId(articleId, pageable).getContent();
 
-   @Transactional
-   public Boolean addProductFeedback(CreateProductFeedbackDTO feedbackDTO, HttpServletRequest request) {
-      Product product = productRepository.findById(feedbackDTO.getProductId())
-            .orElseThrow(() -> new ProductNotFoundException(
-                  String.format("Product with id %s not found", feedbackDTO.getProductId())));
+            return feedbacks
+                        .stream()
+                        .map(this::convertToDTO)
+                        .sorted(new Comparator<FeedbackDTO>() {
+                              @Override
+                              public int compare(FeedbackDTO o1, FeedbackDTO o2) {
+                                    return o1.getId().compareTo(o2.getId());
+                              }
+                        })
+                        .toList();
+      }
 
-      User user = findUserByRequest(request);
-      feedbackRepository.addProductFeedback(user.getId(), product.getId(), feedbackDTO.getText(),
-            feedbackDTO.getStars());
-      simpMessagingTemplate.convertAndSend("/feedbacks", "New Feedback created for product");
-      return true;
-   }
+      @Transactional
+      public Boolean addProductFeedback(CreateProductFeedbackDTO feedbackDTO, HttpServletRequest request) {
+            Product product = productRepository.findById(feedbackDTO.getProductId())
+                        .orElseThrow(() -> new ProductNotFoundException(
+                                    String.format("Product with id %s not found", feedbackDTO.getProductId())));
 
-   @Transactional
-   public Boolean addArticleFeedback(CreateArticleFeedbackDTO feedbackDTO, HttpServletRequest request) {
-      Article article = articleRepository.findById(feedbackDTO.getArticleId())
-            .orElseThrow(() -> new ArticleNotFoundException(
-                  String.format("Article with id %s not found", feedbackDTO.getArticleId())));
+            User user = findUserByRequest(request);
+            feedbackRepository.addProductFeedback(user.getId(), product.getId(), feedbackDTO.getText(),
+                        feedbackDTO.getStars());
+            simpMessagingTemplate.convertAndSend(feedbackTopic, "New Feedback created for product");
+            return true;
+      }
 
-      User user = findUserByRequest(request);
-      feedbackRepository.addArticleFeedback(user.getId(), article.getId(), feedbackDTO.getText(),
-            feedbackDTO.getStars());
-      simpMessagingTemplate.convertAndSend("/feedbacks", "New Feedback created for article");
-      return true;
-   }
+      @Transactional
+      public Boolean addArticleFeedback(CreateArticleFeedbackDTO feedbackDTO, HttpServletRequest request) {
+            Article article = articleRepository.findById(feedbackDTO.getArticleId())
+                        .orElseThrow(() -> new ArticleNotFoundException(
+                                    String.format("Article with id %s not found", feedbackDTO.getArticleId())));
 
-   private User findUserByRequest(HttpServletRequest request) {
-      String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
-      return userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException(
-                  String.format("Username %s not found", username)));
-   }
+            User user = findUserByRequest(request);
+            feedbackRepository.addArticleFeedback(user.getId(), article.getId(), feedbackDTO.getText(),
+                        feedbackDTO.getStars());
+            simpMessagingTemplate.convertAndSend(feedbackTopic, "New Feedback created for article");
+            return true;
+      }
 
-   private FeedbackDTO convertToDTO(Feedback feedback) {
-      return FeedbackDTO.builder()
-            .id(feedback.getId())
-            .author(UserInfoDTO.builder().id(feedback.getAuthor().getId()).username(feedback.getAuthor().getUsername()).build())
-            .product(feedback.getProduct() != null ? ProductDTO.builder()
-                  .id(feedback.getProduct().getId())
-                  .name(feedback.getProduct().getName())
-                  .description(feedback.getProduct().getDescription())
-                  .rate(feedback.getProduct().getRate())
-                  .brand(BrandDTO.builder()
-                        .id(feedback.getProduct().getBrand().getId())
-                        .name(feedback.getProduct().getBrand().getName())
-                        .country(feedback.getProduct().getBrand().getCountry())
-                        .website(feedback.getProduct().getBrand().getWebsite())
-                        .email(feedback.getProduct().getBrand().getEmail())
-                        .build())
-                  .guitarForm(feedback.getProduct().getGuitarForm())
-                  .typeOfProduct(feedback.getProduct().getTypeOfProduct())
-                  .lads(feedback.getProduct().getLads())
-                  .avgPrice(feedback.getProduct().getAvgPrice())
-                  .color(feedback.getProduct().getColor())
-                  .strings(feedback.getProduct().getStrings())
-                  .tipMaterial(feedback.getProduct().getTipMaterial())
-                  .bodyMaterial(feedback.getProduct().getBodyMaterial())
-                  .pickupConfiguration(feedback.getProduct().getPickupConfiguration())
-                  .typeComboAmplifier(feedback.getProduct().getTypeComboAmplifier())
-                  .build() : null)
-            .article(feedback.getArticle() != null ? ArticleDTO.builder()
-                  .id(feedback.getArticle().getId())
-                  .header(feedback.getArticle().getHeader())
-                  .text(feedback.getArticle().getText())
-                  .author(UserInfoDTO.builder().id(feedback.getArticle().getAuthor().getId())
-                        .username(feedback.getArticle().getAuthor().getUsername()).build())
-                  .createdAt(feedback.getArticle().getCreatedAt())
-                  .accepted(feedback.getArticle().getAccepted())
-                  .build() : null)
-            .createdAt(feedback.getCreatedAt())
-            .text(feedback.getText())
-            .stars(feedback.getStars())
-            .build();
-   }
+      private User findUserByRequest(HttpServletRequest request) {
+            String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
+            return userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException(
+                                    String.format("Username %s not found", username)));
+      }
+
+      private FeedbackDTO convertToDTO(Feedback feedback) {
+            return FeedbackDTO.builder()
+                        .id(feedback.getId())
+                        .author(UserInfoDTO.builder().id(feedback.getAuthor().getId())
+                                    .username(feedback.getAuthor().getUsername()).build())
+                        .product(feedback.getProduct() != null ? ProductDTO.builder()
+                                    .id(feedback.getProduct().getId())
+                                    .name(feedback.getProduct().getName())
+                                    .description(feedback.getProduct().getDescription())
+                                    .rate(feedback.getProduct().getRate())
+                                    .brand(BrandDTO.builder()
+                                                .id(feedback.getProduct().getBrand().getId())
+                                                .name(feedback.getProduct().getBrand().getName())
+                                                .country(feedback.getProduct().getBrand().getCountry())
+                                                .website(feedback.getProduct().getBrand().getWebsite())
+                                                .email(feedback.getProduct().getBrand().getEmail())
+                                                .build())
+                                    .guitarForm(feedback.getProduct().getGuitarForm())
+                                    .typeOfProduct(feedback.getProduct().getTypeOfProduct())
+                                    .lads(feedback.getProduct().getLads())
+                                    .avgPrice(feedback.getProduct().getAvgPrice())
+                                    .color(feedback.getProduct().getColor())
+                                    .strings(feedback.getProduct().getStrings())
+                                    .tipMaterial(feedback.getProduct().getTipMaterial())
+                                    .bodyMaterial(feedback.getProduct().getBodyMaterial())
+                                    .pickupConfiguration(feedback.getProduct().getPickupConfiguration())
+                                    .typeComboAmplifier(feedback.getProduct().getTypeComboAmplifier())
+                                    .build() : null)
+                        .article(feedback.getArticle() != null ? ArticleDTO.builder()
+                                    .id(feedback.getArticle().getId())
+                                    .header(feedback.getArticle().getHeader())
+                                    .text(feedback.getArticle().getText())
+                                    .author(UserInfoDTO.builder().id(feedback.getArticle().getAuthor().getId())
+                                                .username(feedback.getArticle().getAuthor().getUsername()).build())
+                                    .createdAt(feedback.getArticle().getCreatedAt())
+                                    .accepted(feedback.getArticle().getAccepted())
+                                    .build() : null)
+                        .createdAt(feedback.getCreatedAt())
+                        .text(feedback.getText())
+                        .stars(feedback.getStars())
+                        .build();
+      }
 
 }

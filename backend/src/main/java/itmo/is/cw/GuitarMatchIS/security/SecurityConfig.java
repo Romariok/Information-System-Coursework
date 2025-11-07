@@ -1,5 +1,6 @@
 package itmo.is.cw.GuitarMatchIS.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,12 +33,16 @@ public class SecurityConfig {
 
    private final AuthUserDetailsService userDetailsService;
 
+   @Value("#{'${app.cors.allowed-origins:http://localhost:5173}'.split(',')}")
+   private List<String> corsAllowedOrigins;
+
+
    @Bean
    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
       return http.csrf(AbstractHttpConfigurer::disable)
       .cors(cors -> cors.configurationSource(request -> {
           CorsConfiguration corsConfiguration = new CorsConfiguration();
-          corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
+          corsConfiguration.setAllowedOrigins(corsAllowedOrigins);
           corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "PATCH","DELETE", "OPTIONS"));
           corsConfiguration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "from", "size"));
           corsConfiguration.setAllowCredentials(true);
