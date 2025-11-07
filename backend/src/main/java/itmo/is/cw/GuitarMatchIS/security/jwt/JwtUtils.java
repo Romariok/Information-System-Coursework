@@ -6,18 +6,24 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.util.Date;
 
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    private static final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private static final long expirationMs = 3600000; // Время действия токена: 1 час
+    @Value("${app.security.jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${app.security.jwt.expiration-ms:3600000}")
+    private long expirationMs;
 
     public String generateJwtToken(String username) {
         Date now = new Date();
@@ -27,7 +33,7 @@ public class JwtUtils {
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
-                .signWith(secretKey)
+                .signWith(getSecretKey())
                 .compact();
     }
 
@@ -60,7 +66,19 @@ public class JwtUtils {
     }
 
     private Jws<Claims> getParsedToken(String authToken) {
-        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(authToken);
+        return Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(authToken);
+    }
+
+    private Key getSecretKey() {
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            try {
+                keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to initialize JWT secret key", e);
+            }
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String parseJwt(HttpServletRequest request) {

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -49,6 +50,12 @@ public class ArticleService {
    private final ProductRepository productRepository;
    private final ProductArticleRepository productArticleRepository;
    private final SimpMessagingTemplate simpMessagingTemplate;
+
+   @Value("${app.messaging.articles-topic:/articles}")
+   private String articlesTopic;
+
+   @Value("${app.external.markdown-parser.path:${user.dir}/parser}")
+   private String markdownParserPath;
 
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
       Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
@@ -113,12 +120,12 @@ public class ArticleService {
       if (!moderateArticleDTO.isAccepted()) {
          // Delete the article if rejected
          articleRepository.deleteById(articleId);
-         simpMessagingTemplate.convertAndSend("/articles", "Article was rejected and deleted");
+         simpMessagingTemplate.convertAndSend(articlesTopic, "Article was rejected and deleted");
          return true;
       }
 
       // Accept the article if not rejected
-      simpMessagingTemplate.convertAndSend("/articles", "Article was approved");
+      simpMessagingTemplate.convertAndSend(articlesTopic, "Article was approved");
       return articleRepository.moderateArticle(articleId, true, moderator.getId());
    }
 
@@ -235,7 +242,7 @@ public class ArticleService {
    private String convertMarkdownToHtml(String markdownText) {
       try {
          // Get parser path
-         String parserPath = System.getProperty("user.dir") + "/parser";
+         String parserPath = markdownParserPath;
          // Build the command - passing text directly
          ProcessBuilder processBuilder = new ProcessBuilder(
                parserPath, "-c", markdownText);
