@@ -1,0 +1,113 @@
+{
+  "id": null,
+  "uid": "spring-overview",
+  "title": "Spring Boot Overview",
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "tags": ["micrometer", "spring"],
+  "time": {"from": "now-6h", "to": "now"},
+  "templating": {"list": []},
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests Rate (req/s)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count[1m]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP p95 Latency (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket[5m])))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Heap Used (bytes)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"})"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Process CPU (%)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg(process_cpu_usage) * 100"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "System CPU (%)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg(system_cpu_usage) * 100"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Heap Used (%)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(jvm_memory_used_bytes{area=\"heap\"}) / sum(jvm_memory_max_bytes{area=\"heap\"})"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM Threads Live",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(jvm_threads_live_threads)"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "DB Connections Active",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(hikaricp_connections_active)"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Uptime (hours)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(process_uptime_seconds) / 3600"
+        }
+      ]
+    }
+  ]
+}
+
