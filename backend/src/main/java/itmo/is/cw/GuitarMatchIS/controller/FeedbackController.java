@@ -22,10 +22,12 @@ import itmo.is.cw.GuitarMatchIS.service.FeedbackService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feedback")
+@Slf4j
 @Tag(name = "Отзывы", description = "API для работы с отзывами на товары и статьи")
 public class FeedbackController {
    private final FeedbackService feedbackService;
@@ -41,6 +43,7 @@ public class FeedbackController {
        @Parameter(description = "ID товара") @PathVariable Long productId,
        @Parameter(description = "Начальная позиция") @RequestParam int from,
        @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for feedback for product with id {} received. from={}, size={}", productId, from, size);
       return feedbackService.getFeedbackByProductId(productId, from, size);
    }
 
@@ -55,6 +58,7 @@ public class FeedbackController {
        @Parameter(description = "ID статьи") @PathVariable Long articleId,
        @Parameter(description = "Начальная позиция") @RequestParam int from,
        @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for feedback for article with id {} received. from={}, size={}", articleId, from, size);
       return feedbackService.getFeedbackByArticleId(articleId, from, size);
    }
 
@@ -69,6 +73,7 @@ public class FeedbackController {
    public Boolean addProductFeedback(
        @Parameter(description = "Данные отзыва") @RequestBody @Valid CreateProductFeedbackDTO feedbackDTO,
        HttpServletRequest request) {
+      log.info("Request to add feedback for product with id {} received.", feedbackDTO.getProductId());
       return feedbackService.addProductFeedback(feedbackDTO, request);
    }
 
@@ -83,6 +88,7 @@ public class FeedbackController {
    public Boolean addArticleFeedback(
        @Parameter(description = "Данные отзыва") @RequestBody @Valid CreateArticleFeedbackDTO feedbackDTO,
        HttpServletRequest request) {
+      log.info("Request to add feedback for article with id {} received.", feedbackDTO.getArticleId());
       return feedbackService.addArticleFeedback(feedbackDTO, request);
    }
 }

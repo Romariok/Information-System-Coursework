@@ -10,6 +10,7 @@ import itmo.is.cw.GuitarMatchIS.dto.UserDTO;
 import itmo.is.cw.GuitarMatchIS.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Аутентификация", description = "API для регистрации и входа пользователей")
 public class AuthController {
    private final AuthService authService;
@@ -31,6 +33,7 @@ public class AuthController {
    })
    @PostMapping("/register")
    public AuthResponseDTO register(@RequestBody @Valid UserDTO registerUserDto) {
+      log.info("Received request to register user: {}", registerUserDto.getUsername());
       return authService.register(registerUserDto);
    }
 
@@ -43,6 +46,7 @@ public class AuthController {
    })
    @PostMapping("/login")
    public AuthResponseDTO login(@RequestBody @Valid UserDTO loginUserDto) {
+      log.info("Received request to login user: {}", loginUserDto.getUsername());
       return authService.login(loginUserDto);
    }
 }

@@ -21,10 +21,12 @@ import itmo.is.cw.GuitarMatchIS.models.TypeOfMusician;
 import itmo.is.cw.GuitarMatchIS.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
+@Slf4j
 @Tag(name = "Пользователи", description = "API для работы с пользователями")
 public class UserController {
    private final UserService userService;
@@ -37,6 +39,7 @@ public class UserController {
    })
    @GetMapping("/id/{id}")
    public UserInfoDTO getUserInfoById(@PathVariable Long id) {
+      log.info("Request for user info with id {} received.", id);
       return userService.getUserInfoById(id);
    }
 
@@ -49,6 +52,7 @@ public class UserController {
    @GetMapping("/role/{username}")
    public Role getRoleByUsername(
        @Parameter(description = "Имя пользователя") @PathVariable String username) {
+      log.info("Request for role for username '{}' received.", username);
       return userService.getRoleByUsername(username);
    }
 
@@ -60,6 +64,7 @@ public class UserController {
    })
    @GetMapping("/products")
    public List<ProductDTO> getUserProducts(HttpServletRequest request) {
+      log.info("Request for user's products received.");
       return userService.getUserProducts(request);
    }
 
@@ -73,6 +78,7 @@ public class UserController {
    @PostMapping("/product")
    public Boolean addProductToUser(HttpServletRequest request, 
        @Parameter(description = "Данные продукта") @RequestBody AddUserProductDTO addUserProductDTO) {
+      log.info("Request to add product with id {} to user received.", addUserProductDTO.getProductId());
       return userService.addProductToUser(addUserProductDTO, request);
    }
 
@@ -86,6 +92,7 @@ public class UserController {
    @DeleteMapping("/product")
    public Boolean deleteProductFromUser(HttpServletRequest request,
        @Parameter(description = "Данные продукта") @RequestBody AddUserProductDTO addUserProductDTO) {
+      log.info("Request to delete product with id {} from user received.", addUserProductDTO.getProductId());
       return userService.deleteProductFromUser(addUserProductDTO, request);
    }
 
@@ -97,6 +104,7 @@ public class UserController {
    })
    @GetMapping("/genres")
    public List<Genre> getGenresByUser(HttpServletRequest request) {
+      log.info("Request for user's genres received.");
       return userService.getGenresByUser(request);
    }
 
@@ -108,6 +116,7 @@ public class UserController {
    })
    @GetMapping("/types")
    public List<TypeOfMusician> getTypesOfMusiciansByUser(HttpServletRequest request) {
+      log.info("Request for user's types of musician received.");
       return userService.getTypesOfMusiciansByUser(request);
    }
 
@@ -121,6 +130,7 @@ public class UserController {
    @PostMapping("/genres")
    public Boolean setGenresToUser(HttpServletRequest request,
        @Parameter(description = "Список жанров") @RequestBody UserGenreDTO genres) {
+      log.info("Request to set genres for user received.");
       return userService.setGenresToUser(request, genres.getGenres());
    }
 
@@ -134,6 +144,7 @@ public class UserController {
    @PostMapping("/types")
    public Boolean setTypesOfMusiciansToUser(HttpServletRequest request,
        @Parameter(description = "Список типов музыканта") @RequestBody UserTypeOfMusicianDTO typesOfMusicians) {
+      log.info("Request to set types of musician for user received.");
       return userService.setTypesOfMusiciansToUser(request, typesOfMusicians.getTypesOfMusicians());
    }
 
@@ -145,6 +156,7 @@ public class UserController {
    })
    @GetMapping("/subscribed")
    public List<MusicianInfoDTO> getSubscribedMusicians(HttpServletRequest request) {
+      log.info("Request for user's subscribed musicians received.");
       return userService.getSubscribedMusicians(request);
    }
 }
