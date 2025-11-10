@@ -13,10 +13,12 @@ import itmo.is.cw.GuitarMatchIS.service.ForumPostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/forum/post")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Сообщения форума", description = "API для работы с сообщениями на форуме")
 public class ForumPostController {
    private final ForumPostService forumPostService;
@@ -31,6 +33,7 @@ public class ForumPostController {
    public ForumPostDTO createForumPost(
          @Parameter(description = "Данные нового сообщения") @RequestBody @Valid CreateForumPostDTO createForumPostDTO,
          HttpServletRequest request) {
+      log.info("Request to create forum post in topic with id {} received.", createForumPostDTO.getForumTopicId());
       return forumPostService.createForumPost(createForumPostDTO, request);
    }
 }

@@ -13,6 +13,7 @@ import itmo.is.cw.GuitarMatchIS.service.ArticleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/article")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Статьи", description = "API для работы со статьями")
 public class ArticleController {
    private final ArticleService articleService;
@@ -32,6 +34,7 @@ public class ArticleController {
       @Parameter(description = "Направление сортировки") @RequestParam boolean ascending,
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for accepted articles received. from={}, size={}, sortBy={}, ascending={}", from, size, sortBy, ascending);
       return articleService.getAcceptedArticles(from, size, sortBy, ascending);
    }
 
@@ -44,6 +47,7 @@ public class ArticleController {
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size,
       HttpServletRequest request) {
+      log.info("Request for unaccepted articles received. from={}, size={}", from, size);
       return articleService.getStatusArticles(from, size, request);
    }
 
@@ -51,6 +55,7 @@ public class ArticleController {
              description = "Возвращает статью по её ID")
    @GetMapping("/id/{id}")
    public ArticleDTO getArticleById(@PathVariable Long id) {
+      log.info("Request for article with id {} received.", id);
       return articleService.getArticleById(id);
    }
 
@@ -61,6 +66,7 @@ public class ArticleController {
       @Parameter(description = "Текст для поиска в заголовке") @PathVariable String header,
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for articles with header containing '{}' received. from={}, size={}", header, from, size);
       return articleService.getArticlesByHeaderContaining(header, from, size);
    }
 
@@ -71,6 +77,7 @@ public class ArticleController {
       @Parameter(description = "ID автора") @PathVariable Long authorId,
       @Parameter(description = "Начальная позиция") @RequestParam int from,
       @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for articles by author {} received. from={}, size={}", authorId, from, size);
       return articleService.getArticlesByAuthorId(authorId, from, size);
    }
 
@@ -80,6 +87,7 @@ public class ArticleController {
    public boolean moderateArticle(
       @Parameter(description = "Данные для модерации") @RequestBody @Valid ModerateArticleDTO moderateArticleDTO,
       HttpServletRequest request) {
+      log.info("Request to moderate article with id {} received.", moderateArticleDTO.getArticleId());
       return articleService.moderateArticle(moderateArticleDTO, request);
    }
 
@@ -89,6 +97,7 @@ public class ArticleController {
    public ArticleDTO createArticle(
       @Parameter(description = "Данные новой статьи") @RequestBody @Valid CreateArticleDTO createArticleDTO,
       HttpServletRequest request) {
+      log.info("Request to create article with header '{}' received.", createArticleDTO.getHeader());
       return articleService.createArticle(createArticleDTO, request);
    }
 }

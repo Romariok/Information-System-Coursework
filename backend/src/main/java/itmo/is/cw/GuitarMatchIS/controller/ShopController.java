@@ -13,10 +13,12 @@ import itmo.is.cw.GuitarMatchIS.dto.ShopDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ShopProductDTO;
 import itmo.is.cw.GuitarMatchIS.service.ShopService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/shop")
+@Slf4j
 @Tag(name = "Магазины", description = "API для работы с музыкальными магазинами")
 public class ShopController {
    private final ShopService shopService;
@@ -26,6 +28,7 @@ public class ShopController {
              description = "Возвращает магазин по его ID")
    @GetMapping("/id/{id}")
    public ShopDTO getShopById(@PathVariable Long id) {
+      log.info("Request for shop with id {} received.", id);
       return shopService.getShopById(id);
    }
 
@@ -39,6 +42,7 @@ public class ShopController {
    public List<ShopDTO> getShops(
        @Parameter(description = "Начальная позиция") @RequestParam int from,
        @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for shops received. from={}, size={}", from, size);
       return shopService.getShops(from, size);
    }
 
@@ -54,6 +58,7 @@ public class ShopController {
        @Parameter(description = "ID магазина") @PathVariable Long shopId,
        @Parameter(description = "Начальная позиция") @RequestParam int from,
        @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for products in shop with id {} received. from={}, size={}", shopId, from, size);
       return shopService.getShopProducts(shopId, from, size);
    }
 }

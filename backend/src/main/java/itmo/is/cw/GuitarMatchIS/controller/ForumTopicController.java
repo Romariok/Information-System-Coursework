@@ -17,10 +17,12 @@ import itmo.is.cw.GuitarMatchIS.service.ForumTopicService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/forum/topic")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Темы форума", description = "API для работы с темами на форуме")
 public class ForumTopicController {
    private final ForumTopicService forumTopicService;
@@ -35,6 +37,7 @@ public class ForumTopicController {
    public List<ForumTopicDTO> getForumTopics(
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for forum topics received. from={}, size={}", from, size);
       return forumTopicService.getForumTopics(from, size);
    }
 
@@ -49,6 +52,7 @@ public class ForumTopicController {
          @Parameter(description = "ID автора") @PathVariable Long authorId,
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for forum topics by author {} received. from={}, size={}", authorId, from, size);
       return forumTopicService.getForumTopicsByAuthor(authorId, from, size);
    }
 
@@ -62,6 +66,7 @@ public class ForumTopicController {
    public ForumTopicDTO createForumTopic(
          @Parameter(description = "Данные новой темы") @RequestBody @Valid CreateForumTopicDTO createForumTopicDTO,
          HttpServletRequest request) {
+      log.info("Request to create forum topic with title '{}' received.", createForumTopicDTO.getTitle());
       return forumTopicService.createTopic(createForumTopicDTO, request);
    }
 
@@ -76,6 +81,7 @@ public class ForumTopicController {
    public Boolean closeForumTopic(
          @Parameter(description = "ID темы") @PathVariable Long topicId,
          HttpServletRequest request) {
+      log.info("Request to close forum topic with id {} received.", topicId);
       return forumTopicService.closeTopic(topicId, request);
    }
 
@@ -90,6 +96,7 @@ public class ForumTopicController {
          @Parameter(description = "ID темы") @PathVariable Long topicId,
          @Parameter(description = "Начальная позиция") @RequestParam int from,
          @Parameter(description = "Количество элементов") @RequestParam int size) {
+      log.info("Request for posts in topic {} received. from={}, size={}", topicId, from, size);
       return forumPostService.getForumPostsByTopic(topicId, from, size);
    }
 
@@ -104,6 +111,7 @@ public class ForumTopicController {
    public Boolean isTopicOwner(
          @Parameter(description = "ID темы") @PathVariable Long topicId,
          HttpServletRequest request) {
+      log.info("Request to check ownership of topic {} received.", topicId);
       return forumTopicService.isTopicOwner(topicId, request);
    }
 
@@ -115,6 +123,7 @@ public class ForumTopicController {
    @GetMapping("/{topicId}")
    public ForumTopicDTO getForumTopicById(
          @Parameter(description = "ID темы") @PathVariable Long topicId) {
+      log.info("Request for forum topic with id {} received.", topicId);
       return forumTopicService.getForumTopicById(topicId);
    }
    

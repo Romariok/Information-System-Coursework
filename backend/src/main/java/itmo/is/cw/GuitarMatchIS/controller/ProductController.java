@@ -28,10 +28,12 @@ import itmo.is.cw.GuitarMatchIS.models.TypeComboAmplifier;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 import itmo.is.cw.GuitarMatchIS.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")
+@Slf4j
 @Tag(name = "Товары", description = "API для работы с музыкальными инструментами и оборудованием")
 public class ProductController {
         private final ProductService productService;
@@ -46,6 +48,7 @@ public class ProductController {
                         @Parameter(description = "Название бренда") @RequestParam String brandName,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for products by brand '{}' received. from={}, size={}", brandName, from, size);
                 return productService.getProductsByBrandName(brandName.replaceAll("_", " "), from, size);
         }
 
@@ -59,6 +62,7 @@ public class ProductController {
                         @Parameter(description = "ID товара") @PathVariable long id,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for musicians by product id {} received. from={}, size={}", id, from, size);
                 return productService.getMusiciansByProductId(id, from, size);
         }
 
@@ -70,6 +74,7 @@ public class ProductController {
         @GetMapping("/id/{id}")
         public ProductGenreDTO getProductsById(
                         @Parameter(description = "id") @PathVariable long id) {
+                log.info("Request for product by id {} received.", id);
                 return productService.getProductsById(id);
         }
 
@@ -81,6 +86,7 @@ public class ProductController {
         @GetMapping("/{name}/genres")
         public ProductGenreDTO getGenresByProductName(
                         @Parameter(description = "Название товара") @PathVariable String name) {
+                log.info("Request for genres by product name '{}' received.", name);
                 return productService.getGenresByProductName(name.replaceAll("_", " "));
         }
 
@@ -94,6 +100,7 @@ public class ProductController {
                         @Parameter(description = "ID товара") @PathVariable long id,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for articles for product id {} received. from={}, size={}", id, from, size);
                 return productService.getProductArticles(id, from, size);
         }
 
@@ -107,6 +114,7 @@ public class ProductController {
                         @Parameter(description = "ID товара") @PathVariable long id,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for shops for product id {} received. from={}, size={}", id, from, size);
                 return productService.getProductShops(id, from, size);
         }
 
@@ -120,6 +128,7 @@ public class ProductController {
                         @Parameter(description = "Тип товара") @PathVariable TypeOfProduct typeOfProduct,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for products by type '{}' received. from={}, size={}", typeOfProduct, from, size);
                 return productService.getProductsByTypeOfProduct(typeOfProduct, from, size);
         }
 
@@ -133,6 +142,7 @@ public class ProductController {
                         @Parameter(description = "Строка для поиска") @PathVariable String name,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request for products with name containing '{}' received. from={}, size={}", name, from, size);
                 return productService.getProductsByNameContains(name, from, size);
         }
 
@@ -162,6 +172,7 @@ public class ProductController {
                         @Parameter(description = "Направление сортировки") @RequestParam boolean ascending,
                         @Parameter(description = "Начальная позиция") @RequestParam int from,
                         @Parameter(description = "Количество элементов") @RequestParam int size) {
+                log.info("Request to filter products received. from={}, size={}, sortBy={}, ascending={}", from, size, sortBy, ascending);
                 return productService.getProductsByFilter(name, minRate, maxRate, brandId, guitarForm, typeOfProduct,
                                 lads,
                                 minPrice, maxPrice, color, strings, tipMaterial, bodyMaterial, pickupConfiguration,
