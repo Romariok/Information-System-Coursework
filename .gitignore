@@ -2,3 +2,4 @@
 *.env
 **/*.env
 .DS_Store
+backend/logs/spring-boot-logger.log
