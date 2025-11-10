@@ -89,3 +89,57 @@
 
 - Настроить https для безопасности передачи данных.
 - Настройки производительности приложения (пул соединений, оптимизация JVM, настройка postgreSQL).
+
+## Метрики и дашборды (Prometheus/Micrometer/Grafana)
+
+Добавлена интеграция метрик в бэкенд и инфраструктура мониторинга.
+
+- Бэкенд: `spring-boot-starter-actuator` + `micrometer-registry-prometheus`.
+- Эндпоинт метрик: `GET /actuator/prometheus`.
+- Prometheus и Grafana добавлены в `.docker/docker-compose.yaml`.
+- Grafana автоматически настраивает datasource и загружает дашборд `Spring Boot Overview`.
+
+### Как запустить локально
+
+1) Запустить бэкенд (по умолчанию порт 8080, можно задать `PORT`):
+
+```bash
+mvn -f backend/pom.xml spring-boot:run
+```
+
+2) Запустить Prometheus и Grafana:
+
+```bash
+cd .docker
+docker compose up -d prometheus grafana
+```
+
+3) Открыть:
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000` (логин/пароль: `admin`/`admin`)
+- Дашборды в Grafana: папка `Spring`, дашборд `Spring Boot Overview`
+
+### Настройки
+
+- Точка скрейпа настроена в `.docker/prometheus/prometheus.yml` на `host.docker.internal:8080/actuator/prometheus`.
+  - Если бэкенд слушает другой порт — обновить `targets`.
+  - Если бэкенд будет запущен в Docker-сети — укажите имя сервиса и порт, например `backend:8080`.
+- Конфигурация Grafana:
+  - Datasource: `.docker/grafana/provisioning/datasources/datasource.yml`
+  - Дашборды: `.docker/grafana/dashboards/`
+
+### Полезные метрики
+
+- HTTP: `http_server_requests_seconds_count`, гистограмма `http_server_requests_seconds_bucket`
+- JVM: `jvm_memory_used_bytes`, `jvm_threads_live_threads`, `process_cpu_usage`
+- База данных (через Hikari/JPA): `hikaricp_connections_active`, `jdbc_connections_active`
+
+### Метрики контейнеров (CPU/RAM/Disk/Net)
+
+- Добавлен `cAdvisor` в `.docker/docker-compose.yaml`. Запуск вместе со стеком:
+  ```bash
+  cd .docker
+  docker compose up -d prometheus grafana cadvisor
+  ```
+- Prometheus-джоб `cadvisor` уже подключен.
+- На дашборде добавлены панели: Containers CPU/Memory/FS usage/Net IO.
