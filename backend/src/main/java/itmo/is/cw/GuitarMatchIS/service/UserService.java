@@ -38,9 +38,11 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductMusicianAlreadyExists;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
         private final UserRepository userRepository;
         private final UserGenreRepository userGenreRepository;
@@ -54,42 +56,53 @@ public class UserService {
         private final MusicianProductRepository musicianProductRepository;
 
         public Role getRoleByUsername(String username) {
+                log.info("Getting role for username: {}", username);
                 User user = userRepository.findByUsername(username)
-                                .orElseThrow(() -> new UsernameNotFoundException(
-                                                String.format("Username %s not found", username)));
+                                .orElseThrow(() -> {
+                                        log.warn("User with username {} not found while getting role", username);
+                                        return new UsernameNotFoundException(
+                                                        String.format("Username %s not found", username));
+                                });
                 return user.getIsAdmin() ? Role.ADMIN : Role.USER;
         }
 
         public List<Genre> getGenresByUser(HttpServletRequest request) {
                 User user = findUserByRequest(request);
+                log.info("Getting genres for user: {}", user.getUsername());
                 return userGenreRepository.findByUser(user).stream().map(UserGenre::getGenre).toList();
         }
 
         @Transactional
         public Boolean setGenresToUser(HttpServletRequest request, List<Genre> genres) {
                 User user = findUserByRequest(request);
+                log.info("Setting genres for user: {}", user.getUsername());
                 userGenreRepository.deleteAllByUser(user.getId());
                 genres.forEach(genre -> userGenreRepository.saveByUserIdAndGenre(user.getId(), genre.getCapsValue()));
+                log.info("Successfully set genres for user: {}", user.getUsername());
                 return true;
         }
 
         @Transactional
         public Boolean setTypesOfMusiciansToUser(HttpServletRequest request, List<TypeOfMusician> typesOfMusicians) {
                 User user = findUserByRequest(request);
+                log.info("Setting types of musicians for user: {}", user.getUsername());
                 userTypeOfMusicianRepository.deleteAllByUser(user.getId());
                 typesOfMusicians.forEach(typeOfMusician -> userTypeOfMusicianRepository
                                 .saveByUserIdAndTypeOfMusician(user.getId(), typeOfMusician.getCapsValue()));
+                log.info("Successfully set types of musicians for user: {}", user.getUsername());
                 return true;
         }
 
         public List<TypeOfMusician> getTypesOfMusiciansByUser(HttpServletRequest request) {
                 User user = findUserByRequest(request);
+                log.info("Getting types of musicians for user: {}", user.getUsername());
                 return userTypeOfMusicianRepository.findByUser(user).stream().map(UserTypeOfMusician::getTypeOfMusician)
                                 .toList();
         }
 
         public List<ProductDTO> getUserProducts(HttpServletRequest request) {
                 User user = findUserByRequest(request);
+                log.info("Getting products for user: {}", user.getUsername());
 
                 List<UserProduct> userProducts = userProductRepository.findByUser(user);
 
@@ -98,6 +111,7 @@ public class UserService {
 
         public List<MusicianInfoDTO> getSubscribedMusicians(HttpServletRequest request) {
                 User user = findUserByRequest(request);
+                log.info("Getting subscribed musicians for user: {}", user.getUsername());
                 List<Musician> musicians = userMusicianRepository.findByUser(user).stream()
                                 .map(UserMusician::getMusician).toList();
 
@@ -112,48 +126,62 @@ public class UserService {
 
         @Transactional
         public Boolean addProductToUser(AddUserProductDTO addUserProductDTO, HttpServletRequest request) {
-                if (!productRepository.existsById(addUserProductDTO.getProductId()))
+                log.info("Adding product with id {} to user", addUserProductDTO.getProductId());
+                if (!productRepository.existsById(addUserProductDTO.getProductId())) {
+                        log.warn("Product with id {} not found while adding to user", addUserProductDTO.getProductId());
                         throw new ProductNotFoundException(
                                         "Product with id %s not found".formatted(addUserProductDTO.getProductId()));
-
+                }
                 User user = findUserByRequest(request);
+                log.info("User is {}", user.getUsername());
 
                 Product product = productRepository.findById(addUserProductDTO.getProductId()).get();
 
-                if (userProductRepository.existsByUserAndProduct(user, product))
+                if (userProductRepository.existsByUserAndProduct(user, product)) {
+                        log.warn("Product {} already exists for user {}", product.getName(), user.getUsername());
                         throw new ProductMusicianAlreadyExists(
                                         "Product %s already exists in user %s".formatted(product.getName(),
                                                         user.getUsername()));
-
+                }
                 userProductRepository
                                 .save(UserProduct.builder().userId(user.getId()).productId(product.getId())
                                                 .build());
+                log.info("Successfully added product {} to user {}", product.getName(), user.getUsername());
                 return true;
         }
 
         @Transactional
         public Boolean deleteProductFromUser(AddUserProductDTO addUserProductDTO, HttpServletRequest request) {
-                if (!productRepository.existsById(addUserProductDTO.getProductId()))
+                log.info("Deleting product with id {} from user", addUserProductDTO.getProductId());
+                if (!productRepository.existsById(addUserProductDTO.getProductId())) {
+                        log.warn("Product with id {} not found while deleting from user", addUserProductDTO.getProductId());
                         throw new ProductNotFoundException(
                                         "Product with id %s not found".formatted(addUserProductDTO.getProductId()));
-
+                }
                 User user = findUserByRequest(request);
+                log.info("User is {}", user.getUsername());
 
                 Product product = productRepository.findById(addUserProductDTO.getProductId()).get();
 
-                if (!userProductRepository.existsByUserAndProduct(user, product))
+                if (!userProductRepository.existsByUserAndProduct(user, product)) {
+                        log.warn("Product {} not found for user {}", product.getName(), user.getUsername());
                         throw new ProductNotFoundException(
                                         "Product %s not found in user %s".formatted(product.getName(),
                                                         user.getUsername()));
-
+                }
                 userProductRepository.deleteByUserAndProduct(user, product);
+                log.info("Successfully deleted product {} from user {}", product.getName(), user.getUsername());
                 return true;
         }
 
         public UserInfoDTO getUserInfoById(Long id) {
+                log.info("Getting user info for id: {}", id);
                 User user = userRepository.findById(id)
-                                .orElseThrow(() -> new UsernameNotFoundException(
-                                                String.format("User with id %s not found", id)));
+                                .orElseThrow(() -> {
+                                        log.warn("User with id {} not found", id);
+                                        return new UsernameNotFoundException(
+                                                        String.format("User with id %s not found", id));
+                                });
                 return UserInfoDTO.builder().id(user.getId()).username(user.getUsername()).build();
         }
 

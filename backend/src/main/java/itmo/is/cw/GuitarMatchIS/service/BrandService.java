@@ -12,13 +12,16 @@ import itmo.is.cw.GuitarMatchIS.models.Brand;
 import itmo.is.cw.GuitarMatchIS.repository.BrandRepository;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.BrandNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BrandService {
    private final BrandRepository brandRepository;
 
    public List<BrandDTO> getBrands(int from, int size) {
+      log.info("Fetching brands from: {} to: {}", from, size);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<Brand> brands = brandRepository.findAll(page).getContent();
@@ -41,7 +44,11 @@ public class BrandService {
    }
 
    public BrandDTO getBrandById(Long id) {
-      return convertToDTO(brandRepository.findById(id).orElseThrow(() -> new BrandNotFoundException(String.format("Brand with id %s not found", id))));
+      log.info("Fetching brand by id: {}", id);
+      return convertToDTO(brandRepository.findById(id).orElseThrow(() -> {
+         log.warn("Brand with id {} not found", id);
+         return new BrandNotFoundException(String.format("Brand with id %s not found", id));
+      }));
    }
 
    private BrandDTO convertToDTO(Brand brand) {

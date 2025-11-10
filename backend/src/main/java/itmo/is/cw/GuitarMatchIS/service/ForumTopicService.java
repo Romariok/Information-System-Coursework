@@ -25,9 +25,11 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForumTopicNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ForumTopicService {
    private final ForumTopicRepository forumTopicRepository;
    private final JwtUtils jwtUtils;
@@ -35,6 +37,7 @@ public class ForumTopicService {
    private final SimpMessagingTemplate simpMessagingTemplate;
 
    public List<ForumTopicDTO> getForumTopics(int from, int size) {
+      log.info("Fetching forum topics from: {} to: {}", from, size);
       Pageable pageable = Pagification.createPageTemplate(from, size);
 
       List<ForumTopic> topics = forumTopicRepository.findAll(pageable).getContent();
@@ -52,9 +55,13 @@ public class ForumTopicService {
    }
 
    public List<ForumTopicDTO> getForumTopicsByAuthor(Long authorId, int from, int size) {
+      log.info("Fetching forum topics by author with id: {}", authorId);
       User user = userRepository.findById(authorId)
-            .orElseThrow(() -> new UserNotFoundException(
-                  String.format("User with id %s not found", authorId)));
+            .orElseThrow(() -> {
+               log.warn("User with id {} not found while fetching forum topics", authorId);
+               return new UserNotFoundException(
+                  String.format("User with id %s not found", authorId));
+            });
 
       Pageable pageable = Pagification.createPageTemplate(from, size);
       List<ForumTopic> topics = forumTopicRepository.findAllByAuthor(user, pageable).getContent();
@@ -73,27 +80,38 @@ public class ForumTopicService {
 
    @Transactional
    public Boolean closeTopic(Long topicId, HttpServletRequest request) {
+      log.info("Closing forum topic with id: {}", topicId);
       ForumTopic topic = forumTopicRepository.findById(topicId)
-            .orElseThrow(() -> new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId)));
+            .orElseThrow(() -> {
+               log.warn("Forum topic with id {} not found while closing", topicId);
+               return new ForumTopicNotFoundException(
+                  String.format("Forum topic with id %s not found", topicId));
+            });
 
       User user = findUserByRequest(request);
+      log.info("User {} is attempting to close topic {}", user.getUsername(), topicId);
       if (!user.getIsAdmin() && !user.getId().equals(topic.getAuthor().getId())) {
+         log.warn("User {} is not authorized to close topic {}", user.getUsername(), topicId);
          throw new ForbiddenException("You are not authorized to close this topic");
       }
 
       forumTopicRepository.closeTopic(topic.getId());
       simpMessagingTemplate.convertAndSend("/forum/topics", "Forum topic closed");
+      log.info("Forum topic with id {} successfully closed", topicId);
       return true;
    }
 
    @Transactional
    public ForumTopicDTO createTopic(CreateForumTopicDTO createForumTopicDTO, HttpServletRequest request) {
-      if (forumTopicRepository.existsByTitle(createForumTopicDTO.getTitle()))
+      log.info("Creating forum topic with title: {}", createForumTopicDTO.getTitle());
+      if (forumTopicRepository.existsByTitle(createForumTopicDTO.getTitle())) {
+         log.warn("Forum topic with title {} already exists", createForumTopicDTO.getTitle());
          throw new ForumTopicAlreadyExistsException(String.format("Forum topic with title %s already exists",
                createForumTopicDTO.getTitle()));
+      }
 
       User author = findUserByRequest(request);
+      log.info("Forum topic author is {}", author.getUsername());
 
       ForumTopic topic = ForumTopic.builder()
             .title(createForumTopicDTO.getTitle())
@@ -104,7 +122,7 @@ public class ForumTopicService {
             .build();
       forumTopicRepository.save(topic);
       simpMessagingTemplate.convertAndSend("/forum/topics", "Forum topic created");
-
+      log.info("Forum topic with title {} successfully created with id {}", topic.getTitle(), topic.getId());
       return convertToDTO(topic);
    }
 
@@ -128,18 +146,28 @@ public class ForumTopicService {
    }
 
    public Boolean isTopicOwner(Long topicId, HttpServletRequest request) {
+      log.info("Checking if user is owner of topic with id: {}", topicId);
       ForumTopic topic = forumTopicRepository.findById(topicId)
-            .orElseThrow(() -> new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId)));
+            .orElseThrow(() -> {
+               log.warn("Forum topic with id {} not found while checking ownership", topicId);
+               return new ForumTopicNotFoundException(
+                  String.format("Forum topic with id %s not found", topicId));
+            });
 
       User user = findUserByRequest(request);
-      return user.getIsAdmin() || user.getId().equals(topic.getAuthor().getId());
+      boolean isOwner = user.getIsAdmin() || user.getId().equals(topic.getAuthor().getId());
+      log.info("User {} is {}owner of topic {}", user.getUsername(), isOwner ? "" : "not ", topicId);
+      return isOwner;
    }
 
    public ForumTopicDTO getForumTopicById(Long topicId) {
+      log.info("Fetching forum topic by id: {}", topicId);
       ForumTopic topic = forumTopicRepository.findById(topicId)
-            .orElseThrow(() -> new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId)));
+            .orElseThrow(() -> {
+               log.warn("Forum topic with id {} not found", topicId);
+               return new ForumTopicNotFoundException(
+                  String.format("Forum topic with id %s not found", topicId));
+            });
 
       return convertToDTO(topic);
    }

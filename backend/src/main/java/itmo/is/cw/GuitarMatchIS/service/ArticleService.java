@@ -40,9 +40,11 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ArticleService {
    private final ArticleRepository articleRepository;
    private final JwtUtils jwtUtils;
@@ -58,6 +60,7 @@ public class ArticleService {
    private String markdownParserPath;
 
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
+      log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
       Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
             sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
@@ -70,11 +73,16 @@ public class ArticleService {
    }
 
    public ArticleDTO getArticleById(Long id) {
+      log.info("Fetching article by id: {}", id);
       return convertToDTO(articleRepository.findById(id)
-            .orElseThrow(() -> new ArticleNotFoundException(String.format("Article with id %s not found", id))));
+            .orElseThrow(() -> {
+               log.warn("Article with id {} not found", id);
+               return new ArticleNotFoundException(String.format("Article with id %s not found", id));
+            }));
    }
 
    public List<ArticleDTO> getArticlesByHeaderContaining(String header, int from, int size) {
+      log.info("Fetching articles with header containing: {}", header);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<Article> articles = articleRepository.findByHeaderContainingAndAccepted(header, true, page).getContent();
@@ -92,6 +100,7 @@ public class ArticleService {
    }
 
    public List<ArticleDTO> getArticlesByAuthorId(Long authorId, int from, int size) {
+      log.info("Fetching articles by author id: {}", authorId);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<Article> articles = articleRepository.findByAuthorIdAndAccepted(authorId, true, page).getContent();
@@ -110,37 +119,46 @@ public class ArticleService {
 
    public boolean moderateArticle(ModerateArticleDTO moderateArticleDTO, HttpServletRequest request) {
       User moderator = findUserByRequest(request);
-      if (!moderator.getIsAdmin())
+      log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(), moderator.getUsername());
+      if (!moderator.getIsAdmin()) {
+         log.warn("User {} has no rights to moderate article", moderator.getUsername());
          throw new ForbiddenException("User have no rights to moderate article");
-
+      }
       Long articleId = moderateArticleDTO.getArticleId();
-      if (!articleRepository.existsById(articleId))
+      if (!articleRepository.existsById(articleId)) {
+         log.warn("Article with id {} not found for moderation", articleId);
          throw new ArticleNotFoundException(String.format("Article with id %s not found", articleId));
-
+      }
       if (!moderateArticleDTO.isAccepted()) {
          // Delete the article if rejected
+         log.info("Article with id {} was rejected and will be deleted", articleId);
          articleRepository.deleteById(articleId);
          simpMessagingTemplate.convertAndSend(articlesTopic, "Article was rejected and deleted");
          return true;
       }
 
       // Accept the article if not rejected
+      log.info("Article with id {} was approved", articleId);
       simpMessagingTemplate.convertAndSend(articlesTopic, "Article was approved");
       return articleRepository.moderateArticle(articleId, true, moderator.getId());
    }
 
    @Transactional
    public ArticleDTO createArticle(CreateArticleDTO createArticleDTO, HttpServletRequest request) {
-      if (!productRepository.existsByName(createArticleDTO.getProductName()))
+      log.info("Creating article with header: {}", createArticleDTO.getHeader());
+      if (!productRepository.existsByName(createArticleDTO.getProductName())) {
+         log.warn("Product {} not found for article creation", createArticleDTO.getProductName());
          throw new ProductNotFoundException(String.format("Product %s not found", createArticleDTO.getProductName()));
-
+      }
       Product product = productRepository.findByName(createArticleDTO.getProductName());
 
-      if (articleRepository.existsByHeader(createArticleDTO.getHeader()))
+      if (articleRepository.existsByHeader(createArticleDTO.getHeader())) {
+         log.warn("Article with header {} already exists", createArticleDTO.getHeader());
          throw new ArticleAlreadyExistsException(String.format("Article with header %s already exists",
                createArticleDTO.getHeader()));
-
+      }
       User author = findUserByRequest(request);
+      log.info("Article author is {}", author.getUsername());
 
       Article article = Article.builder()
             .header(createArticleDTO.getHeader())
@@ -150,6 +168,7 @@ public class ArticleService {
             .accepted(false)
             .build();
       articleRepository.save(article);
+      log.info("Article with header {} saved with id {}", article.getHeader(), article.getId());
 
       ProductArticle productArticle = new ProductArticle();
       productArticle.setArticleId(article.getId());
@@ -157,15 +176,17 @@ public class ArticleService {
       productArticleRepository.save(productArticle);
 
       simpMessagingTemplate.convertAndSend("/articles", "New Article created for product " + product.getName());
-
+      log.info("Article creation message sent to websocket");
       return convertToDTO(article);
    }
 
    public List<StatusArticlesDTO> getStatusArticles(int from, int size, HttpServletRequest request) {
       User user = findUserByRequest(request);
-      if (!user.getIsAdmin())
+      log.info("User {} is requesting status articles", user.getUsername());
+      if (!user.getIsAdmin()) {
+         log.warn("User {} has no rights to get moderate articles", user.getUsername());
          throw new ForbiddenException("User have no rights to get moderate articles");
-
+      }
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<ProductArticle> productArticles = productArticleRepository.findByAccepted(false, page).getContent();
@@ -184,6 +205,7 @@ public class ArticleService {
 
    private User findUserByRequest(HttpServletRequest request) {
       String username = jwtUtils.getUserNameFromJwtToken(jwtUtils.parseJwt(request));
+      log.debug("Finding user by username: {}", username);
       return userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException(
                   String.format("Username %s not found", username)));
@@ -244,6 +266,7 @@ public class ArticleService {
          // Get parser path
          String parserPath = markdownParserPath;
          // Build the command - passing text directly
+         log.debug("Converting markdown to html using parser at {}", parserPath);
          ProcessBuilder processBuilder = new ProcessBuilder(
                parserPath, "-c", markdownText);
          processBuilder.redirectErrorStream(true);
@@ -262,12 +285,13 @@ public class ArticleService {
          int exitCode = process.waitFor();
 
          if (exitCode != 0) {
-            System.err.println("Parser failed with output: " + output.toString());
+            log.error("Markdown parser failed with exit code {} and output: {}", exitCode, output.toString());
             return markdownText; // Fallback to original text
          }
+         log.debug("Markdown successfully converted to HTML");
          return output.toString();
       } catch (Exception e) {
-         e.printStackTrace();
+         log.error("Exception while converting markdown to html", e);
          return markdownText; // Fallback to original text
       }
    }

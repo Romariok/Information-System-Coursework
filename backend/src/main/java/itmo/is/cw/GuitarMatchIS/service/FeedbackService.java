@@ -25,9 +25,11 @@ import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FeedbackService {
       private final FeedbackRepository feedbackRepository;
       private final JwtUtils jwtUtils;
@@ -40,6 +42,7 @@ public class FeedbackService {
       private String feedbackTopic;
 
       public List<FeedbackDTO> getFeedbackByProductId(Long productId, int from, int size) {
+            log.info("Fetching feedback for product with id: {}", productId);
             Pageable pageable = Pagification.createPageTemplate(from, size);
 
             List<Feedback> feedbacks = feedbackRepository.findByProductId(productId, pageable).getContent();
@@ -58,6 +61,7 @@ public class FeedbackService {
       }
 
       public List<FeedbackDTO> getFeedbackByArticleId(Long articleId, int from, int size) {
+            log.info("Fetching feedback for article with id: {}", articleId);
             Pageable pageable = Pagification.createPageTemplate(from, size);
 
             List<Feedback> feedbacks = feedbackRepository.findByArticleId(articleId, pageable).getContent();
@@ -76,27 +80,39 @@ public class FeedbackService {
 
       @Transactional
       public Boolean addProductFeedback(CreateProductFeedbackDTO feedbackDTO, HttpServletRequest request) {
+            log.info("Adding feedback for product with id: {}", feedbackDTO.getProductId());
             Product product = productRepository.findById(feedbackDTO.getProductId())
-                        .orElseThrow(() -> new ProductNotFoundException(
-                                    String.format("Product with id %s not found", feedbackDTO.getProductId())));
+                        .orElseThrow(() -> {
+                              log.warn("Product with id {} not found while adding feedback", feedbackDTO.getProductId());
+                              return new ProductNotFoundException(
+                                    String.format("Product with id %s not found", feedbackDTO.getProductId()));
+                        });
 
             User user = findUserByRequest(request);
+            log.info("Feedback author is {}", user.getUsername());
             feedbackRepository.addProductFeedback(user.getId(), product.getId(), feedbackDTO.getText(),
                         feedbackDTO.getStars());
             simpMessagingTemplate.convertAndSend(feedbackTopic, "New Feedback created for product");
+            log.info("Feedback for product with id {} successfully added", feedbackDTO.getProductId());
             return true;
       }
 
       @Transactional
       public Boolean addArticleFeedback(CreateArticleFeedbackDTO feedbackDTO, HttpServletRequest request) {
+            log.info("Adding feedback for article with id: {}", feedbackDTO.getArticleId());
             Article article = articleRepository.findById(feedbackDTO.getArticleId())
-                        .orElseThrow(() -> new ArticleNotFoundException(
-                                    String.format("Article with id %s not found", feedbackDTO.getArticleId())));
+                        .orElseThrow(() -> {
+                              log.warn("Article with id {} not found while adding feedback", feedbackDTO.getArticleId());
+                              return new ArticleNotFoundException(
+                                    String.format("Article with id %s not found", feedbackDTO.getArticleId()));
+                        });
 
             User user = findUserByRequest(request);
+            log.info("Feedback author is {}", user.getUsername());
             feedbackRepository.addArticleFeedback(user.getId(), article.getId(), feedbackDTO.getText(),
                         feedbackDTO.getStars());
             simpMessagingTemplate.convertAndSend(feedbackTopic, "New Feedback created for article");
+            log.info("Feedback for article with id {} successfully added", feedbackDTO.getArticleId());
             return true;
       }
 

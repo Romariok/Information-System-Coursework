@@ -16,9 +16,11 @@ import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserAlreadyExistException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
         private final JwtUtils jwtUtils;
@@ -27,10 +29,12 @@ public class AuthService {
         private final AuthenticationManager authenticationManager;
 
         public AuthResponseDTO register(UserDTO registerUserDto) {
-                if (userRepository.existsByUsername(registerUserDto.getUsername()))
+                log.info("Registering user with username: {}", registerUserDto.getUsername());
+                if (userRepository.existsByUsername(registerUserDto.getUsername())) {
+                        log.warn("User with username {} already exists", registerUserDto.getUsername());
                         throw new UserAlreadyExistException(
                                         String.format("Username %s already exists", registerUserDto.getUsername()));
-
+                }
                 User user = User
                                 .builder()
                                 .username(registerUserDto.getUsername())
@@ -41,7 +45,7 @@ public class AuthService {
                                 .build();
 
                 user = userRepository.save(user);
-
+                log.info("User with username {} successfully registered", user.getUsername());
                 String token = jwtUtils.generateJwtToken(user.getUsername());
                 return new AuthResponseDTO(
                                 user.getUsername(),
@@ -52,15 +56,20 @@ public class AuthService {
         }
 
         public AuthResponseDTO login(UserDTO loginUserDto) {
+                log.info("Logging in user with username: {}", loginUserDto.getUsername());
                 User user = userRepository.findByUsername(loginUserDto.getUsername())
-                                .orElseThrow(() -> new UserNotFoundException(
-                                                String.format("Username %s not found", loginUserDto.getUsername())));
+                                .orElseThrow(() -> {
+                                        log.warn("User with username {} not found", loginUserDto.getUsername());
+                                        return new UserNotFoundException(
+                                                        String.format("Username %s not found", loginUserDto.getUsername()));
+                                });
 
                 authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(loginUserDto.getUsername(),
                                                 loginUserDto.getPassword()));
 
                 String token = jwtUtils.generateJwtToken(user.getUsername());
+                log.info("User with username {} successfully logged in", user.getUsername());
                 return new AuthResponseDTO(
                                 user.getUsername(),
                                 user.getIsAdmin(),
