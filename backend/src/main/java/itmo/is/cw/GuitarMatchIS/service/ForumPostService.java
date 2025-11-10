@@ -23,9 +23,11 @@ import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForumTopicNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ForumPostService {
       private final ForumPostRepository forumPostRepository;
       private final ForumTopicRepository forumTopicRepository;
@@ -34,10 +36,14 @@ public class ForumPostService {
       private final SimpMessagingTemplate simpMessagingTemplate;
 
       public List<ForumPostDTO> getForumPostsByTopic(Long topicId, int from, int size) {
+            log.info("Fetching forum posts for topic with id: {}", topicId);
             Pageable pageable = Pagification.createPageTemplate(from, size);
 
             ForumTopic topic = forumTopicRepository.findById(topicId)
-                        .orElseThrow(() -> new ForumTopicNotFoundException("Topic with id " + topicId + " not found"));
+                        .orElseThrow(() -> {
+                              log.warn("Forum topic with id {} not found", topicId);
+                              return new ForumTopicNotFoundException("Topic with id " + topicId + " not found");
+                        });
             List<ForumPost> posts = forumPostRepository.findAllByTopic(topic, pageable).getContent();
 
             return posts
@@ -53,12 +59,17 @@ public class ForumPostService {
       }
 
       public ForumPostDTO createForumPost(CreateForumPostDTO forumPostDTO, HttpServletRequest request) {
+            log.info("Creating forum post for topic with id: {}", forumPostDTO.getForumTopicId());
             ForumTopic topic = forumTopicRepository.findById(forumPostDTO.getForumTopicId())
-                        .orElseThrow(() -> new ForumTopicNotFoundException(
-                                    String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId())));
-
+                        .orElseThrow(() -> {
+                              log.warn("Forum topic with id {} not found while creating post", forumPostDTO.getForumTopicId());
+                              return new ForumTopicNotFoundException(
+                                    String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId()));
+                        });
             User author = findUserByRequest(request);
+            log.info("Forum post author is {}", author.getUsername());
             if (topic.getIsClosed()) {
+                  log.warn("Attempt to create post in closed topic with id {}", topic.getId());
                   throw new ForumTopicNotFoundException("This topic is closed");
             }
             ForumPost post = ForumPost.builder()
@@ -68,6 +79,7 @@ public class ForumPostService {
                         .content(forumPostDTO.getContent())
                         .build();
             forumPostRepository.save(post);
+            log.info("Forum post with id {} successfully created", post.getId());
             simpMessagingTemplate.convertAndSend("/forum/posts", "Forum post created");
 
             return convertToDTO(post);

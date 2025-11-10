@@ -16,14 +16,17 @@ import itmo.is.cw.GuitarMatchIS.repository.ShopProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ShopRepository;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ShopNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ShopService {
    private final ShopRepository shopRepository;
    private final ShopProductRepository shopProductRepository;
 
    public List<ShopDTO> getShops(int from, int size) {
+      log.info("Fetching shops from: {} to: {}", from, size);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       List<Shop> shops = shopRepository.findAll(page).getContent();
@@ -47,10 +50,14 @@ public class ShopService {
    }
 
    public ShopProductDTO getShopProducts(Long shopId, int from, int size) {
+      log.info("Fetching products for shop with id: {}", shopId);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       Shop shop = shopRepository.findById(shopId)
-            .orElseThrow(() -> new ShopNotFoundException("Shop with id " + shopId + " not found"));
+            .orElseThrow(() -> {
+               log.warn("Shop with id {} not found while fetching products", shopId);
+               return new ShopNotFoundException("Shop with id " + shopId + " not found");
+            });
 
       List<ShopProduct> shopProducts = shopProductRepository.findAllByShop(shop, page).getContent();
 
@@ -61,7 +68,11 @@ public class ShopService {
    }
 
    public ShopDTO getShopById(Long id) {
-      return convertToDTO(shopRepository.findById(id).orElseThrow(() -> new ShopNotFoundException(String.format("Shop with id %s not found", id))));
+      log.info("Fetching shop by id: {}", id);
+      return convertToDTO(shopRepository.findById(id).orElseThrow(() -> {
+         log.warn("Shop with id {} not found", id);
+         return new ShopNotFoundException(String.format("Shop with id %s not found", id));
+      }));
    }
 
    private ProductOfShopDTO convertToDTO(ShopProduct shopProduct) {

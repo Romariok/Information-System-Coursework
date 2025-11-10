@@ -28,12 +28,14 @@ import itmo.is.cw.GuitarMatchIS.repository.ProductGenreRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ShopProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
    private final ProductRepository productRepository;
    private final BrandRepository brandRepository;
@@ -45,9 +47,11 @@ public class ProductService {
    private final ShopProductRepository shopProductRepository;
 
    public List<ProductGenreDTO> getProductsByBrandName(String brandName, int from, int size) {
+      log.info("Fetching products for brand: {} from: {} to: {}", brandName, from, size);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       if (!brandRepository.existsByName(brandName)) {
+         log.warn("Brand with name {} not found", brandName);
          throw new BrandNotFoundException("Brand %s not found".formatted(brandName));
       }
 
@@ -65,6 +69,7 @@ public class ProductService {
    }
 
    public List<ProductGenreDTO> getProductsByTypeOfProduct(TypeOfProduct typeOfProduct, int from, int size) {
+      log.info("Fetching products by type: {} from: {} to: {}", typeOfProduct, from, size);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       return productRepository.findAllByTypeOfProduct(typeOfProduct, page).getContent().stream()
@@ -79,7 +84,9 @@ public class ProductService {
    }
 
    public ProductGenreDTO getGenresByProductName(String productName) {
+      log.info("Fetching genres for product: {}", productName);
       if (!productRepository.existsByName(productName)) {
+         log.warn("Product with name {} not found", productName);
          throw new ProductNotFoundException("Product %s not found".formatted(productName));
       }
 
@@ -94,7 +101,11 @@ public class ProductService {
    }
 
    public ProductGenreDTO getProductsById(long id){
-      Product p = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(id)));
+      log.info("Fetching product by id: {}", id);
+      Product p = productRepository.findById(id).orElseThrow(() -> {
+         log.warn("Product with id {} not found", id);
+         return new ProductNotFoundException("Product id = %d not found".formatted(id));
+      });
       return ProductGenreDTO.builder()
             .product(convertToDTO(p))
             .genres(productGenreRepository.findByProduct(p).stream()
@@ -104,6 +115,7 @@ public class ProductService {
    }
 
    public List<ProductGenreDTO> getProductsByNameContains(String name, int from, int size) {
+      log.info("Fetching products with name containing: {}", name);
       Pageable page = Pagification.createPageTemplate(from, size);
 
       return productRepository.findAllByNameContains(name, page).getContent().stream()
@@ -118,9 +130,13 @@ public class ProductService {
    }
 
    public ProductArticleDTO getProductArticles(long productId, int from, int size) {
+      log.info("Fetching articles for product with id: {}", productId);
       Pageable page = Pagification.createPageTemplate(from, size);
 
-      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
+      Product product = productRepository.findById(productId).orElseThrow(() -> {
+         log.warn("Product with id {} not found while fetching articles", productId);
+         return new ProductNotFoundException("Product id = %d not found".formatted(productId));
+      });
 
       List<ProductArticle> productArticles = productArticleRepository
             .findByProductIdAndAccepted(productId, true, page)
@@ -141,8 +157,12 @@ public class ProductService {
    }
 
    public ProductShopsDTO getProductShops(long productId, int from, int size) {
+      log.info("Fetching shops for product with id: {}", productId);
       Pageable page = Pagification.createPageTemplate(from, size);
-      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
+      Product product = productRepository.findById(productId).orElseThrow(() -> {
+         log.warn("Product with id {} not found while fetching shops", productId);
+         return new ProductNotFoundException("Product id = %d not found".formatted(productId));
+      });
       List<ShopProduct> shopProducts = shopProductRepository.findAllByProduct(product, page).getContent();
       List<Shop> shops = shopProducts.stream().map(shopProduct -> shopProduct.getShop()).toList();
       
@@ -177,6 +197,7 @@ public class ProductService {
          boolean ascending,
          int from, int size) {
     
+    log.info("Fetching products by filter");
     Specification<Product> specification = Specification.where(ProductSpecification.hasBrand(brandId))
             .and(ProductSpecification.hasName(name))
             .and(ProductSpecification.hasRateBetween(minRate, maxRate))
@@ -202,8 +223,12 @@ public class ProductService {
 }
 
    public List<MusicianInfoDTO> getMusiciansByProductId(long productId, int from, int size) {
+      log.info("Fetching musicians for product with id: {}", productId);
       Pageable page = Pagification.createPageTemplate(from, size);
-      Product product = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException("Product id = %d not found".formatted(productId)));
+      Product product = productRepository.findById(productId).orElseThrow(() -> {
+         log.warn("Product with id {} not found while fetching musicians", productId);
+         return new ProductNotFoundException("Product id = %d not found".formatted(productId));
+      });
       List<MusicianProduct> musicianProducts = musicianProductRepository.findByProduct(product, page).getContent();
       List<Musician> musicians = musicianProducts.stream().map(musicianProduct -> musicianProduct.getMusician()).toList();
       return musicians.stream().map(musician -> MusicianInfoDTO.builder()
