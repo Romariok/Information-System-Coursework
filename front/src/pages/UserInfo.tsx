@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
-import api, { getUserGenres, getUserMusicians } from "../services/api";
+import api, { getUserMusicians } from "../services/api";
 import {
   ProductSimple,
   Musician,

@@ -234,7 +234,7 @@ export default function MusicianProfile() {
                               setSearchResults([]);
                             }}
                             className={`p-2 flex items-center gap-3 hover:bg-gray-100 cursor-pointer ${
-                              selectedProduct?.id === product.id
+                              (selectedProduct && "id" in selectedProduct && (selectedProduct as ProductSimple).id === product.id)
                                 ? "bg-indigo-50"
                                 : ""
                             }`}
