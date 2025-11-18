@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { login } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -15,10 +16,11 @@ export default function Login() {
     mutationFn: () => login(username, password),
     onSuccess: (data) => {
       authLogin(data);
-      navigate("/");
+      void navigate("/");
     },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || "An error occurred");
+    onError: (error: unknown) => {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      setError(axiosError.response?.data?.message || "An error occurred");
     },
   });
 

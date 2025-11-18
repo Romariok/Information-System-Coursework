@@ -25,7 +25,7 @@ export default function Forum() {
     mutationFn: (data: { title: string; description: string }) =>
       createForumTopic(data.title, data.description),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forumTopics"] });
+      void queryClient.invalidateQueries({ queryKey: ["forumTopics"] });
       setIsCreateModalOpen(false);
       setNewTopic({ title: "", description: "" });
     },

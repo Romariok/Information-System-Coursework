@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Pagination from "../components/Pagination";
 import api from "../services/api";
-import { Brand } from "../services/types";
+import type { Brand } from "../services/types";
 import { Link } from "react-router-dom";
 
 export default function Brands() {
@@ -12,7 +12,7 @@ export default function Brands() {
   const { data: brandsData, isLoading } = useQuery<Brand[]>({
     queryKey: ["brands", page],
     queryFn: async () => {
-      const response = await api.get("/brand", {
+      const response = await api.get<Brand[]>("/brand", {
         params: {
           from: (page - 1) * pageSize,
           size: pageSize,

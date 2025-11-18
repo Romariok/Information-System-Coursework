@@ -15,7 +15,7 @@ import {
   subscribeToMusician,
   unsubscribeFromMusician,
 } from "../services/api";
-import {
+import type {
   Product,
   Article,
   Musician,
@@ -44,6 +44,7 @@ const formatProductType = (type: string) => {
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const [articlesPage, setArticlesPage] = useState(1);
   const [musiciansPage, setMusiciansPage] = useState(1);
   const [feedbackPage, setFeedbackPage] = useState(1);
@@ -122,7 +123,7 @@ export default function ProductDetails() {
     mutationFn: (data: { text: string; stars: number }) =>
       addProductFeedback(id!, data.text, data.stars),
     onSuccess: () => {
-      useQueryClient().invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["productFeedbacks", id],
       });
     },

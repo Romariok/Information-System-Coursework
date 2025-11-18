@@ -11,7 +11,7 @@ import {
   searchProducts,
 } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Genre, TypeOfMusician, ProductSimple } from "../services/types.ts";
+import type { Genre, TypeOfMusician, ProductSimple } from "../services/types.ts";
 import { useState } from "react";
 export default function MusicianProfile() {
   const { id } = useParams<{ id: string }>();
@@ -35,8 +35,8 @@ export default function MusicianProfile() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["musicianSubscription", id] });
-      queryClient.invalidateQueries({ queryKey: ["musician", id] });
+      void queryClient.invalidateQueries({ queryKey: ["musicianSubscription", id] });
+      void queryClient.invalidateQueries({ queryKey: ["musician", id] });
     },
   });
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function MusicianProfile() {
     mutationFn: () =>
       addProductToMusician(musician?.name || "", Number(newProductId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["musician", id] });
+      void queryClient.invalidateQueries({ queryKey: ["musician", id] });
       setIsAddProductModalOpen(false);
       setNewProductId("");
     },
@@ -107,11 +107,10 @@ export default function MusicianProfile() {
               <div className="flex gap-4">
                 <button
                   onClick={() => subscriptionMutation.mutate()}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    isSubscribed
-                      ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${isSubscribed
+                    ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
                   disabled={subscriptionMutation.isPending}
                 >
                   {isSubscribed ? "Unsubscribe" : "Subscribe"}
@@ -213,7 +212,7 @@ export default function MusicianProfile() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
+                    onChange={(e) => { void handleSearch(e.target.value); }}
                     className="w-full p-2 border rounded-md"
                     placeholder="Type to search products..."
                   />
@@ -233,11 +232,10 @@ export default function MusicianProfile() {
                               setSearchQuery(product.name);
                               setSearchResults([]);
                             }}
-                            className={`p-2 flex items-center gap-3 hover:bg-gray-100 cursor-pointer ${
-                              (selectedProduct && "id" in selectedProduct && (selectedProduct as ProductSimple).id === product.id)
-                                ? "bg-indigo-50"
-                                : ""
-                            }`}
+                            className={`p-2 flex items-center gap-3 hover:bg-gray-100 cursor-pointer ${(selectedProduct && "id" in selectedProduct && (selectedProduct as ProductSimple).id === product.id)
+                              ? "bg-indigo-50"
+                              : ""
+                              }`}
                           >
                             <img
                               src={

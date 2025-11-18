@@ -11,7 +11,7 @@ import {
   checkMusicianSubscribed,
   createMusician,
 } from "../services/api";
-import { Genre, TypeOfMusician } from "../services/types";
+import type { Genre, TypeOfMusician } from "../services/types";
 
 type SortOption = {
   field: "NAME" | "SUBSCRIBERS";
@@ -150,7 +150,7 @@ export default function Musicians() {
       typesOfMusician: TypeOfMusician[];
     }) => createMusician(data.name, data.genres, data.typesOfMusician),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["musicians"] });
+      void queryClient.invalidateQueries({ queryKey: ["musicians"] });
       setIsCreateModalOpen(false);
       setNewMusicianName("");
       setSelectedGenres([]);

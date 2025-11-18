@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import StarRating from "../components/StarRating";
-import { formatProductType, ProductSimple } from "../services/types";
+import type { ProductSimple } from "../services/types";
+import { formatProductType } from "../services/types";
 import api from "../services/api";
 import { likeProduct, unlikeProduct } from "../services/api";
 
@@ -92,7 +93,7 @@ export default function Catalog() {
   const { data: userProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
-      const response = await api.get("/user/products");
+      const response = await api.get<ProductSimple[]>("/user/products");
       return response.data;
     },
   });
@@ -143,7 +144,7 @@ export default function Catalog() {
   const { data: products } = useQuery<ProductSimple[]>({
     queryKey: ["products", filters, page, sort],
     queryFn: async () => {
-      const response = await api.get("/product/filter", {
+      const response = await api.get<ProductSimple[]>("/product/filter", {
         params: {
           name: filters.name || undefined,
           minRate: filters.minRate,

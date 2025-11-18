@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
 import api, { getUserMusicians } from "../services/api";
-import {
+import type {
   ProductSimple,
   Musician,
   Genre,
@@ -26,7 +26,7 @@ export default function UserInfo() {
   const { data: likedProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
-      const response = await api.get("/user/products");
+      const response = await api.get<ProductSimple[]>("/user/products");
       return response.data;
     },
   });
@@ -44,7 +44,7 @@ export default function UserInfo() {
   const { data: userGenres } = useQuery<Genre[]>({
     queryKey: ["userGenres"],
     queryFn: async () => {
-      const response = await api.get("/user/genres");
+      const response = await api.get<Genre[]>("/user/genres");
       return response.data;
     },
   });
@@ -53,7 +53,7 @@ export default function UserInfo() {
   const { data: userTypes } = useQuery<TypeOfMusician[]>({
     queryKey: ["userTypes"],
     queryFn: async () => {
-      const response = await api.get("/user/types");
+      const response = await api.get<TypeOfMusician[]>("/user/types");
       return response.data;
     },
   });
@@ -64,7 +64,7 @@ export default function UserInfo() {
       await api.post("/user/genres", { genres });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userGenres"] });
+      void queryClient.invalidateQueries({ queryKey: ["userGenres"] });
       setIsEditingGenres(false);
     },
   });
@@ -74,7 +74,7 @@ export default function UserInfo() {
       await api.post("/user/types", { typesOfMusicians: types });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userTypes"] });
+      void queryClient.invalidateQueries({ queryKey: ["userTypes"] });
       setIsEditingTypes(false);
     },
   });
