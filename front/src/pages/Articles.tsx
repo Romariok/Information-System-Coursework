@@ -49,7 +49,7 @@ export default function Articles() {
     mutationFn: (data: { productName: string; header: string; text: string }) =>
       createArticle(data.productName, data.header, data.text),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["articles"] });
+      void queryClient.invalidateQueries({ queryKey: ["articles"] });
       setIsCreateModalOpen(false);
       setNewArticle({ productName: "", header: "", text: "" });
     },
@@ -96,7 +96,7 @@ export default function Articles() {
           {/* Error Display */}
           {queryError && (
             <div className="mb-6 p-4 text-red-700 bg-red-100 border border-red-400 rounded-md">
-              Failed to load articles: {(queryError as Error).message}
+              Failed to load articles: {(queryError).message}
             </div>
           )}
 

@@ -12,7 +12,7 @@ import {
   unsubscribeFromMusician,
   checkMusicianSubscribed,
 } from "../services/api";
-import { Article, Musician, ProductSimple } from "../services/types";
+import type { Article, Musician, ProductSimple } from "../services/types";
 import api from "../services/api";
 import StarRating from "../components/StarRating";
 
@@ -64,7 +64,7 @@ export default function Home() {
   const { data: userProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
-      const response = await api.get("/user/products");
+      const response = await api.get<ProductSimple[]>("/user/products");
       return response.data;
     },
   });
@@ -140,8 +140,8 @@ export default function Home() {
         ...prev,
         [musicianId]: !prev[musicianId],
       }));
-      queryClient.invalidateQueries({ queryKey: ["musicianSubscriptions"] });
-      queryClient.invalidateQueries({ queryKey: ["topMusicians"] });
+      void queryClient.invalidateQueries({ queryKey: ["musicianSubscriptions"] });
+      void queryClient.invalidateQueries({ queryKey: ["topMusicians"] });
     },
     onError: (error) => {
       console.error("Subscription error:", error);
@@ -173,7 +173,7 @@ export default function Home() {
                   Loading products...
                 </div>
               ) : (
-                topProducts?.map((product: any) => (
+                topProducts?.map((product: ProductSimple) => (
                   <div
                     key={product.id}
                     className="bg-white p-6 rounded-lg shadow-md"
@@ -285,14 +285,14 @@ export default function Home() {
                   Loading articles...
                 </div>
               ) : (
-                topArticles?.map((article: any) => (
+                topArticles?.map((article: Article) => (
                   <div
                     key={article.id}
                     className="bg-white p-6 rounded-lg shadow-md"
                   >
                     <h3 className="text-lg font-semibold">{article.header}</h3>
                     <p className="text-gray-600 mt-2 line-clamp-2">
-                      {article.content}
+                        {article.text}
                     </p>
                     <div className="mt-2 text-sm text-gray-500">
                       By{" "}
@@ -324,7 +324,7 @@ export default function Home() {
                   Loading musicians...
                 </div>
               ) : (
-                topMusicians?.map((musician: any) => (
+                topMusicians?.map((musician: Musician) => (
                   <div
                     key={musician.id}
                     className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center"

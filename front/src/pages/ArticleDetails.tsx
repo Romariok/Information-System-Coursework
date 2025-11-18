@@ -8,7 +8,7 @@ import {
   getArticleFeedbacks,
   addArticleFeedback,
 } from "../services/api";
-import { Article, Feedback } from "../services/types";
+import type { Article, Feedback } from "../services/types";
 import StarRating from "../components/StarRating";
 import CollapsibleReviewForm from "../components/CollapsibleReviewForm";
 
@@ -38,7 +38,7 @@ export default function ArticleDetails() {
     mutationFn: (data: { text: string; stars: number }) =>
       addArticleFeedback(id!, data.text, data.stars),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["articleFeedbacks", id] });
+      void queryClient.invalidateQueries({ queryKey: ["articleFeedbacks", id] });
     },
   });
 

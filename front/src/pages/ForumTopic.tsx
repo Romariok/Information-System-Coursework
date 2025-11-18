@@ -29,7 +29,7 @@ export default function ForumTopic() {
   const createPostMutation = useMutation({
     mutationFn: (content: string) => createForumPost(Number(id), content),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forumPosts", id] });
+      void queryClient.invalidateQueries({ queryKey: ["forumPosts", id] });
       setNewPost("");
     },
   });
@@ -37,8 +37,8 @@ export default function ForumTopic() {
   const closeTopicMutation = useMutation({
     mutationFn: () => closeForumTopic(Number(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forumPosts", id] });
-      queryClient.invalidateQueries({ queryKey: ["forumTopics"] });
+      void queryClient.invalidateQueries({ queryKey: ["forumPosts", id] });
+      void queryClient.invalidateQueries({ queryKey: ["forumTopics"] });
     },
   });
 

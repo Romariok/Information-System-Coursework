@@ -30,7 +30,7 @@ export default function AdminArticles() {
       if (!variables.accepted && articlesData?.items.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
       }
-      queryClient.invalidateQueries({ queryKey: ["unacceptedArticles"] });
+      void queryClient.invalidateQueries({ queryKey: ["unacceptedArticles"] });
     },
   });
 

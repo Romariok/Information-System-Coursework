@@ -8,7 +8,8 @@ import {
   likeProduct,
   unlikeProduct,
 } from "../services/api";
-import { Brand, formatProductType, ProductSimple } from "../services/types";
+import type { Brand, ProductSimple } from "../services/types";
+import { formatProductType } from "../services/types";
 import api from "../services/api";
 import Pagination from "../components/Pagination";
 export default function BrandDetails() {
@@ -25,21 +26,20 @@ export default function BrandDetails() {
   } = useQuery<Brand>({
     queryKey: ["brand", id],
     queryFn: async () => {
-      const response = await api.get(`/brand/id/${id}`);
+      const response = await api.get<Brand>(`/brand/id/${id}`);
       return response.data;
     },
   });
-  const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
+  const { data: products, isLoading: isLoadingProducts } = useQuery<ProductSimple[]>({
     queryKey: ["brandProducts", id, page],
     queryFn: () =>
       getProductsByBrand(Number(id), (page - 1) * pageSize, pageSize),
     enabled: !!id,
   });
-  const products = productsResponse?.data as ProductSimple[];
   const { data: userProducts } = useQuery<ProductSimple[]>({
     queryKey: ["userProducts"],
     queryFn: async () => {
-      const response = await api.get("/user/products");
+      const response = await api.get<ProductSimple[]>("/user/products");
       return response.data;
     },
   });
@@ -155,11 +155,10 @@ export default function BrandDetails() {
                   <h3 className="text-lg font-semibold">{product.name}</h3>
                   <button
                     onClick={() => handleLikeClick(product.id)}
-                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
-                      likedProducts[product.id]
-                        ? "text-red-500 hover:text-red-600"
-                        : "text-gray-400 hover:text-gray-500"
-                    }`}
+                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${likedProducts[product.id]
+                      ? "text-red-500 hover:text-red-600"
+                      : "text-gray-400 hover:text-gray-500"
+                      }`}
                     disabled={likeMutation.isPending}
                   >
                     <svg
@@ -182,7 +181,7 @@ export default function BrandDetails() {
                   <div className="flex items-center mb-2">
                     <StarRating
                       rating={product.rate}
-                      onRatingChange={() => {}}
+                      onRatingChange={() => { }}
                       size="sm"
                     />
                     <span className="ml-2 text-gray-600">
