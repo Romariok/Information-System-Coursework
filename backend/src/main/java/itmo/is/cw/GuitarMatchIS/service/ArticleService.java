@@ -6,12 +6,15 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -263,6 +266,25 @@ public class ArticleService {
 
    private String convertMarkdownToHtml(String markdownText) {
       try {
+         // Выполняем конвертацию в отдельной асинхронной задаче
+         return convertMarkdownToHtmlAsync(markdownText).get();
+      } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         log.error("Markdown to HTML conversion was interrupted", e);
+         return markdownText;
+      } catch (ExecutionException e) {
+         log.error("Exception while converting markdown to html", e.getCause());
+         return markdownText;
+      }
+   }
+
+   /**
+    * Асинхронный вызов внешнего markdown-парсера.
+    * Этот метод будет выполняться в отдельном потоке thread pool'а Spring.
+    */
+   @Async
+   public CompletableFuture<String> convertMarkdownToHtmlAsync(String markdownText) {
+      try {
          // Get parser path
          String parserPath = markdownParserPath;
          // Build the command - passing text directly
@@ -286,13 +308,13 @@ public class ArticleService {
 
          if (exitCode != 0) {
             log.error("Markdown parser failed with exit code {} and output: {}", exitCode, output.toString());
-            return markdownText; // Fallback to original text
+            return CompletableFuture.completedFuture(markdownText); // Fallback to original text
          }
          log.debug("Markdown successfully converted to HTML");
-         return output.toString();
+         return CompletableFuture.completedFuture(output.toString());
       } catch (Exception e) {
          log.error("Exception while converting markdown to html", e);
-         return markdownText; // Fallback to original text
+         return CompletableFuture.completedFuture(markdownText); // Fallback to original text
       }
    }
 }
