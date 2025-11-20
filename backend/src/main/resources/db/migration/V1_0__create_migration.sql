@@ -644,4 +644,4 @@ $$ LANGUAGE plpgsql;
 
 UPDATE app_user
 SET is_admin = TRUE
-WHERE username = 'userTest';
+WHERE username = 'admin';
