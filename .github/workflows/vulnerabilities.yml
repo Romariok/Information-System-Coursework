@@ -2,9 +2,9 @@ name: vulnerabilities check
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feat/part2, feat/part3 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, feat/part2, feat/part3 ]
   workflow_dispatch:
 
 jobs:
