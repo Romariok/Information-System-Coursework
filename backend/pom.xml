@@ -129,7 +129,7 @@
 					<effort>Max</effort>
 					<threshold>Low</threshold>
 					<xmlOutput>true</xmlOutput>
-					<failOnError>false</failOnError>
+					<failOnError>true</failOnError>
 				</configuration>
 				<executions>
 					<execution>
