@@ -23,7 +23,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
           memory: 4G
     networks:
       - postgres
@@ -43,7 +43,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 1G
     networks:
       - postgres
@@ -99,6 +99,43 @@ services:
     networks:
       - postgres
 
+  backend:
+    container_name: backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: "5252"
+      POSTGRES_NAME: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "pgpwd"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres"
+      JWT_SECRET: "dev-secret"
+      APP_EXTERNAL_MARKDOWN_PARSER_PATH: "/opt/app/parser.exe"
+    volumes:
+      - ../backend/logs:/opt/app/logs
+      - ../backend/parser.exe:/opt/app/parser.exe
+    ports:
+      - "5252:5252"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - postgres
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ../front
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - postgres
 
 networks:
   postgres:
