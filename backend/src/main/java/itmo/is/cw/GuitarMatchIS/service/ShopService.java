@@ -40,12 +40,7 @@ public class ShopService {
                   shop1.getWebsite(),
                   shop1.getEmail(),
                   shop1.getAddress()))
-            .sorted(new Comparator<ShopDTO>() {
-               @Override
-               public int compare(ShopDTO o1, ShopDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ShopDTO::getId))
             .toList();
    }
 
@@ -83,14 +78,13 @@ public class ShopService {
             .build();
    }
 
-    private ShopDTO convertToDTO(Shop shop) {
-        return new ShopDTO(
+   private ShopDTO convertToDTO(Shop shop) {
+      return new ShopDTO(
             shop.getId(),
             shop.getName(),
             shop.getDescription(),
             shop.getWebsite(),
             shop.getEmail(),
-            shop.getAddress()
-        );
-    }
+            shop.getAddress());
+   }
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class UserProductId implements Serializable {
+   private static final long serialVersionUID = 1L;
    private Long userId;
    private Long productId;
 }

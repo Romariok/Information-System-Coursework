@@ -34,12 +34,7 @@ public class BrandService {
                   brand1.getCountry(),
                   brand1.getWebsite(),
                   brand1.getEmail()))
-            .sorted(new Comparator<BrandDTO>() {
-               @Override
-               public int compare(BrandDTO o1, BrandDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(BrandDTO::getId))
             .toList();
    }
 
@@ -54,10 +49,9 @@ public class BrandService {
    private BrandDTO convertToDTO(Brand brand) {
       return new BrandDTO(
             brand.getId(),
-            brand.getName(), 
+            brand.getName(),
             brand.getCountry(),
             brand.getWebsite(),
-            brand.getEmail()
-      );
+            brand.getEmail());
    }
 }
