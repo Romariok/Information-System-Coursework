@@ -71,7 +71,7 @@ jobs:
          - name: Build backend image (no push)
            uses: docker/build-push-action@v6
            with:
-              context: ./backend
+              context: .
               file: ./backend/Dockerfile
               push: false
               tags: temp/backend:ci
