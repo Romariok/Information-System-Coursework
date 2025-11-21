@@ -1,17 +1,21 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +64,8 @@ public class ArticleService {
    private String markdownParserPath;
 
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
-      log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
+      log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy,
+            ascending);
       Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
             sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
@@ -90,12 +95,7 @@ public class ArticleService {
       return articles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ArticleDTO>() {
-               @Override
-               public int compare(ArticleDTO o1, ArticleDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ArticleDTO::getId))
             .toList();
    }
 
@@ -108,18 +108,14 @@ public class ArticleService {
       return articles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ArticleDTO>() {
-               @Override
-               public int compare(ArticleDTO o1, ArticleDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ArticleDTO::getId))
             .toList();
    }
 
    public boolean moderateArticle(ModerateArticleDTO moderateArticleDTO, HttpServletRequest request) {
       User moderator = findUserByRequest(request);
-      log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(), moderator.getUsername());
+      log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(),
+            moderator.getUsername());
       if (!moderator.getIsAdmin()) {
          log.warn("User {} has no rights to moderate article", moderator.getUsername());
          throw new ForbiddenException("User have no rights to moderate article");
@@ -194,12 +190,7 @@ public class ArticleService {
       return productArticles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<StatusArticlesDTO>() {
-               @Override
-               public int compare(StatusArticlesDTO o1, StatusArticlesDTO o2) {
-                  return o1.getProduct().getId().compareTo(o2.getProduct().getId());
-               }
-            })
+            .sorted(Comparator.comparing((StatusArticlesDTO dto) -> dto.getProduct().getId()))
             .toList();
    }
 
@@ -263,6 +254,25 @@ public class ArticleService {
 
    private String convertMarkdownToHtml(String markdownText) {
       try {
+         // Выполняем конвертацию в отдельной асинхронной задаче
+         return convertMarkdownToHtmlAsync(markdownText).get();
+      } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         log.error("Markdown to HTML conversion was interrupted", e);
+         return markdownText;
+      } catch (ExecutionException e) {
+         log.error("Exception while converting markdown to html", e.getCause());
+         return markdownText;
+      }
+   }
+
+   /**
+    * Асинхронный вызов внешнего markdown-парсера.
+    * Этот метод будет выполняться в отдельном потоке thread pool'а Spring.
+    */
+   @Async
+   public CompletableFuture<String> convertMarkdownToHtmlAsync(String markdownText) {
+      try {
          // Get parser path
          String parserPath = markdownParserPath;
          // Build the command - passing text directly
@@ -286,13 +296,17 @@ public class ArticleService {
 
          if (exitCode != 0) {
             log.error("Markdown parser failed with exit code {} and output: {}", exitCode, output.toString());
-            return markdownText; // Fallback to original text
+            return CompletableFuture.completedFuture(markdownText); // Fallback to original text
          }
          log.debug("Markdown successfully converted to HTML");
-         return output.toString();
-      } catch (Exception e) {
-         log.error("Exception while converting markdown to html", e);
-         return markdownText; // Fallback to original text
+         return CompletableFuture.completedFuture(output.toString());
+      } catch (IOException e) {
+         log.error("IO error while converting markdown to html", e);
+         return CompletableFuture.completedFuture(markdownText); // Fallback to original text
+      } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         log.error("Markdown to HTML conversion was interrupted", e);
+         return CompletableFuture.completedFuture(markdownText); // Fallback to original text
       }
    }
 }

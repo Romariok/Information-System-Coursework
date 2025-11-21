@@ -49,12 +49,7 @@ public class ForumPostService {
             return posts
                         .stream()
                         .map(this::convertToDTO)
-                        .sorted(new Comparator<ForumPostDTO>() {
-                              @Override
-                              public int compare(ForumPostDTO o1, ForumPostDTO o2) {
-                                    return o1.getId().compareTo(o2.getId());
-                              }
-                        })
+                        .sorted(Comparator.comparing(ForumPostDTO::getId))
                         .toList();
       }
 
@@ -62,9 +57,11 @@ public class ForumPostService {
             log.info("Creating forum post for topic with id: {}", forumPostDTO.getForumTopicId());
             ForumTopic topic = forumTopicRepository.findById(forumPostDTO.getForumTopicId())
                         .orElseThrow(() -> {
-                              log.warn("Forum topic with id {} not found while creating post", forumPostDTO.getForumTopicId());
+                              log.warn("Forum topic with id {} not found while creating post",
+                                          forumPostDTO.getForumTopicId());
                               return new ForumTopicNotFoundException(
-                                    String.format("Forum topic with id %s not found", forumPostDTO.getForumTopicId()));
+                                          String.format("Forum topic with id %s not found",
+                                                      forumPostDTO.getForumTopicId()));
                         });
             User author = findUserByRequest(request);
             log.info("Forum post author is {}", author.getUsername());

@@ -67,16 +67,16 @@ public class MusicianService {
 
    public List<MusicianInfoDTO> getMusician(int from, int size, MusicianSort sortBy, boolean ascending) {
       log.info("Fetching musicians from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
-      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC, 
-                       sortBy.getFieldName());
+      Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
+            sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
 
       List<Musician> musicians = musicianRepository.findAll(page).getContent();
       return musicians
             .stream()
-            .map(musician1 -> convertToDTO(musician1, 
-                  musicianGenreRepository.findByMusician(musician1), 
-                  musicianTypeOfMusicianRepository.findByMusician(musician1), 
+            .map(musician1 -> convertToDTO(musician1,
+                  musicianGenreRepository.findByMusician(musician1),
+                  musicianTypeOfMusicianRepository.findByMusician(musician1),
                   musicianProductRepository.findByMusician(musician1)))
             .toList();
    }
@@ -84,10 +84,11 @@ public class MusicianService {
    public Boolean isSubscribed(Long musicianId, HttpServletRequest request) {
       User user = findUserByRequest(request);
       log.info("Checking if user {} is subscribed to musician with id: {}", user.getUsername(), musicianId);
-      return userMusicianRepository.existsByUserAndMusician(user, musicianRepository.findById(musicianId).orElseThrow(() -> {
-         log.warn("Musician with id {} not found while checking subscription", musicianId);
-         return new MusicianNotFoundException("Musician with id %s not found".formatted(musicianId));
-      }));
+      return userMusicianRepository.existsByUserAndMusician(user,
+            musicianRepository.findById(musicianId).orElseThrow(() -> {
+               log.warn("Musician with id {} not found while checking subscription", musicianId);
+               return new MusicianNotFoundException("Musician with id %s not found".formatted(musicianId));
+            }));
    }
 
    @Transactional
@@ -111,13 +112,15 @@ public class MusicianService {
       }
 
       for (TypeOfMusician typeOfMusician : createMusicianDTO.getTypesOfMusician()) {
-         musicianTypeOfMusicianRepository.saveByMusicianIdAndTypeOfMusician(musician.getId(), typeOfMusician.toString());
+         musicianTypeOfMusicianRepository.saveByMusicianIdAndTypeOfMusician(musician.getId(),
+               typeOfMusician.toString());
       }
 
       simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
       log.info("Musician creation message sent to websocket");
 
-      return convertToDTOLists(musician, createMusicianDTO.getGenres(), createMusicianDTO.getTypesOfMusician(), new ArrayList<>());
+      return convertToDTOLists(musician, createMusicianDTO.getGenres(), createMusicianDTO.getTypesOfMusician(),
+            new ArrayList<>());
    }
 
    public Boolean subscribeToMusician(SubscribeDTO subscribeDTO, HttpServletRequest request) {
@@ -128,7 +131,7 @@ public class MusicianService {
             .orElseThrow(() -> {
                log.warn("Musician with id {} not found while subscribing", subscribeDTO.getMusicianId());
                return new MusicianNotFoundException(
-                  "Musician with id %s not found".formatted(subscribeDTO.getMusicianId()));
+                     "Musician with id %s not found".formatted(subscribeDTO.getMusicianId()));
             });
       if (userMusicianRepository.existsByUserAndMusician(user, musician)) {
          log.warn("User {} is already subscribed to musician {}", user.getUsername(), musician.getName());
@@ -149,7 +152,7 @@ public class MusicianService {
             .orElseThrow(() -> {
                log.warn("Musician with id {} not found while unsubscribing", subscribeDTO.getMusicianId());
                return new MusicianNotFoundException(
-                  "Musician with id %s not found".formatted(subscribeDTO.getMusicianId()));
+                     "Musician with id %s not found".formatted(subscribeDTO.getMusicianId()));
             });
       if (!userMusicianRepository.existsByUserAndMusician(user, musician)) {
          log.warn("User {} is not subscribed to musician {}", user.getUsername(), musician.getName());
@@ -168,16 +171,11 @@ public class MusicianService {
 
       return musicians
             .stream()
-            .map(musician1 -> convertToDTO(musician1, 
-                  musicianGenreRepository.findByMusician(musician1), 
-                  musicianTypeOfMusicianRepository.findByMusician(musician1), 
+            .map(musician1 -> convertToDTO(musician1,
+                  musicianGenreRepository.findByMusician(musician1),
+                  musicianTypeOfMusicianRepository.findByMusician(musician1),
                   musicianProductRepository.findByMusician(musician1)))
-            .sorted(new Comparator<MusicianInfoDTO>() {
-               @Override
-               public int compare(MusicianInfoDTO o1, MusicianInfoDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(MusicianInfoDTO::getId))
             .toList();
    }
 
@@ -234,15 +232,16 @@ public class MusicianService {
             .orElseThrow(() -> new MusicianNotFoundException(
                   "Musician with id %s not found".formatted(musicianId)));
 
-      return convertToDTO(musician, 
-            musicianGenreRepository.findByMusician(musician), 
-            musicianTypeOfMusicianRepository.findByMusician(musician), 
+      return convertToDTO(musician,
+            musicianGenreRepository.findByMusician(musician),
+            musicianTypeOfMusicianRepository.findByMusician(musician),
             musicianProductRepository.findByMusician(musician));
    }
 
    @Transactional
    public Boolean addProductToMusician(AddProductMusicianDTO addProductMusicianDTO, HttpServletRequest request) {
-      log.info("Adding product with id {} to musician with name {}", addProductMusicianDTO.getProductId(), addProductMusicianDTO.getMusicianName());
+      log.info("Adding product with id {} to musician with name {}", addProductMusicianDTO.getProductId(),
+            addProductMusicianDTO.getMusicianName());
       if (!musicianRepository.existsByName(addProductMusicianDTO.getMusicianName()))
          throw new MusicianNotFoundException(
                "Musician with name %s not found".formatted(addProductMusicianDTO.getMusicianName()));
@@ -269,7 +268,8 @@ public class MusicianService {
 
    @Transactional
    public Boolean deleteProductFromMusician(AddProductMusicianDTO addProductMusicianDTO, HttpServletRequest request) {
-      log.info("Deleting product with id {} from musician with name {}", addProductMusicianDTO.getProductId(), addProductMusicianDTO.getMusicianName());
+      log.info("Deleting product with id {} from musician with name {}", addProductMusicianDTO.getProductId(),
+            addProductMusicianDTO.getMusicianName());
       if (!musicianRepository.existsByName(addProductMusicianDTO.getMusicianName()))
          throw new MusicianNotFoundException(
                "Musician with name %s not found".formatted(addProductMusicianDTO.getMusicianName()));
@@ -325,7 +325,8 @@ public class MusicianService {
             .build();
    }
 
-   private MusicianInfoDTO convertToDTO(Musician musician, List<MusicianGenre> musicianGenres, List<MusicianTypeOfMusician> musicianTypes, List<MusicianProduct> musicianProducts) {
+   private MusicianInfoDTO convertToDTO(Musician musician, List<MusicianGenre> musicianGenres,
+         List<MusicianTypeOfMusician> musicianTypes, List<MusicianProduct> musicianProducts) {
       return MusicianInfoDTO.builder()
             .id(musician.getId())
             .name(musician.getName())
@@ -336,7 +337,8 @@ public class MusicianService {
             .build();
    }
 
-   private MusicianInfoDTO convertToDTOLists(Musician musician, List<Genre> genres, List<TypeOfMusician> typesOfMusician, List<MusicianProduct> musicianProducts) {
+   private MusicianInfoDTO convertToDTOLists(Musician musician, List<Genre> genres,
+         List<TypeOfMusician> typesOfMusician, List<MusicianProduct> musicianProducts) {
       return MusicianInfoDTO.builder()
             .id(musician.getId())
             .name(musician.getName())

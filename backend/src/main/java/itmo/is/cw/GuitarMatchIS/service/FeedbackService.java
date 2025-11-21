@@ -50,12 +50,7 @@ public class FeedbackService {
             return feedbacks
                         .stream()
                         .map(this::convertToDTO)
-                        .sorted(new Comparator<FeedbackDTO>() {
-                              @Override
-                              public int compare(FeedbackDTO o1, FeedbackDTO o2) {
-                                    return o1.getId().compareTo(o2.getId());
-                              }
-                        })
+                        .sorted(Comparator.comparing(FeedbackDTO::getId))
                         .toList();
 
       }
@@ -69,12 +64,7 @@ public class FeedbackService {
             return feedbacks
                         .stream()
                         .map(this::convertToDTO)
-                        .sorted(new Comparator<FeedbackDTO>() {
-                              @Override
-                              public int compare(FeedbackDTO o1, FeedbackDTO o2) {
-                                    return o1.getId().compareTo(o2.getId());
-                              }
-                        })
+                        .sorted(Comparator.comparing(FeedbackDTO::getId))
                         .toList();
       }
 
@@ -83,9 +73,10 @@ public class FeedbackService {
             log.info("Adding feedback for product with id: {}", feedbackDTO.getProductId());
             Product product = productRepository.findById(feedbackDTO.getProductId())
                         .orElseThrow(() -> {
-                              log.warn("Product with id {} not found while adding feedback", feedbackDTO.getProductId());
+                              log.warn("Product with id {} not found while adding feedback",
+                                          feedbackDTO.getProductId());
                               return new ProductNotFoundException(
-                                    String.format("Product with id %s not found", feedbackDTO.getProductId()));
+                                          String.format("Product with id %s not found", feedbackDTO.getProductId()));
                         });
 
             User user = findUserByRequest(request);
@@ -102,9 +93,10 @@ public class FeedbackService {
             log.info("Adding feedback for article with id: {}", feedbackDTO.getArticleId());
             Article article = articleRepository.findById(feedbackDTO.getArticleId())
                         .orElseThrow(() -> {
-                              log.warn("Article with id {} not found while adding feedback", feedbackDTO.getArticleId());
+                              log.warn("Article with id {} not found while adding feedback",
+                                          feedbackDTO.getArticleId());
                               return new ArticleNotFoundException(
-                                    String.format("Article with id %s not found", feedbackDTO.getArticleId()));
+                                          String.format("Article with id %s not found", feedbackDTO.getArticleId()));
                         });
 
             User user = findUserByRequest(request);

@@ -1,10 +1,8 @@
 #!/bin/sh
 set -e
 
-if [ -f "/opt/app/parser.exe" ]; then
-  chmod +x /opt/app/parser.exe || true
+if [ -f "/opt/app/parser" ]; then
+  chmod +x /opt/app/parser || true
 fi
 
 exec java -jar /opt/app/app.jar
-
-

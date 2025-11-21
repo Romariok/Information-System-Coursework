@@ -132,7 +132,7 @@ export default function Articles() {
 
         {/* Create Article Modal */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50  backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
               <h2 className="text-2xl font-bold mb-4">Create New Article</h2>
               <form onSubmit={handleCreateArticle} className="space-y-4">
