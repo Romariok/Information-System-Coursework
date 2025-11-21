@@ -6,7 +6,8 @@ import itmo.is.cw.GuitarMatchIS.models.Genre;
 import lombok.Data;
 
 @Data
-public class MusicianGenreId implements Serializable{
+public class MusicianGenreId implements Serializable {
+   private static final long serialVersionUID = 1L;
    private Long musicianId;
    private Genre genre;
 }

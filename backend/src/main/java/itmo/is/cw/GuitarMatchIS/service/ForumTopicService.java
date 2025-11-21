@@ -45,12 +45,7 @@ public class ForumTopicService {
       return topics
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ForumTopicDTO>() {
-               @Override
-               public int compare(ForumTopicDTO o1, ForumTopicDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ForumTopicDTO::getId))
             .toList();
    }
 
@@ -60,7 +55,7 @@ public class ForumTopicService {
             .orElseThrow(() -> {
                log.warn("User with id {} not found while fetching forum topics", authorId);
                return new UserNotFoundException(
-                  String.format("User with id %s not found", authorId));
+                     String.format("User with id %s not found", authorId));
             });
 
       Pageable pageable = Pagification.createPageTemplate(from, size);
@@ -69,12 +64,7 @@ public class ForumTopicService {
       return topics
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ForumTopicDTO>() {
-               @Override
-               public int compare(ForumTopicDTO o1, ForumTopicDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ForumTopicDTO::getId))
             .toList();
    }
 
@@ -85,7 +75,7 @@ public class ForumTopicService {
             .orElseThrow(() -> {
                log.warn("Forum topic with id {} not found while closing", topicId);
                return new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId));
+                     String.format("Forum topic with id %s not found", topicId));
             });
 
       User user = findUserByRequest(request);
@@ -151,7 +141,7 @@ public class ForumTopicService {
             .orElseThrow(() -> {
                log.warn("Forum topic with id {} not found while checking ownership", topicId);
                return new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId));
+                     String.format("Forum topic with id %s not found", topicId));
             });
 
       User user = findUserByRequest(request);
@@ -166,7 +156,7 @@ public class ForumTopicService {
             .orElseThrow(() -> {
                log.warn("Forum topic with id {} not found", topicId);
                return new ForumTopicNotFoundException(
-                  String.format("Forum topic with id %s not found", topicId));
+                     String.format("Forum topic with id %s not found", topicId));
             });
 
       return convertToDTO(topic);

@@ -1,6 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -63,7 +64,8 @@ public class ArticleService {
    private String markdownParserPath;
 
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
-      log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
+      log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy,
+            ascending);
       Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
             sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
@@ -93,12 +95,7 @@ public class ArticleService {
       return articles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ArticleDTO>() {
-               @Override
-               public int compare(ArticleDTO o1, ArticleDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ArticleDTO::getId))
             .toList();
    }
 
@@ -111,18 +108,14 @@ public class ArticleService {
       return articles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<ArticleDTO>() {
-               @Override
-               public int compare(ArticleDTO o1, ArticleDTO o2) {
-                  return o1.getId().compareTo(o2.getId());
-               }
-            })
+            .sorted(Comparator.comparing(ArticleDTO::getId))
             .toList();
    }
 
    public boolean moderateArticle(ModerateArticleDTO moderateArticleDTO, HttpServletRequest request) {
       User moderator = findUserByRequest(request);
-      log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(), moderator.getUsername());
+      log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(),
+            moderator.getUsername());
       if (!moderator.getIsAdmin()) {
          log.warn("User {} has no rights to moderate article", moderator.getUsername());
          throw new ForbiddenException("User have no rights to moderate article");
@@ -197,12 +190,7 @@ public class ArticleService {
       return productArticles
             .stream()
             .map(this::convertToDTO)
-            .sorted(new Comparator<StatusArticlesDTO>() {
-               @Override
-               public int compare(StatusArticlesDTO o1, StatusArticlesDTO o2) {
-                  return o1.getProduct().getId().compareTo(o2.getProduct().getId());
-               }
-            })
+            .sorted(Comparator.comparing((StatusArticlesDTO dto) -> dto.getProduct().getId()))
             .toList();
    }
 
@@ -312,8 +300,12 @@ public class ArticleService {
          }
          log.debug("Markdown successfully converted to HTML");
          return CompletableFuture.completedFuture(output.toString());
-      } catch (Exception e) {
-         log.error("Exception while converting markdown to html", e);
+      } catch (IOException e) {
+         log.error("IO error while converting markdown to html", e);
+         return CompletableFuture.completedFuture(markdownText); // Fallback to original text
+      } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         log.error("Markdown to HTML conversion was interrupted", e);
          return CompletableFuture.completedFuture(markdownText); // Fallback to original text
       }
    }
