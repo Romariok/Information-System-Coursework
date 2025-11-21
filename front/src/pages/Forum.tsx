@@ -103,7 +103,7 @@ export default function Forum() {
 
         {/* Create Topic Modal */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg w-full max-w-lg">
               <h2 className="text-2xl font-bold mb-4">Create New Topic</h2>
               <form onSubmit={handleCreateTopic}>
