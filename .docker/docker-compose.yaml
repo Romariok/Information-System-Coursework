@@ -12,7 +12,7 @@ services:
       - ./InitDatabase:/docker-entrypoint-initdb.d
       - .:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
@@ -102,8 +102,9 @@ services:
   backend:
     container_name: backend
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      # Контекст — корень репозитория, чтобы в сборке были доступны и backend, и parser
+      context: ..
+      dockerfile: backend/Dockerfile
     environment:
       PORT: "5252"
       POSTGRES_NAME: "postgres"
@@ -111,10 +112,10 @@ services:
       POSTGRES_PASSWORD: "pgpwd"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres"
       JWT_SECRET: "dev-secret"
-      APP_EXTERNAL_MARKDOWN_PARSER_PATH: "/opt/app/parser.exe"
+      # Явно указываем путь к собранному Linux-бинарнику парсера внутри контейнера
+      APP_EXTERNAL_MARKDOWN_PARSER_PATH: "/opt/app/parser"
     volumes:
       - ../backend/logs:/opt/app/logs
-      - ../backend/parser.exe:/opt/app/parser.exe
     ports:
       - "5252:5252"
     depends_on:

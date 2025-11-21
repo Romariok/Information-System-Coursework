@@ -11,7 +11,6 @@ public class AuthResponseDTO {
     private Integer subscriptions;
     private LocalDateTime createdAt;
     private String token;
-    private final String tokenType = "Bearer ";
 
     public AuthResponseDTO(String username, Boolean isAdmin, Integer subscriptions, LocalDateTime createdAt,
             String token) {
@@ -20,5 +19,9 @@ public class AuthResponseDTO {
         this.subscriptions = subscriptions;
         this.createdAt = createdAt;
         this.token = token;
+    }
+
+    public String getTokenType() {
+        return "Bearer ";
     }
 }
