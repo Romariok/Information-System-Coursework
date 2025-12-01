@@ -36,37 +36,37 @@ public class SecurityConfig {
    @Value("#{'${app.cors.allowed-origins:http://localhost:5173}'.split(',')}")
    private List<String> corsAllowedOrigins;
 
-
    @Bean
    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
       return http.csrf(AbstractHttpConfigurer::disable)
-      .cors(cors -> cors.configurationSource(request -> {
-          CorsConfiguration corsConfiguration = new CorsConfiguration();
-          corsConfiguration.setAllowedOrigins(corsAllowedOrigins);
-          corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "PATCH","DELETE", "OPTIONS"));
-          corsConfiguration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "from", "size"));
-          corsConfiguration.setAllowCredentials(true);
-          return corsConfiguration;
-      }))
-      .authorizeHttpRequests(
-              request -> request
-                      .requestMatchers("/index.html", "/favicon.ico", "/static/**").permitAll()
-                      .requestMatchers("/actuator/**").permitAll()
-                      .requestMatchers("api/auth/**", "api/user/role/**", "/ws", "/api/").permitAll()
-                      .requestMatchers(HttpMethod.GET, "api/admin/**").hasRole("ADMIN")
-                      .requestMatchers(HttpMethod.POST, "api/moderate/**").hasRole("ADMIN")
-                      .anyRequest().authenticated()
-      ).userDetailsService(userDetailsService)
-      .sessionManagement(session -> session
-              .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class)
-      .exceptionHandling(exHandler -> exHandler.authenticationEntryPoint(new JwtAuthEntryPoint()))
-      .build();
+            .cors(cors -> cors.configurationSource(request -> {
+               CorsConfiguration corsConfiguration = new CorsConfiguration();
+               corsConfiguration.setAllowedOrigins(corsAllowedOrigins);
+               corsConfiguration.setAllowedMethods(List.of("POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"));
+               corsConfiguration
+                     .setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "from", "size"));
+               corsConfiguration.setAllowCredentials(true);
+               return corsConfiguration;
+            }))
+            .authorizeHttpRequests(
+                  request -> request
+                        .requestMatchers("/index.html", "/favicon.ico", "/static/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/user/role/**", "/ws", "/api/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/moderate/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+            .userDetailsService(userDetailsService)
+            .authenticationProvider(daoAuthenticationProvider())
+            .sessionManagement(session -> session
+                  .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthTokenFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(exHandler -> exHandler.authenticationEntryPoint(new JwtAuthEntryPoint()))
+            .build();
 
    }
 
-   @Bean
-   public DaoAuthenticationProvider authenticationProvider() {
+   private DaoAuthenticationProvider daoAuthenticationProvider() {
       DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
       authProvider.setUserDetailsService(userDetailsService);
