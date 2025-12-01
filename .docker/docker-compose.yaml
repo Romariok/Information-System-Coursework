@@ -112,6 +112,7 @@ services:
       POSTGRES_PASSWORD: "pgpwd"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/postgres"
       JWT_SECRET: "dev-secret"
+      BCRYPT_STRENGTH: "8"
       # Явно указываем путь к собранному Linux-бинарнику парсера внутри контейнера
       APP_EXTERNAL_MARKDOWN_PARSER_PATH: "/opt/app/parser"
     volumes:
