@@ -158,6 +158,7 @@ CREATE TABLE articles (
     author_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     accepted BOOLEAN DEFAULT FALSE NOT NULL,
+    html_content TEXT,
     CONSTRAINT fk_articles_user FOREIGN KEY (author_id) REFERENCES app_user (id) ON DELETE SET NULL
 );
 
