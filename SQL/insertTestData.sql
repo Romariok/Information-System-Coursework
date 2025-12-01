@@ -53,13 +53,21 @@ SELECT
 FROM generate_series(1, 1000);
 
 -- Добавление отзывов
+-- Ограничение chk_feedback_target требует, чтобы был либо product_id, либо article_id, но не оба сразу.
+-- Чётные отзывы делаем по продуктам, нечётные — по статьям.
 INSERT INTO feedback (author_id, product_id, article_id, text, stars, created_at)
 SELECT 
-    floor(random() * 13000 + 1)::int,
-    floor(random() * 130000 + 1)::int,
-    floor(random() * 1000 + 1)::int,
+    floor(random() * 13000 + 1)::int AS author_id, -- 1..13000, все существующие пользователи
+    CASE 
+        WHEN generate_series % 2 = 0 THEN floor(random() * 130000 + 1)::int  -- только для чётных: ссылка на product
+        ELSE NULL
+    END AS product_id,
+    CASE 
+        WHEN generate_series % 2 = 1 THEN floor(random() * 1000 + 1)::int     -- только для нечётных: ссылка на article
+        ELSE NULL
+    END AS article_id,
     'Feedback text ' || generate_series,
-    floor(random() * 5 + 1)::int,
+    floor(random() * 6)::int, -- 0..5, укладываемся в CHECK(stars between 0 and 5)
     current_date - (random() * 365)::int
 FROM generate_series(1, 10000);
 
