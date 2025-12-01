@@ -1,5 +1,7 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -67,14 +69,21 @@ public class MusicianService {
       private final MusicianProductRepository musicianProductRepository;
       private final ProductRepository productRepository;
 
+      @Cacheable(value = "musicians", key = "'list:' + #from + ':' + #size + ':' + #sortBy + ':' + #ascending")
       public List<MusicianInfoDTO> getMusician(int from, int size, MusicianSort sortBy, boolean ascending) {
             log.info("Fetching musicians from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
             Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
                         sortBy.getFieldName());
             Pageable page = PageRequest.of(from / size, size, sort);
-            List<Musician> musicians = musicianRepository.findAll(page).getContent();
 
-            return buildMusicianInfoDTOs(musicians);
+            List<Musician> musicians = musicianRepository.findAll(page).getContent();
+            return musicians
+                        .stream()
+                        .map(musician1 -> convertToDTO(musician1,
+                                    musicianGenreRepository.findByMusician(musician1),
+                                    musicianTypeOfMusicianRepository.findByMusician(musician1),
+                                    musicianProductRepository.findByMusician(musician1)))
+                        .toList();
       }
 
       public Boolean isSubscribed(Long musicianId, HttpServletRequest request) {
@@ -89,6 +98,7 @@ public class MusicianService {
       }
 
       @Transactional
+      @CacheEvict(value = "musicians", allEntries = true)
       public MusicianInfoDTO createMusician(CreateMusicianDTO createMusicianDTO, HttpServletRequest request) {
             User user = findUserByRequest(request);
             log.info("User {} is creating musician with name: {}", user.getUsername(), createMusicianDTO.getName());
@@ -170,40 +180,13 @@ public class MusicianService {
             Pageable page = Pagification.createPageTemplate(from, size);
             List<Musician> musicians = musicianRepository.findAllByNameContains(name, page).getContent();
 
-            return buildMusicianInfoDTOs(musicians)
+            return musicians
                         .stream()
+                        .map(musician1 -> convertToDTO(musician1,
+                                    musicianGenreRepository.findByMusician(musician1),
+                                    musicianTypeOfMusicianRepository.findByMusician(musician1),
+                                    musicianProductRepository.findByMusician(musician1)))
                         .sorted(Comparator.comparing(MusicianInfoDTO::getId))
-                        .toList();
-      }
-
-      private List<MusicianInfoDTO> buildMusicianInfoDTOs(List<Musician> musicians) {
-            if (musicians.isEmpty()) {
-                  return List.of();
-            }
-
-            List<Long> musicianIds = musicians.stream()
-                        .map(Musician::getId)
-                        .toList();
-
-            List<MusicianGenre> musicianGenres = musicianGenreRepository.findByMusicianIdIn(musicianIds);
-            Map<Long, List<MusicianGenre>> musicianGenresByMusicianId = musicianGenres.stream()
-                        .collect(Collectors.groupingBy(MusicianGenre::getMusicianId));
-
-            List<MusicianTypeOfMusician> musicianTypes = musicianTypeOfMusicianRepository
-                        .findByMusicianIdIn(musicianIds);
-            Map<Long, List<MusicianTypeOfMusician>> musicianTypesByMusicianId = musicianTypes.stream()
-                        .collect(Collectors.groupingBy(MusicianTypeOfMusician::getMusicianId));
-
-            List<MusicianProduct> musicianProducts = musicianProductRepository.findByMusicianIdIn(musicianIds);
-            Map<Long, List<MusicianProduct>> musicianProductsByMusicianId = musicianProducts.stream()
-                        .collect(Collectors.groupingBy(MusicianProduct::getMusicianId));
-
-            return musicians.stream()
-                        .map(musician -> convertToDTO(
-                                    musician,
-                                    musicianGenresByMusicianId.getOrDefault(musician.getId(), List.of()),
-                                    musicianTypesByMusicianId.getOrDefault(musician.getId(), List.of()),
-                                    musicianProductsByMusicianId.getOrDefault(musician.getId(), List.of())))
                         .toList();
       }
 

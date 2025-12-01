@@ -1,5 +1,6 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -186,6 +187,31 @@ public class ProductService {
       }
 
       public List<ProductDTO> getProductsByFilter(String name,
+                  Float minRate,
+                  Float maxRate,
+                  Long brandId,
+                  GuitarForm guitarForm,
+                  TypeOfProduct typeOfProduct,
+                  Integer lads,
+                  Double minPrice,
+                  Double maxPrice,
+                  Color color,
+                  Integer strings,
+                  TipMaterial tipMaterial,
+                  BodyMaterial bodyMaterial,
+                  PickupConfiguration pickupConfiguration,
+                  TypeComboAmplifier typeComboAmplifier,
+                  ProductSort sortBy,
+                  boolean ascending,
+                  int from, int size) {
+
+            return getProductsByFilterCached(name, minRate, maxRate, brandId, guitarForm, typeOfProduct, lads, minPrice,
+                        maxPrice, color, strings, tipMaterial, bodyMaterial, pickupConfiguration, typeComboAmplifier,
+                        sortBy, ascending, from, size);
+      }
+
+      @Cacheable(value = "products_filter", key = "'filter:' + #name + ':' + #minRate + ':' + #maxRate + ':' + #brandId + ':' + #guitarForm + ':' + #typeOfProduct + ':' + #lads + ':' + #minPrice + ':' + #maxPrice + ':' + #color + ':' + #strings + ':' + #tipMaterial + ':' + #bodyMaterial + ':' + #pickupConfiguration + ':' + #typeComboAmplifier + ':' + #sortBy + ':' + #ascending + ':' + #from + ':' + #size")
+      public List<ProductDTO> getProductsByFilterCached(String name,
                   Float minRate,
                   Float maxRate,
                   Long brandId,

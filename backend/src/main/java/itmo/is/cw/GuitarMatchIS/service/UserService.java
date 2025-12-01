@@ -178,7 +178,8 @@ public class UserService {
         public Boolean deleteProductFromUser(AddUserProductDTO addUserProductDTO, HttpServletRequest request) {
                 log.info("Deleting product with id {} from user", addUserProductDTO.getProductId());
                 if (!productRepository.existsById(addUserProductDTO.getProductId())) {
-                        log.warn("Product with id {} not found while deleting from user", addUserProductDTO.getProductId());
+                        log.warn("Product with id {} not found while deleting from user",
+                                        addUserProductDTO.getProductId());
                         throw new ProductNotFoundException(
                                         "Product with id %s not found".formatted(addUserProductDTO.getProductId()));
                 }
