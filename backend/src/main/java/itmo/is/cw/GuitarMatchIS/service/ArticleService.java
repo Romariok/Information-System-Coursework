@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +65,7 @@ public class ArticleService {
    @Value("${app.external.markdown-parser.path:${user.dir}/parser}")
    private String markdownParserPath;
 
+   @Cacheable(value = "articles", key = "'accepted:' + #from + ':' + #size + ':' + #sortBy + ':' + #ascending")
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
       log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy,
             ascending);
@@ -112,6 +115,7 @@ public class ArticleService {
             .toList();
    }
 
+   @CacheEvict(value = "articles", allEntries = true)
    public boolean moderateArticle(ModerateArticleDTO moderateArticleDTO, HttpServletRequest request) {
       User moderator = findUserByRequest(request);
       log.info("Moderating article with id: {} by user: {}", moderateArticleDTO.getArticleId(),
@@ -140,6 +144,7 @@ public class ArticleService {
    }
 
    @Transactional
+   @CacheEvict(value = "articles", allEntries = true)
    public ArticleDTO createArticle(CreateArticleDTO createArticleDTO, HttpServletRequest request) {
       log.info("Creating article with header: {}", createArticleDTO.getHeader());
       if (!productRepository.existsByName(createArticleDTO.getProductName())) {
