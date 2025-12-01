@@ -83,6 +83,18 @@ services:
     networks:
       - postgres
 
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    restart: unless-stopped
+    networks:
+      - postgres
+
   cadvisor:
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest
@@ -115,6 +127,8 @@ services:
       BCRYPT_STRENGTH: "8"
       # Явно указываем путь к собранному Linux-бинарнику парсера внутри контейнера
       APP_EXTERNAL_MARKDOWN_PARSER_PATH: "/opt/app/parser"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
     volumes:
       - ../backend/logs:/opt/app/logs
     ports:
@@ -122,6 +136,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
     networks:
       - postgres
