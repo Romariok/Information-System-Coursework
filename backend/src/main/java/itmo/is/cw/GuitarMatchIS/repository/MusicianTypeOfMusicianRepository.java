@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 public interface MusicianTypeOfMusicianRepository extends JpaRepository<MusicianTypeOfMusician, MusicianTypeOfMusicianId> {
    List<MusicianTypeOfMusician> findByMusician(Musician musician);
 
+   List<MusicianTypeOfMusician> findByMusicianIdIn(List<Long> musicianIds);
+
    @Transactional
    @Modifying
    @Query(value = "INSERT INTO type_of_musician_musician (musician_id, type_of_musician) VALUES (:musicianId, CAST(:typeOfMusician AS type_of_musician_enum))", nativeQuery = true)

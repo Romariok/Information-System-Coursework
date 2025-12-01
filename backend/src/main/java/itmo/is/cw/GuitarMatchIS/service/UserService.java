@@ -1,6 +1,8 @@
 package itmo.is.cw.GuitarMatchIS.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -113,14 +115,36 @@ public class UserService {
                 User user = findUserByRequest(request);
                 log.info("Getting subscribed musicians for user: {}", user.getUsername());
                 List<Musician> musicians = userMusicianRepository.findByUser(user).stream()
-                                .map(UserMusician::getMusician).toList();
+                                .map(UserMusician::getMusician)
+                                .toList();
+
+                if (musicians.isEmpty()) {
+                        return List.of();
+                }
+
+                List<Long> musicianIds = musicians.stream()
+                                .map(Musician::getId)
+                                .toList();
+
+                List<MusicianGenre> musicianGenres = musicianGenreRepository.findByMusicianIdIn(musicianIds);
+                Map<Long, List<MusicianGenre>> musicianGenresByMusicianId = musicianGenres.stream()
+                                .collect(Collectors.groupingBy(MusicianGenre::getMusicianId));
+
+                List<MusicianTypeOfMusician> musicianTypes = musicianTypeOfMusicianRepository.findByMusicianIdIn(musicianIds);
+                Map<Long, List<MusicianTypeOfMusician>> musicianTypesByMusicianId = musicianTypes.stream()
+                                .collect(Collectors.groupingBy(MusicianTypeOfMusician::getMusicianId));
+
+                List<MusicianProduct> musicianProducts = musicianProductRepository.findByMusicianIdIn(musicianIds);
+                Map<Long, List<MusicianProduct>> musicianProductsByMusicianId = musicianProducts.stream()
+                                .collect(Collectors.groupingBy(MusicianProduct::getMusicianId));
 
                 return musicians
                                 .stream()
-                                .map(musician1 -> convertToDTO(musician1,
-                                                musicianGenreRepository.findByMusician(musician1),
-                                                musicianTypeOfMusicianRepository.findByMusician(musician1),
-                                                musicianProductRepository.findByMusician(musician1)))
+                                .map(musician1 -> convertToDTO(
+                                                musician1,
+                                                musicianGenresByMusicianId.getOrDefault(musician1.getId(), List.of()),
+                                                musicianTypesByMusicianId.getOrDefault(musician1.getId(), List.of()),
+                                                musicianProductsByMusicianId.getOrDefault(musician1.getId(), List.of())))
                                 .toList();
         }
 
