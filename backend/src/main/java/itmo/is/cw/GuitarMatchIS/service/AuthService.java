@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import itmo.is.cw.GuitarMatchIS.dto.AuthResponseDTO;
@@ -14,7 +15,6 @@ import itmo.is.cw.GuitarMatchIS.models.User;
 import itmo.is.cw.GuitarMatchIS.repository.UserRepository;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserAlreadyExistException;
-import itmo.is.cw.GuitarMatchIS.utils.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,16 +57,13 @@ public class AuthService {
 
         public AuthResponseDTO login(UserDTO loginUserDto) {
                 log.info("Logging in user with username: {}", loginUserDto.getUsername());
-                User user = userRepository.findByUsername(loginUserDto.getUsername())
-                                .orElseThrow(() -> {
-                                        log.warn("User with username {} not found", loginUserDto.getUsername());
-                                        return new UserNotFoundException(
-                                                        String.format("Username %s not found", loginUserDto.getUsername()));
-                                });
 
-                authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(loginUserDto.getUsername(),
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                loginUserDto.getUsername(),
                                                 loginUserDto.getPassword()));
+
+                User user = (User) authentication.getPrincipal();
 
                 String token = jwtUtils.generateJwtToken(user.getUsername());
                 log.info("User with username {} successfully logged in", user.getUsername());

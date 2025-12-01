@@ -167,6 +167,7 @@ public class ArticleService {
             .author(author)
             .createdAt(LocalDateTime.now())
             .accepted(false)
+            .htmlContent(convertMarkdownToHtml(createArticleDTO.getText()))
             .build();
       articleRepository.save(article);
       log.info("Article with header {} saved with id {}", article.getHeader(), article.getId());
@@ -208,7 +209,10 @@ public class ArticleService {
    }
 
    private ArticleDTO convertToDTO(Article article) {
-      String htmlContent = convertMarkdownToHtml(article.getText());
+      String htmlContent = article.getHtmlContent();
+      if (htmlContent == null || htmlContent.isBlank()) {
+         htmlContent = convertMarkdownToHtml(article.getText());
+      }
 
       return ArticleDTO.builder()
             .id(article.getId())

@@ -15,6 +15,8 @@ import org.springframework.data.repository.query.Param;
 public interface MusicianGenreRepository extends JpaRepository<MusicianGenre, MusicianGenreId> {
    List<MusicianGenre> findByMusician(Musician musician);
 
+   List<MusicianGenre> findByMusicianIdIn(List<Long> musicianIds);
+
    @Transactional
    @Modifying
    @Query(value = "INSERT INTO musician_genre (musician_id, genre) VALUES (:musicianId, CAST(:genre AS genre_enum))", nativeQuery = true)

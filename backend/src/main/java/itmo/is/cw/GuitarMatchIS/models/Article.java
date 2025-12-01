@@ -32,4 +32,7 @@ public class Article {
 
    @Column(name = "accepted", nullable = false)
    private Boolean accepted;
+
+   @Column(name = "html_content")
+   private String htmlContent;
 }
