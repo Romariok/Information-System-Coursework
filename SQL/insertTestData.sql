@@ -43,13 +43,16 @@ SELECT
 FROM generate_series(1, 130000);
 
 -- Добавление статей
-INSERT INTO articles (header, text, author_id, created_at, accepted)
+INSERT INTO articles (header, text, author_id, created_at, accepted, html_content)
 SELECT 
     'Article Header ' || generate_series,
     'Article Text ' || generate_series,
     floor(random() * 13000 + 1)::int,
     current_date - (random() * 365)::int,
-    random() > 0.5
+    random() > 0.5,
+    -- Для тестовых данных html_content оставляем равным text,
+    -- чтобы не тратить время на внешний парсер при выборке
+    'Article Text ' || generate_series
 FROM generate_series(1, 1000);
 
 -- Добавление отзывов
