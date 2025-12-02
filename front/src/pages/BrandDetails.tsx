@@ -140,11 +140,11 @@ export default function BrandDetails() {
                     <img
                       src={
                         [
-                          "https://images.equipboard.com/uploads/item/image/16008/gibson-les-paul-classic-electric-guitar-m.webp?v=1734091576",
+                          
                           "https://images.equipboard.com/uploads/item/image/17684/roland-g-707-m.webp?v=1734005219",
                           "https://images.equipboard.com/uploads/item/image/9259/yamaha-hs8-powered-studio-monitor-m.webp?v=1734264173",
                           "https://images.equipboard.com/uploads/item/image/17369/dave-smith-instruments-sequential-prophet-6-m.webp?v=1732782610",
-                        ][product.id % 4]
+                        ][product.id % 3]
                       }
                       alt={product.name}
                       className="w-full h-full object-cover rounded-md hover:opacity-75 transition-opacity"
