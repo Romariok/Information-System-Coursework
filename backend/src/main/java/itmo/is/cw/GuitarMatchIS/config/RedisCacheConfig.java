@@ -3,7 +3,11 @@ package itmo.is.cw.GuitarMatchIS.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -12,7 +16,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class RedisCacheConfig {
+@Slf4j
+public class RedisCacheConfig implements CachingConfigurer {
 
    @Bean
    public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper,
@@ -42,5 +47,29 @@ public class RedisCacheConfig {
       }
       return config;
    }
-}
 
+   @Override
+   public CacheErrorHandler errorHandler() {
+      return new CacheErrorHandler() {
+         @Override
+         public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+            log.warn("Cache GET error on cache '{}' for key '{}': {}", cache.getName(), key, exception.getMessage());
+         }
+
+         @Override
+         public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
+            log.warn("Cache PUT error on cache '{}' for key '{}': {}", cache.getName(), key, exception.getMessage());
+         }
+
+         @Override
+         public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+            log.warn("Cache EVICT error on cache '{}' for key '{}': {}", cache.getName(), key, exception.getMessage());
+         }
+
+         @Override
+         public void handleCacheClearError(RuntimeException exception, Cache cache) {
+            log.warn("Cache CLEAR error on cache '{}': {}", cache.getName(), exception.getMessage());
+         }
+      };
+   }
+}

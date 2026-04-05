@@ -69,6 +69,7 @@ public class ArticleService {
    public List<ArticleDTO> getAcceptedArticles(int from, int size, ArticleSort sortBy, boolean ascending) {
       log.info("Fetching accepted articles from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy,
             ascending);
+      if (size <= 0) throw new IllegalArgumentException("size must be >= 1");
       Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
             sortBy.getFieldName());
       Pageable page = PageRequest.of(from / size, size, sort);
@@ -133,13 +134,21 @@ public class ArticleService {
          // Delete the article if rejected
          log.info("Article with id {} was rejected and will be deleted", articleId);
          articleRepository.deleteById(articleId);
-         simpMessagingTemplate.convertAndSend(articlesTopic, "Article was rejected and deleted");
+         try {
+            simpMessagingTemplate.convertAndSend(articlesTopic, "Article was rejected and deleted");
+         } catch (Exception e) {
+            log.warn("WebSocket notification failed", e);
+         }
          return true;
       }
 
       // Accept the article if not rejected
       log.info("Article with id {} was approved", articleId);
-      simpMessagingTemplate.convertAndSend(articlesTopic, "Article was approved");
+      try {
+         simpMessagingTemplate.convertAndSend(articlesTopic, "Article was approved");
+      } catch (Exception e) {
+         log.warn("WebSocket notification failed", e);
+      }
       return articleRepository.moderateArticle(articleId, true, moderator.getId());
    }
 
@@ -177,8 +186,12 @@ public class ArticleService {
       productArticle.setProductId(product.getId());
       productArticleRepository.save(productArticle);
 
-      simpMessagingTemplate.convertAndSend("/articles", "New Article created for product " + product.getName());
-      log.info("Article creation message sent to websocket");
+      try {
+         simpMessagingTemplate.convertAndSend("/articles", "New Article created for product " + product.getName());
+         log.info("Article creation message sent to websocket");
+      } catch (Exception e) {
+         log.warn("WebSocket notification failed", e);
+      }
       return convertToDTO(article);
    }
 
@@ -306,6 +319,10 @@ public class ArticleService {
          if (exitCode != 0) {
             log.error("Markdown parser failed with exit code {} and output: {}", exitCode, output.toString());
             return CompletableFuture.completedFuture(markdownText); // Fallback to original text
+         }
+         if (output.toString().isBlank()) {
+            log.warn("Markdown parser returned empty output, falling back to original text");
+            return CompletableFuture.completedFuture(markdownText);
          }
          log.debug("Markdown successfully converted to HTML");
          return CompletableFuture.completedFuture(output.toString());
