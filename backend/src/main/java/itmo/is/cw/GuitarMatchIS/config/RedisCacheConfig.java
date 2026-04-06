@@ -25,6 +25,9 @@ public class RedisCacheConfig implements CachingConfigurer {
       ObjectMapper mapper = objectMapper.copy();
       mapper.registerModule(new JavaTimeModule());
       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+      mapper.activateDefaultTyping(
+            mapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL);
 
       RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(
