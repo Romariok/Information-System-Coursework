@@ -2,6 +2,7 @@ package itmo.is.cw.GuitarMatchIS.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -11,9 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.security.MessageDigest;
 import java.util.Date;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtils {
@@ -30,16 +31,16 @@ public class JwtUtils {
         Date expiration = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiration)
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiration)
                 .signWith(getSecretKey())
                 .compact();
     }
 
     public String getUserNameFromJwtToken(String authToken) {
         try {
-            return getParsedToken(authToken).getBody().getSubject();
+            return getParsedToken(authToken).getPayload().getSubject();
         } catch (Exception e) {
             logger.error("Invalid token: {}", e.getMessage());
 
@@ -51,7 +52,7 @@ public class JwtUtils {
         try {
             getParsedToken(authToken);
             return true;
-        } catch (@SuppressWarnings("deprecation") SignatureException e) {
+        } catch (SignatureException e) {
             System.out.println("Invalid JWT signature: " + e.getMessage());
         } catch (MalformedJwtException e) {
             System.out.println("Invalid JWT token: " + e.getMessage());
@@ -66,10 +67,10 @@ public class JwtUtils {
     }
 
     private Jws<Claims> getParsedToken(String authToken) {
-        return Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(authToken);
+        return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(authToken);
     }
 
-    private Key getSecretKey() {
+    private SecretKey getSecretKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
             try {
