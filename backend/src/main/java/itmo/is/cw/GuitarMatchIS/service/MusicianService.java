@@ -45,6 +45,7 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductMusicianNotFoundExceptio
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.SubscriptionAlreadyExistsException;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.SubscriptionNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,7 @@ public class MusicianService {
       @Cacheable(value = "musicians", key = "'list:' + #from + ':' + #size + ':' + #sortBy + ':' + #ascending")
       public List<MusicianInfoDTO> getMusician(int from, int size, MusicianSort sortBy, boolean ascending) {
             log.info("Fetching musicians from: {}, size: {}, sortBy: {}, ascending: {}", from, size, sortBy, ascending);
+            if (size <= 0) throw new IllegalArgumentException("size must be >= 1");
             Sort sort = Sort.by(ascending ? Sort.Direction.ASC : Sort.Direction.DESC,
                         sortBy.getFieldName());
             Pageable page = PageRequest.of(from / size, size, sort);
@@ -124,8 +126,12 @@ public class MusicianService {
                               typeOfMusician.toString());
             }
 
-            simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
-            log.info("Musician creation message sent to websocket");
+            try {
+                  simpMessagingTemplate.convertAndSend("/musicians", "New musician added");
+                  log.info("Musician creation message sent to websocket");
+            } catch (Exception e) {
+                  log.warn("WebSocket notification failed", e);
+            }
 
             return convertToDTOLists(musician, createMusicianDTO.getGenres(), createMusicianDTO.getTypesOfMusician(),
                         new ArrayList<>());
@@ -146,8 +152,18 @@ public class MusicianService {
                   log.warn("User {} is already subscribed to musician {}", user.getUsername(), musician.getName());
                   throw new SubscriptionAlreadyExistsException("You are already subscribed to this musician");
             }
-            simpMessagingTemplate.convertAndSend("/musicians", "New subscriber to musician");
-            userMusicianRepository.subscribeToMusician(user.getId(), subscribeDTO.getMusicianId());
+            try {
+                  simpMessagingTemplate.convertAndSend("/musicians", "New subscriber to musician");
+            } catch (Exception e) {
+                  log.warn("WebSocket notification failed", e);
+            }
+            try {
+                  userMusicianRepository.subscribeToMusician(user.getId(), subscribeDTO.getMusicianId());
+            } catch (DataIntegrityViolationException e) {
+                  log.warn("Race condition detected in subscribeToMusician for user {} and musician {}",
+                              user.getUsername(), musician.getName());
+                  throw new SubscriptionAlreadyExistsException("You are already subscribed to this musician");
+            }
             log.info("User {} successfully subscribed to musician {}", user.getUsername(), musician.getName());
             return true;
       }
@@ -169,7 +185,11 @@ public class MusicianService {
                   log.warn("User {} is not subscribed to musician {}", user.getUsername(), musician.getName());
                   throw new SubscriptionNotFoundException("You have no subscription to this musician");
             }
-            simpMessagingTemplate.convertAndSend("/musicians", "Deleted subscription to musician");
+            try {
+                  simpMessagingTemplate.convertAndSend("/musicians", "Deleted subscription to musician");
+            } catch (Exception e) {
+                  log.warn("WebSocket notification failed", e);
+            }
             userMusicianRepository.deleteByUserAndMusician(user, musician);
             log.info("User {} successfully unsubscribed from musician {}", user.getUsername(), musician.getName());
             return true;
