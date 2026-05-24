@@ -17,10 +17,11 @@
 
 | Слой | Технология |
 |---|---|
-| Бэкенд | Java 17, Spring Boot 3, Spring Security + JWT, Flyway |
+| Бэкенд | Java 21, Spring Boot 4, Spring Security + JWT, Flyway |
+| Парсер | Haskell |
 | База данных | PostgreSQL 15 |
 | Кэш | Redis 7 |
-| Фронтенд | TypeScript, React, Tailwind CSS |
+| Фронтенд | TypeScript 5.6, React 18, Tailwind CSS, Vite 6 |
 | Мониторинг | Prometheus + Micrometer, Grafana, cAdvisor |
 | Контейнеризация | Docker, docker-compose |
 | CI/CD | GitHub Actions |
