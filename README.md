@@ -84,14 +84,41 @@ Stateless JWT вместо сессий — нет общего хранилищ
 
 ### Индексы
 
-Индексы создавались после профилирования, не наугад. Покрыли FK-колонки, поля фильтрации (`type_of_product`, `guitar_form`, `rate`, `avg_price`, `stars`), поля поиска (`name`, `header`, `title`) и составные индексы для частых паттернов: `(musician_id, genre)`, `(shop_id, price)`, `(author_id, product_id, article_id)`.
+Без индексов основные запросы вырождаются в Seq Scan по таблицам:
+- `product` — 130 000 строк, каждый фильтр по типу / цене / рейтингу читает всё
+- `shop_product` — 390 000 строк, JOIN с product без индекса по `product_id` — Hash Join по полной таблице
+- `feedback` — 10 000 строк, 50% с `product_id IS NULL`, поиск по продукту читает их все
 
-Самый заметный результат — фильтрация продуктов по типу + цвету + цене + рейтингу:
+Текущий набор: 43 explicit индекса + ~21 PK/unique constraint, итого ~64, суммарно 163 MB. Покрывают FK-колонки (все JOIN-ы идут по индексу), поля фильтрации (`type_of_product`, `guitar_form`, `rate`, `avg_price`, `stars`), поля поиска (`name`, `header`, `title`) и частые составные паттерны:
+
+- `(type_of_product, avg_price, rate)` — фильтрация продуктов по трём условиям сразу на уровне индекса
+- `(product_id, price) WHERE available = TRUE` — partial index, исключает недоступные товары до Heap Scan
+- `(author_id) WHERE accepted = TRUE` — partial index, только опубликованные статьи
+- `product_id WHERE product_id IS NOT NULL` — вдвое меньше полного индекса по feedback
+- `subscribers DESC` — `ORDER BY subscribers DESC LIMIT N` без узла Sort
+
+Фильтрация продуктов по типу + цене + рейтингу (130k строк):
 
 ```
-Было:  73.7 мс
-Стало:  2.0 мс
+Без индексов: Parallel Seq Scan — 60.345 мс
+С индексами:  Bitmap Index Scan  —  1.394 мс  (43×)
 ```
+
+Топ-рейтинговые продукты (rate >= 4.5, 130k строк):
+
+```
+Без индексов: Seq Scan          — 85.902 мс
+С индексами:  Index Scan Backward — 2.058 мс  (42×)
+```
+
+Магазины с доступным продуктом (shop_product JOIN shop, 390k строк):
+
+```
+Без индексов: pk range scan, 301 Index Searches — 36.667 мс
+С индексами:  partial index, 1 Index Search      —  1.847 мс  (20×)
+```
+
+Подробно: [docs/index-optimization.md](./docs/index-optimization.md)
 
 ---
 
@@ -228,3 +255,5 @@ Backend собирается в multi-stage Dockerfile: первый stage ко�
 - [2 этап — схема БД, триггеры, индексы, замеры](./docs/2_step/README.MD)
 - [3 этап — REST API](./docs/3_step/README.MD)
 - [Оптимизации подробно](./docs/refactoring/3-it/optimizations.md)
+- [Оптимизация индексов: замеры, решения, итоги](./docs/index-optimization.md)
+- [Теория индексов PostgreSQL](./docs/index-theory.md)

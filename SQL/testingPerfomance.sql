@@ -1,5 +1,5 @@
--- Time before: 73,711
--- Time after: 1,993
+-- Time before: 60,345
+-- Time after: 1,394
 -- Retrieve products of a specific type with additional filters like color, average price range, and rating.
 EXPLAIN ANALYZE 
 SELECT 
@@ -15,8 +15,8 @@ ORDER BY
     p.avg_price ASC;
 
 
--- Time before: 0,348
--- Time after: 0,089
+-- Time before: 36,667
+-- Time after: 1,847
 -- Retrieve a list of shops where a specific product is available, along with the price.
 EXPLAIN ANALYZE 
 SELECT 
@@ -30,8 +30,8 @@ WHERE
 ORDER BY 
     sp.price ASC;
 
--- Time before: 2,559
--- Time after: 2,354
+-- Time before: 2,748
+-- Time after: 3,580
 -- Retrieve musicians with their genres and subscriber counts, sorted by popularity.
 EXPLAIN ANALYZE 
 SELECT 
@@ -47,8 +47,8 @@ GROUP BY
 ORDER BY 
     m.subscribers DESC;
 
--- Time before: 0,027
--- Time after: 0,026
+-- Time before: 0,945
+-- Time after: 0,158
 -- Find products associated with a specific musician
 EXPLAIN ANALYZE 
 SELECT 
@@ -62,8 +62,8 @@ FROM
 WHERE 
     mp.musician_id = 5;
 
--- Time before: 0,053
--- Time after: 0,044
+-- Time before: 0,990
+-- Time after: 0,141
 -- Retrieve all articles related to a specific product, along with their authors.
 EXPLAIN ANALYZE 
 SELECT 
@@ -81,8 +81,8 @@ WHERE
 ORDER BY 
     a.created_at DESC;
 
--- Time before: 0,447
--- Time after: 0,026
+-- Time before: 0,926
+-- Time after: 0,363
 -- Retrieve user feedback for a specific product, including the rating and feedback text.
 EXPLAIN ANALYZE 
 SELECT 
@@ -99,8 +99,8 @@ WHERE
 ORDER BY 
     f.created_at DESC;
 
--- Time before: 0,035
--- Time after: 0,032
+-- Time before: 0,537
+-- Time after: 0,244
 -- Retrieve the list of musicians a user is subscribed to.
 EXPLAIN ANALYZE 
 SELECT 
@@ -115,8 +115,8 @@ WHERE
 ORDER BY 
     m.subscribers DESC;
 
--- Time before: 0,034
--- Time after: 0,026
+-- Time before: 0,102
+-- Time after: 0,105
 -- Forum topics created by a user
 EXPLAIN ANALYZE 
 SELECT 
@@ -133,8 +133,8 @@ ORDER BY
     ft.created_at DESC;
 
 
--- Time before: 16,732
--- Time after: 2,834
+-- Time before: 85,902
+-- Time after: 2,058
 -- Top-rated products across all types
 EXPLAIN ANALYZE 
 SELECT 
@@ -200,22 +200,3 @@ WHERE
     AND a.accepted = TRUE -- Filter for accepted articles
 ORDER BY 
     au.username, p.avg_price DESC;
-
-
-SELECT DISTINCT p.*
-FROM product p
-JOIN shop_product sp ON p.id = sp.product_id
-JOIN musician_product mp ON p.id = mp.product_id
-JOIN user_musician_subscription ums ON mp.musician_id = ums.musician_id
-JOIN (
-    SELECT author_id
-    FROM articles
-    GROUP BY author_id
-    HAVING COUNT(*) >= 2
-) a ON ums.user_id = a.author_id
-WHERE sp.available = TRUE
-  AND p.type_of_product IN (
-      'ELECTRIC_GUITAR',
-      'ACOUSTIC_GUITAR',
-      'BASS_GUITAR'
-  );
