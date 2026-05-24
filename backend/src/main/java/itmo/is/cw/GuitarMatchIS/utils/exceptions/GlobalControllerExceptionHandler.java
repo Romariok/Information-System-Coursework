@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -167,6 +168,12 @@ public class GlobalControllerExceptionHandler {
       public ErrorResponse handleGenreNotFoundException(GenreNotFoundException e) {
             return new ErrorResponse(e.getClass().getCanonicalName(),
                         e.getMessage());
+      }
+
+      @ExceptionHandler(BadCredentialsException.class)
+      @ResponseStatus(HttpStatus.UNAUTHORIZED)
+      public ErrorResponse handleBadCredentialsException(BadCredentialsException e) {
+            return new ErrorResponse(e.getClass().getCanonicalName(), e.getMessage());
       }
 
       @ExceptionHandler(UsernameNotFoundException.class)

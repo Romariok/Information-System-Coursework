@@ -6,7 +6,6 @@ import itmo.is.cw.GuitarMatchIS.dto.CreateMusicianDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianInfoDTO;
 import itmo.is.cw.GuitarMatchIS.dto.MusicianProductDTO;
 import itmo.is.cw.GuitarMatchIS.dto.SubscribeDTO;
-import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.security.service.AuthUserDetailsService;
 import itmo.is.cw.GuitarMatchIS.service.MusicianService;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.MusicianAlreadyExistsException;
@@ -17,7 +16,7 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.SubscriptionNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MusicianController.class)
-@Import(JwtUtils.class)
+@Import(TestWebMvcSecurityConfig.class)
 @TestPropertySource(properties = {
         "spring.cache.type=none",
         "app.security.jwt.secret=test-secret-key-for-controller-tests-1234"
@@ -44,8 +43,7 @@ class MusicianControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private MusicianService musicianService;

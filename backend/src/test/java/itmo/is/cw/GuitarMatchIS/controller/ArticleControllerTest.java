@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import itmo.is.cw.GuitarMatchIS.dto.ArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.CreateArticleDTO;
 import itmo.is.cw.GuitarMatchIS.dto.ModerateArticleDTO;
-import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.security.service.AuthUserDetailsService;
 import itmo.is.cw.GuitarMatchIS.service.ArticleService;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ArticleNotFoundException;
@@ -12,7 +11,7 @@ import itmo.is.cw.GuitarMatchIS.utils.exceptions.ForbiddenException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -29,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ArticleController.class)
-@Import(JwtUtils.class)
+@Import(TestWebMvcSecurityConfig.class)
 @TestPropertySource(properties = {
         "spring.cache.type=none",
         "app.security.jwt.secret=test-secret-key-for-controller-tests-1234"
@@ -39,8 +38,7 @@ class ArticleControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private ArticleService articleService;
@@ -174,5 +172,55 @@ class ArticleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void getArticleById_found_returns200() throws Exception {
+        ArticleDTO articleDTO = ArticleDTO.builder()
+                .id(1L)
+                .header("Test Article")
+                .text("Article content")
+                .htmlContent("<p>Article content</p>")
+                .accepted(true)
+                .build();
+        when(articleService.getArticleById(1L)).thenReturn(articleDTO);
+
+        mockMvc.perform(get("/api/article/id/1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void getArticleById_notFound_returns404() throws Exception {
+        when(articleService.getArticleById(999L))
+                .thenThrow(new ArticleNotFoundException("Article not found"));
+
+        mockMvc.perform(get("/api/article/id/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void getArticlesByHeaderContaining_returns200() throws Exception {
+        when(articleService.getArticlesByHeaderContaining(anyString(), anyInt(), anyInt()))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/article/header/Gibson")
+                        .param("from", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void getArticlesByAuthorId_returns200() throws Exception {
+        when(articleService.getArticlesByAuthorId(anyLong(), anyInt(), anyInt()))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/article/author/1")
+                        .param("from", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk());
     }
 }

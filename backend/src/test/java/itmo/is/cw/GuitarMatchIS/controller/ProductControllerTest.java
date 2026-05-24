@@ -1,6 +1,5 @@
 package itmo.is.cw.GuitarMatchIS.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import itmo.is.cw.GuitarMatchIS.models.TypeOfProduct;
 import itmo.is.cw.GuitarMatchIS.security.jwt.JwtUtils;
 import itmo.is.cw.GuitarMatchIS.security.service.AuthUserDetailsService;
@@ -8,7 +7,7 @@ import itmo.is.cw.GuitarMatchIS.service.ProductService;
 import itmo.is.cw.GuitarMatchIS.utils.exceptions.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -32,9 +31,6 @@ class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockitoBean
     private ProductService productService;
