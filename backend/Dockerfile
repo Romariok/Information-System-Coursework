@@ -10,7 +10,7 @@ COPY parser/*.hs ./
 # Собираем бинарник парсера (явно подключаем скрытые пакеты text и bytestring)
 RUN ghc -O2 -threaded -rtsopts "-with-rtsopts=-N" -package cryptonite -package text -package bytestring -o parser Main.hs
 
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
 COPY backend/pom.xml .
@@ -18,7 +18,7 @@ COPY backend/src ./src
 
 RUN --mount=type=cache,target=/root/.m2 mvn -q -DskipTests package
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /opt/app
 
 COPY --from=build /workspace/target/GuitarMatchIS-0.0.1.jar /opt/app/app.jar

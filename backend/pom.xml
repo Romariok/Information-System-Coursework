@@ -20,6 +20,8 @@
 		<lombok.version>1.18.36</lombok.version>
 		<flyway.version>11.8.1</flyway.version>
 		<testcontainers.version>1.21.0</testcontainers.version>
+		<tomcat.version>11.0.22</tomcat.version>
+		<netty.version>4.2.13.Final</netty.version>
 	</properties>
 	<dependencies>
 		<dependency>
