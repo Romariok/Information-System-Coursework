@@ -30,6 +30,8 @@ import itmo.is.cw.GuitarMatchIS.repository.ProductRepository;
 import itmo.is.cw.GuitarMatchIS.repository.ShopProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.Comparator;
@@ -47,6 +49,10 @@ public class ProductService {
       private final MusicianGenreRepository musicianGenreRepository;
       private final MusicianTypeOfMusicianRepository musicianTypeOfMusicianRepository;
       private final ShopProductRepository shopProductRepository;
+
+      @Lazy
+      @Autowired
+      private ProductService self;
 
       public List<ProductGenreDTO> getProductsByBrandName(String brandName, int from, int size) {
             log.info("Fetching products for brand: {} from: {} to: {}", brandName, from, size);
@@ -205,9 +211,9 @@ public class ProductService {
                   boolean ascending,
                   int from, int size) {
 
-            return getProductsByFilterCached(name, minRate, maxRate, brandId, guitarForm, typeOfProduct, lads, minPrice,
-                        maxPrice, color, strings, tipMaterial, bodyMaterial, pickupConfiguration, typeComboAmplifier,
-                        sortBy, ascending, from, size);
+            return self.getProductsByFilterCached(name, minRate, maxRate, brandId, guitarForm, typeOfProduct, lads,
+                        minPrice, maxPrice, color, strings, tipMaterial, bodyMaterial, pickupConfiguration,
+                        typeComboAmplifier, sortBy, ascending, from, size);
       }
 
       @Cacheable(value = "products_filter", key = "'filter:' + #name + ':' + #minRate + ':' + #maxRate + ':' + #brandId + ':' + #guitarForm + ':' + #typeOfProduct + ':' + #lads + ':' + #minPrice + ':' + #maxPrice + ':' + #color + ':' + #strings + ':' + #tipMaterial + ':' + #bodyMaterial + ':' + #pickupConfiguration + ':' + #typeComboAmplifier + ':' + #sortBy + ':' + #ascending + ':' + #from + ':' + #size")
