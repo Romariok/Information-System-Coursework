@@ -22,9 +22,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisCacheConfig implements CachingConfigurer {
 
    @Bean
-   public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper,
-         CacheProperties cacheProperties) {
-      ObjectMapper mapper = objectMapper.copy();
+   public RedisCacheConfiguration redisCacheConfiguration(CacheProperties cacheProperties) {
+      ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new JavaTimeModule());
       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
       mapper.activateDefaultTyping(
